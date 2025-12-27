@@ -1364,15 +1364,6 @@ function applyTimeZoom() {
         updateZoomInputs(); // Réaffiche les valeurs actuelles
     }
 }
-
-
-
-function resetTimeZoom() { 
-    updateTimeChart(); 
-    setTimeout(updateZoomInputs, 10);
-}
-
-
 // --- THEMES ---
 function changeTheme(theme) {
     document.body.setAttribute('data-theme', theme);
@@ -1423,9 +1414,34 @@ function setStatus(msg) {
     }, 3000); 
 }
 
-function resetTimeZoom() { 
-    updateTimeChart(); 
+function resetTimeZoom() {
+    const chart = appState.charts.time;
+    if (!chart || !appState.fullDataTime.length) {
+        setStatus("Aucune donnée à afficher");
+        return;
+    }
+
+    // Réinitialiser le zoom horizontal à la plage complète des données
+    const t = appState.fullDataTime;
+    chart.options.scales.x.min = t[0];
+    chart.options.scales.x.max = t[t.length - 1];
+
+    // Réinitialiser le zoom vertical sur TOUTES les échelles Y
+    Object.keys(chart.scales).forEach(scaleKey => {
+        if (scaleKey.startsWith('y')) {
+            // Supprimer les limites personnalisées pour permettre l'auto-scaling
+            delete chart.options.scales[scaleKey].min;
+            delete chart.options.scales[scaleKey].max;
+        }
+    });
+
+    // Mettre à jour le graphique
+    chart.update('none');
+
+    // Mettre à jour les champs de zoom pour refléter les nouvelles valeurs
     setTimeout(updateZoomInputs, 10);
+
+    setStatus("Zoom réinitialisé sur toute la plage temporelle");
 }
 
 function resetFreqZoom() { 

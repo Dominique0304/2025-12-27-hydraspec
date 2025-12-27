@@ -1,0 +1,426 @@
+/* =====================================
+   ANIMATIONS ET FEEDBACK VISUEL
+   ===================================== */
+
+/* ===== ANIMATIONS BOUTONS ===== */
+
+/* Pulse au clic */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+button:active:not(:disabled) {
+    animation: pulse 0.3s ease-in-out;
+}
+
+/* Hover smooth */
+button:not(:disabled),
+.icon-btn:not(:disabled) {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== ACCORDÉONS ===== */
+
+/* Slide down */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+    }
+    to {
+        opacity: 1;
+        max-height: 2000px;
+        overflow: visible;
+    }
+}
+
+/* Slide up */
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        max-height: 2000px;
+    }
+    to {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+    }
+}
+
+/* Appliquer aux contenus d'accordéons */
+[id$="-content"] {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[id$="-content"][style*="display: block"],
+[id$="-content"][style*="display: flex"] {
+    animation-name: slideDown;
+}
+
+/* ===== ROTATION ICÔNES ===== */
+
+.fa-chevron-down, .fa-chevron-up {
+    transition: transform 0.3s ease;
+}
+
+/* Rotation au clic */
+@keyframes rotate360 {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.icon-rotate {
+    animation: rotate360 0.6s ease-in-out;
+}
+
+/* ===== SHAKE POUR ERREURS ===== */
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+    20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+.shake {
+    animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Input en erreur */
+input:invalid:not(:placeholder-shown),
+select:invalid,
+textarea:invalid:not(:placeholder-shown) {
+    border-color: var(--accent-red) !important;
+    animation: shake 0.4s ease;
+}
+
+/* ===== FADE IN ===== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* ===== HIGHLIGHT FLASH ===== */
+
+@keyframes highlight {
+    0% { background-color: var(--accent-blue); }
+    100% { background-color: transparent; }
+}
+
+.highlight {
+    animation: highlight 1s ease-out;
+}
+
+/* ===== SPINNER ===== */
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    animation: spin 0.8s linear infinite;
+}
+
+/* ===== MODAL BACKDROP ===== */
+
+.modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes modalBackdropFadeIn {
+    from { background-color: rgba(0, 0, 0, 0); }
+    to { background-color: rgba(0, 0, 0, 0.7); }
+}
+
+.modal[style*="display: flex"] {
+    animation: modalBackdropFadeIn 0.3s ease-out;
+}
+
+/* ===== TRANSITIONS GRAPHIQUES ===== */
+
+/* Smooth resize des graphiques */
+.plot-container {
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== DRAG & DROP ===== */
+
+/* Section en cours de drag */
+.draggable-section {
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.draggable-section:active {
+    cursor: grabbing !important;
+}
+
+.draggable-section[draggable="true"]:hover {
+    background: var(--bg-tertiary);
+}
+
+/* ===== HOVER EFFECTS ===== */
+
+/* Lignes de tableaux */
+tr:hover {
+    background-color: var(--bg-secondary);
+    transition: background-color 0.2s ease;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+input[type="checkbox"]:hover:not(:disabled) {
+    transform: scale(1.1);
+}
+
+input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== SLIDERS ===== */
+
+input[type="range"] {
+    transition: all 0.2s ease;
+}
+
+input[type="range"]:hover:not(:disabled) {
+    filter: brightness(1.2);
+}
+
+input[type="range"]:active:not(:disabled) {
+    filter: brightness(1.4);
+}
+
+/* ===== FOCUS VISIBLE ===== */
+
+*:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* ===== LOADING STATES ===== */
+
+/* Bouton en chargement */
+@keyframes buttonLoading {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+button.loading {
+    background: linear-gradient(90deg,
+        var(--accent-blue) 0%,
+        var(--accent-green) 50%,
+        var(--accent-blue) 100%);
+    background-size: 200% 100%;
+    animation: buttonLoading 1.5s ease infinite;
+    pointer-events: none;
+}
+
+/* ===== PROGRESS BARS ===== */
+
+@keyframes progressIndeterminate {
+    0% { left: -35%; right: 100%; }
+    60% { left: 100%; right: -90%; }
+    100% { left: 100%; right: -90%; }
+}
+
+.progress-indeterminate {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-indeterminate::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -35%;
+    right: 100%;
+    background: var(--accent-blue);
+    animation: progressIndeterminate 2s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+}
+
+/* ===== TOOLTIP ANIMATIONS ===== */
+
+[title]:hover::after {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* ===== SELECTION ANIMATIONS ===== */
+
+::selection {
+    background-color: var(--accent-blue);
+    color: white;
+}
+
+::-moz-selection {
+    background-color: var(--accent-blue);
+    color: white;
+}
+
+/* ===== SCROLLBAR ANIMATIONS ===== */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) var(--bg-tertiary);
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-green);
+}
+
+/* ===== RIPPLE EFFECT ===== */
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    width: 20px;
+    height: 20px;
+    animation: ripple 0.6s ease-out;
+    pointer-events: none;
+}
+
+/* ===== MICRO-INTERACTIONS ===== */
+
+/* Success checkmark */
+@keyframes checkmark {
+    0% { stroke-dashoffset: 100; }
+    100% { stroke-dashoffset: 0; }
+}
+
+.checkmark-animate {
+    stroke-dasharray: 100;
+    animation: checkmark 0.5s ease-out forwards;
+}
+
+/* ===== SKELETON LOADING ===== */
+
+@keyframes skeleton {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg,
+        var(--bg-secondary) 0px,
+        var(--bg-tertiary) 50px,
+        var(--bg-secondary) 100px
+    );
+    background-size: 200px 100%;
+    animation: skeleton 1.5s ease-in-out infinite;
+}
+
+/* ===== RESPONSIVE ANIMATIONS ===== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== CHART TRANSITIONS ===== */
+
+canvas {
+    transition: opacity 0.3s ease;
+}
+
+canvas.updating {
+    opacity: 0.6;
+}
+
+/* ===== NOTIFICATION BADGE ===== */
+
+@keyframes badgePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.badge {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* ===== GLOW EFFECT ===== */
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px var(--accent-blue); }
+    50% { box-shadow: 0 0 20px var(--accent-blue), 0 0 30px var(--accent-blue); }
+}
+
+.glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* ===== BOUNCE ===== */
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.bounce {
+    animation: bounce 1s ease;
+}

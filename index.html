@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="fr" id="html-lang">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HydraSpec Pro V1.4.0</title>
+
+
+
+
+    <!-- TOUTES LES DÉPENDANCES EN LOCAL -->
+    <script src="lib/chart.min.js"></script>
+    <script src="lib/marked.min.js"></script>
+    <script src="lib/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="lib/all.min.css">
+
+
+
+    <!-- Fichiers de l'application -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+
+<body data-theme="steampunk2">
+
+    <header>
+        <div class="brand">
+            <i class="fas fa-cogs gear-icon"></i> HYDRASPEC PRO
+            <span style="font-size:0.7em; opacity:0.7; margin-left:5px;">V1.4.0</span>
+
+            <!-- Statut DANS la même div brand -->
+            <div style="display: flex; align-items: center; margin-left: 15px;">
+                <div id="status-indicator" style="
+                width: 8px;
+                height: 8px;
+                background: var(--accent-green);
+                border-radius: 50%;
+                margin-right: 6px;
+                animation: pulse 2s infinite;
+            "></div>
+                <div class="status-bar" id="status-bar" style="
+                font-size: 0.85em;
+                font-weight: normal;
+            ">Prêt.</div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+            <!-- Boutons de contrôle de visibilité -->
+            <button id="toggle-time-btn" class="header-btn toggle-btn active" onclick="toggleTimeDomain()"
+                title="Afficher/Masquer le domaine temporel">
+                <i class="fas fa-stopwatch"></i> <span>Temps</span>
+            </button>
+
+            <button id="toggle-freq-btn" class="header-btn toggle-btn active" onclick="toggleFreqDomain()"
+                title="Afficher/Masquer le domaine fréquentiel">
+                <i class="fas fa-wave-square"></i> <span>Fréquence</span>
+            </button>
+
+            <button id="toggle-spectro-btn" class="header-btn toggle-btn active" onclick="toggleSpectrogram()"
+                title="Afficher/Masquer le spectrogramme">
+                <i class="fas fa-chart-area"></i> <span>Spectro</span>
+            </button>
+
+            <!-- Configurateur Multi-Canaux -->
+            <button onclick="openChannelConfig()" class="header-btn" title="Configuration Multi-Canaux" style="color:var(--accent-blue);">
+                <i class="fas fa-layer-group"></i>
+            </button>
+
+            <!-- Outils Menu -->
+            <div class="dropdown">
+                <button class="header-btn" id="btn-tools">
+                    <i class="fas fa-tools"></i> <span data-i18n="tools">Outils</span> <i class="fas fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="load_csv">Charger
+                            fichier .csv</span>
+                    </button>
+                    <button onclick="document.getElementById('projectInput').click()">
+                        <i class="fas fa-project-diagram" style="width:20px;"></i> <span data-i18n="open_proj">Ouvrir
+                            Projet (.hsp)</span>
+                    </button>
+                    <button onclick="initSaveProject()">
+                        <i class="fas fa-save" style="width:20px;"></i> <span data-i18n="save_proj">Enregistrer
+                            Projet</span>
+                    </button>
+                    <div style="border-top:1px solid var(--border-color); margin:5px 0;"></div>
+                    <button onclick="openModal('genModal')">
+                        <i class="fas fa-wave-square" style="width:20px;"></i> <span
+                            data-i18n="generator">Générateur</span>
+                    </button>
+                    <button onclick="initExportData()">
+                        <i class="fas fa-file-alt" style="width:20px;"></i> <span data-i18n="export_csv">Exporter
+                            fichier .csv</span>
+                    </button>
+                    <button onclick="initCaptureScreenshot()">
+                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="export_png">Exporter
+                            PNG</span>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="openModal('settingsModal')" class="header-btn" title="Paramètres">
+                <i class="fas fa-cog"></i> <span data-i18n="settings">Paramètres</span>
+            </button>
+
+            <button onclick="openModal('helpModal')" class="header-btn" title="Aide">
+                <i class="fas fa-question-circle"></i> <span data-i18n="help">Aide</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container" id="capture-area">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+
+            <!-- Acquisition -->
+            <div class="control-group">
+                <h3><i class="fas fa-satellite-dish"></i> <span data-i18n="acquisition">Acquisition</span></h3>
+                <input type="file" id="fileInput" style="display:none" accept=".csv,.txt"
+                    onchange="handleFileUpload(this)">
+                <input type="file" id="projectInput" style="display:none" accept=".hsp"
+                    onchange="handleProjectUpload(this)">
+
+
+
+                <h3 id="acquisition-header" style="cursor:default; padding:10px; background:var(--bg-secondary); border-radius:4px; border-left:4px solid var(--accent-blue);">
+                    <i class="fas fa-file"></i> <span id="acquisition-title">Exemple</span>
+                </h3>
+
+                <!-- Canal -->
+                <div class="control-group">
+                    <h3 id="canal-header" onclick="toggleCanal()" style="cursor:pointer;">
+                        <i class="fas fa-signal"></i> Canal
+                        <i id="canal-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                    </h3>
+
+                    <div id="canal-content" style="display:none;">
+                        <div style="overflow-x:auto;">
+                            <table id="canal-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                                <thead style="background:var(--bg-secondary); border-bottom:2px solid var(--border-color);">
+                                    <tr>
+                                        <th style="padding:8px; text-align:left; border-right:1px solid var(--border-color);">Canal</th>
+                                        <th style="padding:6px; text-align:center; border-right:1px solid var(--border-color);" title="Axe Y à gauche">L</th>
+                                        <th style="padding:6px; text-align:center;" title="Axe Y à droite">R</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="canal-tbody">
+                                    <!-- Rempli dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tools Panel -->
+                <div class="control-group">
+                    <h3 id="tools-header" onclick="toggleTools()" style="cursor:pointer;">
+                        <i class="fas fa-tools"></i> <span>Outils</span>
+                        <i id="tools-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                    </h3>
+
+                    <div id="tools-content" style="display:none;">
+                    <!-- Interval -->
+                    <div style="margin-bottom:15px;">
+                        <button id="btn-interval-main" onclick="toggleIntervalTool()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
+                            <i class="fas fa-arrows-alt-h"></i> Interval
+                            <i id="interval-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        </button>
+
+                        <div id="interval-content" style="display:none;">
+                            <!-- Liste des intervalles -->
+                            <div id="intervals-list" style="max-height:200px; overflow-y:auto; background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
+                                <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
+                                    Aucun intervalle
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mesure de différence -->
+                    <div style="margin-bottom:15px;">
+                        <button id="measure-diff-btn" onclick="toggleMeasureTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-ruler-combined"></i> Mesure de Différence
+                        </button>
+
+                        <div id="measure-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
+                                <i class="fas fa-info-circle"></i> Cliquez 2 points sur le graphique
+                            </div>
+                            <div class="control-row" style="font-size:0.9rem;">
+                                <span>ΔX:</span>
+                                <span id="measure-dx" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                            <div class="control-row" style="font-size:0.9rem;">
+                                <span>ΔY:</span>
+                                <span id="measure-dy" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                            <button onclick="clearMeasure()"
+                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                <i class="fas fa-eraser"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Diff/Canal -->
+                    <div style="margin-bottom:15px;">
+                        <button id="diff-canal-btn" onclick="toggleDiffCanalTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-chart-line"></i> Diff/Canal
+                        </button>
+
+                        <div id="diff-canal-content" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+
+                            <!-- Sélection du canal -->
+                            <div style="margin-bottom:10px;">
+                                <label style="display:block; font-size:0.85rem; margin-bottom:4px; color:var(--text-muted);">
+                                    <i class="fas fa-layer-group"></i> Canal:
+                                </label>
+                                <select id="diff-canal-channel-select" onchange="onChannelSelect(event)"
+                                        style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
+                                    <option value="">-- Sélectionner un canal --</option>
+                                </select>
+                            </div>
+
+                            <!-- Création par champs de saisie -->
+                            <div style="margin-bottom:10px; padding:8px; background:var(--bg-secondary); border-radius:4px;">
+                                <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
+                                    <i class="fas fa-keyboard"></i> Saisie manuelle:
+                                </div>
+                                <div style="margin-bottom:5px;">
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Temps début (s):</label>
+                                    <input type="number" id="diff-canal-time-start" step="0.001" placeholder="0.000"
+                                           style="width:100%; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
+                                </div>
+                                <div style="margin-bottom:5px;">
+                                    <label style="font-size:0.8rem; color:var(--text-muted);">Temps fin (s):</label>
+                                    <input type="number" id="diff-canal-time-end" step="0.001" placeholder="0.000"
+                                           style="width:100%; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
+                                </div>
+                                <button onclick="createDiffCanalFromInputs()"
+                                        style="width:100%; margin-top:4px; padding:6px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.85rem;">
+                                    <i class="fas fa-plus"></i> Créer
+                                </button>
+                            </div>
+
+                            <!-- Aide -->
+                            <div style="font-size:0.75rem; margin-bottom:10px; padding:6px; background:var(--bg-secondary); border-radius:4px; color:var(--text-muted);">
+                                <i class="fas fa-info-circle"></i> Sélectionnez un canal puis cliquez 2 points sur le graphique OU utilisez la saisie manuelle
+                            </div>
+
+                            <!-- Liste des diff/canal -->
+                            <div style="margin-top:10px;">
+                                <div style="font-size:0.85rem; margin-bottom:5px; font-weight:bold;">
+                                    Diff/Canal créées:
+                                </div>
+                                <div style="max-height:200px; overflow-y:auto;">
+                                    <table style="width:100%; font-size:0.75rem; border-collapse:collapse;">
+                                        <thead>
+                                            <tr style="background:var(--bg-secondary);">
+                                                <th style="padding:4px; text-align:left;">ID</th>
+                                                <th style="padding:4px; text-align:left;">Canal</th>
+                                                <th style="padding:4px; text-align:left;">Δt</th>
+                                                <th style="padding:4px; text-align:left;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="diff-canal-list-tbody">
+                                            <!-- Les diff/canal seront listées ici -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mesurer (Règle simple) -->
+                    <div style="margin-bottom:15px;">
+                        <button id="ruler-tool-btn" onclick="toggleRulerTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-ruler"></i> Mesurer
+                        </button>
+
+                        <div id="ruler-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
+                                <i class="fas fa-info-circle"></i> Cliquez un point sur le graphique
+                            </div>
+                            <div class="control-row" style="font-size:0.9rem;">
+                                <span>X:</span>
+                                <span id="ruler-x" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                            <div class="control-row" style="font-size:0.9rem;">
+                                <span>Y:</span>
+                                <span id="ruler-y" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                            <button onclick="clearRuler()"
+                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                <i class="fas fa-eraser"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Traquer (Curseur de suivi) -->
+                    <div style="margin-bottom:15px;">
+                        <button id="track-tool-btn" onclick="toggleTrackTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-crosshairs"></i> Traquer
+                        </button>
+
+                        <div id="track-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
+                                <i class="fas fa-info-circle"></i> Déplacez la souris sur le graphique
+                            </div>
+                            <div id="track-values" style="font-size:0.85rem; max-height:150px; overflow-y:auto;">
+                                <!-- Les valeurs des canaux seront affichées ici -->
+                            </div>
+                            <button onclick="clearTrack()"
+                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                <i class="fas fa-eraser"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lissage de Canal -->
+                    <div style="margin-bottom:15px;">
+                        <button onclick="toggleSmoothing()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
+                            <i class="fas fa-wave-square"></i> Lissage de Canal
+                            <i id="smoothing-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        </button>
+
+                        <div id="smoothing-content" style="display:none;">
+                        <!-- Sélection du canal source -->
+                        <div class="control-row" style="margin-bottom:8px;">
+                            <label style="font-size:0.9em;">Canal source:</label>
+                            <select id="smooth-source-channel" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                        </div>
+
+                        <!-- Nom du nouveau canal -->
+                        <div class="control-row" style="margin-bottom:8px;">
+                            <label style="font-size:0.9em;">Nom:</label>
+                            <input type="text" id="smooth-channel-name" placeholder="Canal lissé" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;" oninput="updateSmoothingRealtime()">
+                        </div>
+
+                        <!-- Couleur -->
+                        <div class="control-row" style="margin-bottom:8px;">
+                            <label style="font-size:0.9em;">Couleur:</label>
+                            <input type="color" id="smooth-channel-color" value="#FF6B00" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;" oninput="updateSmoothingRealtime()">
+                        </div>
+
+                        <!-- Nombre de points (slider) -->
+                        <div style="margin-bottom:8px;">
+                            <div class="control-row" style="margin-bottom:4px;">
+                                <label style="font-size:0.9em;">Points de lissage:</label>
+                                <span id="smooth-points-value" style="color:var(--accent-blue); font-weight:bold; font-size:0.9em;">50</span>
+                            </div>
+                            <input type="range" id="smooth-points" min="3" max="500" value="50" step="1" style="width:100%;" oninput="document.getElementById('smooth-points-value').textContent = this.value; updateSmoothingRealtime()">
+                        </div>
+
+                        <!-- Bouton créer -->
+                        <button onclick="createSmoothedChannel()" style="width:100%; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem; margin-bottom:10px;">
+                            <i class="fas fa-plus-circle"></i> Créer
+                        </button>
+
+                        <!-- Liste des canaux lissés -->
+                        <div id="smoothed-channels-list" style="display:none; margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color);">
+                            <div style="font-size:0.85rem; margin-bottom:8px; color:var(--text-muted); font-weight:bold;">
+                                <i class="fas fa-list"></i> Canaux lissés:
+                            </div>
+                            <div id="smoothed-channels-items">
+                                <!-- Les canaux lissés seront listés ici -->
+                            </div>
+                        </div>
+                        </div> <!-- Fin smoothing-content -->
+                    </div>
+
+                    <!-- Canal Calculé -->
+                    <div style="margin-bottom:15px;">
+                        <button onclick="toggleCalculatedChannel()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
+                            <i class="fas fa-calculator"></i> Canal Calculé
+                            <i id="calculated-channel-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        </button>
+
+                        <div id="calculated-channel-content" style="display:none;">
+                            <!-- Liste des canaux disponibles (pour référence) -->
+                            <div style="margin-bottom:12px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color);">
+                                <div style="font-size:0.85rem; margin-bottom:6px; color:var(--text-muted); font-weight:bold;">
+                                    <i class="fas fa-info-circle"></i> Canaux disponibles:
+                                </div>
+                                <div id="available-channels-list" style="font-size:0.8rem; color:var(--text-main); max-height:100px; overflow-y:auto;">
+                                    <!-- Les canaux seront listés ici sous forme S1, S2, etc. -->
+                                </div>
+                            </div>
+
+                            <!-- Nom du nouveau canal (DÉPLACÉ ICI) -->
+                            <div class="control-row" style="margin-bottom:8px;">
+                                <label style="font-size:0.9em;">Nom:</label>
+                                <input type="text" id="calculated-channel-name" placeholder="Optionnel" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                            </div>
+
+                            <!-- Champ de formule avec bouton ? -->
+                            <div style="margin-bottom:8px;">
+                                <div style="display:flex; align-items:center; margin-bottom:4px;">
+                                    <label style="font-size:0.9em;">Formule:</label>
+                                    <button onclick="toggleFormulaHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" title="Aide sur les formules">
+                                        ?
+                                    </button>
+                                </div>
+                                <input type="text" id="calculated-formula" placeholder="Ex: S2-S1 ou sqrt(S1^2+S2^2)" style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em; font-family:monospace;">
+                            </div>
+
+                            <!-- Aide (accordéon) -->
+                            <div id="formula-help" style="display:none; margin-bottom:12px; padding:10px; background:var(--bg-secondary); border-radius:4px; font-size:0.75rem; max-height:200px; overflow-y:auto; border:1px solid var(--border-color);">
+                                <p style="margin:0 0 8px 0; font-weight:bold;">Vous pouvez créer une formule mathématique utilisant les canaux disponibles. La formule sera calculée point par point.</p>
+
+                                <p style="margin:8px 0 4px 0; font-weight:bold;">Exemple: S2 - S1</p>
+
+                                <p style="margin:8px 0 4px 0; font-weight:bold;">Symboles utilisables:</p>
+                                <table style="width:100%; font-size:0.75rem; margin-bottom:8px;">
+                                    <tr><td style="padding:2px;"><strong>Opérateurs:</strong></td><td></td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">+</td><td style="padding:2px;">Addition</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">-</td><td style="padding:2px;">Soustraction</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">*</td><td style="padding:2px;">Multiplication</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">/</td><td style="padding:2px;">Division</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">^</td><td style="padding:2px;">Puissance</td></tr>
+                                </table>
+
+                                <table style="width:100%; font-size:0.75rem; margin-bottom:8px;">
+                                    <tr><td style="padding:2px;"><strong>Fonctions:</strong></td><td></td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">sqrt()</td><td style="padding:2px;">Racine carrée</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">sqr()</td><td style="padding:2px;">Carré (x²)</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">ln()</td><td style="padding:2px;">Logarithme naturel</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">log()</td><td style="padding:2px;">Logarithme décimal</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">abs()</td><td style="padding:2px;">Valeur absolue</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">sin(), cos(), tan()</td><td style="padding:2px;">Fonctions trigonométriques</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">asin(), acos(), atan()</td><td style="padding:2px;">Fonctions trigonométriques inverses</td></tr>
+                                </table>
+
+                                <table style="width:100%; font-size:0.75rem;">
+                                    <tr><td style="padding:2px;"><strong>Constantes:</strong></td><td></td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">Pi</td><td style="padding:2px;">3,14159...</td></tr>
+                                    <tr><td style="padding:2px 2px 2px 10px;">e</td><td style="padding:2px;">2,71828...</td></tr>
+                                </table>
+
+                                <p style="margin:8px 0 0 0; font-style:italic; color:var(--text-muted);">Note: Les fonctions racine et logarithme retournent toujours des valeurs positives, même avec des entrées négatives (valeur absolue appliquée).</p>
+                            </div>
+
+                            <!-- Couleur -->
+                            <div class="control-row" style="margin-bottom:12px;">
+                                <label style="font-size:0.9em;">Couleur:</label>
+                                <input type="color" id="calculated-channel-color" value="#FF00FF" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;">
+                            </div>
+
+                            <!-- Bouton créer -->
+                            <button onclick="createCalculatedChannel()" style="width:100%; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                <i class="fas fa-plus-circle"></i> Créer
+                            </button>
+
+                            <!-- Liste des canaux calculés -->
+                            <div id="calculated-channels-list" style="display:none; margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color);">
+                                <div style="font-size:0.85rem; margin-bottom:8px; color:var(--text-muted); font-weight:bold;">
+                                    <i class="fas fa-list"></i> Canaux calculés:
+                                </div>
+                                <div id="calculated-channels-items">
+                                    <!-- Les canaux calculés seront listés ici -->
+                                </div>
+                            </div>
+                        </div> <!-- Fin calculated-channel-content -->
+                    </div>
+
+                    </div>
+                </div>
+
+                <!-- Déplacement / Zoom -->
+                <div class="control-group">
+                    <h3 id="pan-tool-header" onclick="togglePanTool()" style="cursor:pointer;">
+                        <i class="fas fa-arrows-alt"></i> <i class="fas fa-search-plus"></i> <span>Déplacement / Zoom</span>
+                        <i id="pan-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                    </h3>
+
+                    <div id="pan-content" style="display:none;">
+                            <!-- Subdivision Déplacement -->
+                            <div style="margin-bottom:15px;">
+                                <div style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:4px;">
+                                    <i class="fas fa-arrows-alt"></i> Déplacement
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                                    <button id="pan-horizontal-btn" onclick="setPanMode('horizontal')"
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-arrows-alt-h"></i><br>Horizontal
+                                    </button>
+                                    <button id="pan-vertical-btn" onclick="setPanMode('vertical')"
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-arrows-alt-v"></i><br>Vertical
+                                    </button>
+                                    <button id="pan-y0-btn" onclick="toggleY0Mode()"
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-equals"></i><br>Y=0
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Subdivision Zoom -->
+                            <div>
+                                <div style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:4px;">
+                                    <i class="fas fa-search-plus"></i> Zoom
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                                    <button id="zoom-grid-btn" onclick="setZoomMode('grid')"
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-th"></i><br>Quadrillage
+                                    </button>
+                                    <button id="zoom-horizontal-btn" onclick="setZoomMode('horizontal')"
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-grip-lines"></i><br>Horizontal
+                                    </button>
+                                    <button id="zoom-vertical-btn" onclick="setZoomMode('vertical')"
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-grip-lines-vertical"></i><br>Vertical
+                                    </button>
+                                </div>
+                                <div style="margin-top:8px; font-size:0.7rem; color:var(--text-muted); text-align:center; font-style:italic;">
+                                    Ctrl+Molette et Alt+Molette conservent leur fonction
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+                <!-- Annotations -->
+                <div class="control-group">
+                    <h3 id="annotations-header" onclick="toggleAnnotations()" style="cursor:pointer;">
+                        <i class="fas fa-pen"></i> <span data-i18n="notes">Annotations</span>
+                        <i id="annotations-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                    </h3>
+
+                    <div id="annotations-content" style="display:none;">
+                        <!-- Boutons d'outils annotations -->
+                        <div style="display:flex; gap:8px; margin-bottom:10px;">
+                            <button onclick="toggleAnnotationMode()" id="btn-annotation-mode"
+                                    title="Mode Annotation (A)&#10;• Clic: Créer annotation&#10;• Drag boîte: Déplacer position&#10;• CTRL+DRAG marqueur ⭕: Déplacer ancrage sur courbe"
+                                    style="flex:1; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button onclick="toggleAllAnnotations()" id="btn-annotations-visibility"
+                                    title="Afficher/Masquer toutes les annotations"
+                                    style="flex:1; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+
+                        <!-- Boutons Undo/Redo -->
+                        <div style="display:flex; gap:8px; margin-bottom:10px;">
+                            <button onclick="handleUndo()" id="undo-btn"
+                                    title="Annuler (Ctrl+Z)"
+                                    style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem; transition: all 0.2s;">
+                                <i class="fas fa-undo"></i> Annuler
+                            </button>
+                            <button onclick="handleRedo()" id="redo-btn"
+                                    title="Refaire (Ctrl+Y)"
+                                    style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem; transition: all 0.2s;">
+                                <i class="fas fa-redo"></i> Refaire
+                            </button>
+                        </div>
+
+                        <!-- Liste des annotations -->
+                        <div style="margin-bottom:10px;">
+                            <div style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border-color);">
+                                <i class="fas fa-list"></i> Liste des annotations
+                            </div>
+                            <div id="annotations-list" style="max-height:200px; overflow-y:auto; background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
+                                <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
+                                    Aucune annotation
+                                </div>
+                            </div>
+                        </div>
+
+                        <textarea id="user-notes" rows="4" placeholder="Notes..."
+                            style="width:93%; resize:vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Analysis Settings -->
+                <div class="control-group" id="fft-params-panel">
+                    <h3 id="fft-params-header" onclick="toggleFFTParams()" style="cursor:pointer;">
+                        <i class="fas fa-sliders-h"></i> <span data-i18n="fft_params">Paramètres FFT</span>
+                        <i id="fft-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                    </h3>
+
+                    <div id="fft-params-content" style="display:none;">
+                        <!-- Centrer curseur -->
+                        <button onclick="centerCursors()" style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem; margin-bottom:10px;">
+                            <i class="fas fa-crosshairs"></i> Centrer curseur
+                        </button>
+
+                        <!-- Tableau des canaux FFT -->
+                        <div style="overflow-x:auto; margin-bottom:10px;">
+                            <table id="fft-canal-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                                <thead style="background:var(--bg-secondary); border-bottom:2px solid var(--border-color);">
+                                    <tr>
+                                        <th style="padding:8px; text-align:left; border-right:1px solid var(--border-color);">Canal FFT</th>
+                                        <th style="padding:6px; text-align:center; border-right:1px solid var(--border-color);" title="Axe Y à gauche">L</th>
+                                        <th style="padding:6px; text-align:center;" title="Axe Y à droite">R</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fft-canal-tbody">
+                                    <!-- Rempli dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="control-row">
+                            <label data-i18n="window">Fenêtre:</label>
+                            <select id="window-func" onchange="performAnalysis()">
+                                <option value="rect">Rectangulaire</option>
+                                <option value="hanning" selected>Hanning</option>
+                                <option value="hamming">Hamming</option>
+                                <option value="blackman">Blackman</option>
+                            </select>
+                        </div>
+                        <div class="control-row">
+                            <label data-i18n="fft_pts">Points FFT:</label>
+                            <select id="fft-size" onchange="performAnalysis()">
+                                <option value="256">256</option>
+                                <option value="512">512</option>
+                                <option value="1024">1024</option>
+                                <option value="2048">2048</option>
+                                <option value="4096" selected>4096</option>
+                                <option value="8192">8192</option>
+                                <option value="16384">16384</option>
+                            </select>
+                        </div>
+                        <div style="margin-top:5px;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <label data-i18n="peak_sens">Sensibilité Pics:</label>
+                                <span style="font-size:0.7em; color:var(--text-muted)">(Log)</span>
+                            </div>
+                            <input type="range" id="peak-threshold" min="1" max="100" value="50" style="width:100%"
+                                oninput="updateSensitivityUI()"
+                                onmousedown="event.stopPropagation()"
+                                onmousemove="event.stopPropagation()"
+                                onmouseup="event.stopPropagation()"
+                                onclick="event.stopPropagation()"
+                                ontouchstart="event.stopPropagation()"
+                                ontouchmove="event.stopPropagation()"
+                                ontouchend="event.stopPropagation()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spectrogram Settings -->
+                <div class="control-group" id="spectro-params-panel">
+                    <h3 id="spectro-params-header" onclick="toggleSpectroParams()" style="cursor:pointer;">
+                        <i class="fas fa-chart-area"></i> <span data-i18n="spectrogram">Spectrogramme STFT</span>
+                        <i id="spectro-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                    </h3>
+
+                    <div id="spectro-params-content" style="display:none;">
+                        <!-- Sélecteur de canal -->
+                        <div class="control-row" id="column-selector-row" style="display: none;">
+                            <label data-i18n="channel">Canal:</label>
+                            <select id="column-selector" onchange="changeCurrentColumn(parseInt(this.value))"
+                                style="width: 150px;">
+                                <option value="0">Chargement...</option>
+                            </select>
+                        </div>
+
+                        <div class="spectrogram-controls">
+                            <div>
+                                <label>Fenêtre STFT:</label>
+                                <select id="stft-window-size" onchange="updateSpectrogram()">
+                                    <option value="256">256</option>
+                                    <option value="512" selected>512</option>
+                                    <option value="1024">1024</option>
+                                    <option value="2048">2048</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Recouvrement:</label>
+                                <select id="stft-overlap" onchange="updateSpectrogram()">
+                                    <option value="0.25">25%</option>
+                                    <option value="0.50" selected>50%</option>
+                                    <option value="0.75">75%</option>
+                                    <option value="0.99">90%</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Échelle:</label>
+                                <select id="stft-scale" onchange="updateSpectrogram()">
+                                    <option value="linear">Linéaire</option>
+                                    <option value="log" selected>Logarithmique</option>
+                                    <option value="db">dB</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Freq Max (Hz):</label>
+                                <input type="number" id="stft-freq-max" value="500" step="10" onchange="updateSpectrogram()"
+                                    style="width:100%">
+                            </div>
+                        </div>
+
+                        <!-- Results moved here -->
+                        <div style="background:var(--input-bg); padding:10px; border-radius:4px; font-size:0.85rem; border:1px solid var(--border-color); margin-top:15px; margin-bottom:10px;">
+                            <div class="control-row">
+                                <span data-i18n="freq_dom">Fréq. Pic Principal:</span>
+                                <span id="res-peak" style="color:var(--accent-green); font-weight:bold;">-- Hz</span>
+                            </div>
+                            <div class="control-row">
+                                <span data-i18n="amp_max">Amp. Pic Principal:</span>
+                                <span id="res-amp" style="color:var(--accent-green); font-weight:bold;">-- Bar</span>
+                            </div>
+                            <div class="control-row">
+                                <span data-i18n="rms_sel">RMS Sélection:</span>
+                                <span id="res-rms" style="color:var(--accent-blue);">--</span>
+                            </div>
+
+                            <!-- Stats Zone Curseurs -->
+                            <div style="border-top:1px solid var(--border-color); margin-top:8px; padding-top:8px;">
+                                <div class="control-row">
+                                    <span data-i18n="min">Min:</span>
+                                    <span id="stat-min" class="stat-val">--</span>
+                                </div>
+                                <div class="control-row">
+                                    <span data-i18n="max">Max:</span>
+                                    <span id="stat-max" class="stat-val">--</span>
+                                </div>
+                                <div class="control-row">
+                                    <span data-i18n="mean">Moyenne:</span>
+                                    <span id="stat-mean" class="stat-val">--</span>
+                                </div>
+                                <div class="control-row">
+                                    <span data-i18n="std">Écart Type:</span>
+                                    <span id="stat-std" class="stat-val">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:8px;">
+                            <label>Plage Couleurs:</label>
+                            <div class="color-scale" id="color-scale"></div>
+                        </div>
+                    </div>
+                </div>
+
+        </aside>
+
+
+
+        <!-- Main Plots -->
+        <main class="plots-area" id="plots-container">
+
+            <!-- Time Plot -->
+
+            <div class="plot-container" id="time-container" style="height: 30%;">
+
+                <div class="plot-toolbar">
+                    <span class="toolbar-title"><i class="fas fa-stopwatch"></i> <span data-i18n="time_domain">DOMAINE
+                            TEMPOREL</span></span>
+                    <div class="toolbar-controls">
+                        <button onclick="resetTimeZoom()" class="icon-btn" title="Reset Zoom">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="flex:1; position:relative; min-height:0;">
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Resizer Handle -->
+            <div class="gutter-v" id="resizer1"></div>
+
+            <!-- Frequency Plot -->
+            <div class="plot-container" id="freq-container" style="height: 30%;">
+                <div class="plot-toolbar">
+                    <span class="toolbar-title"><i class="fas fa-wave-square"></i> <span data-i18n="freq_domain">DOMAINE
+                            FRÉQUENTIEL</span> <span style="font-weight:normal; font-size:0.9em; opacity:0.8;"
+                            data-i18n="dirac_spec">(Spectre de Dirac/FFT)</span></span>
+                    <button onclick="resetFreqZoom()" class="icon-btn" title="Reset Zoom"><i
+                            class="fas fa-expand"></i></button>
+                </div>
+                <div style="flex:1; position:relative; min-height:0;">
+                    <canvas id="freqChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Resizer Handle -->
+            <div class="gutter-v" id="resizer2"></div>
+
+            <!-- Spectrogram Plot -->
+            <div class="plot-container" id="spectro-container" style="flex: 1;">
+                <div class="plot-toolbar">
+                    <span class="toolbar-title">
+                        <i class="fas fa-chart-area"></i> <span data-i18n="spectrogram_title">SPECTROGRAMME STFT</span>
+                    </span>
+
+                </div>
+                <div style="flex:1; position:relative; min-height:0;">
+                    <canvas id="spectroChart"></canvas>
+                </div>
+                <div style="position:absolute; top:10px; right:90px; font-size:0.7em; color:var(--text-muted);">
+                    Visualisation temps-fréquence
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <button class="btn-close" onclick="closeModal('settingsModal')">&times;</button>
+            <h2 style="margin-top:0;"><i class="fas fa-cog"></i> <span data-i18n="settings">Paramètres</span></h2>
+
+            <div class="settings-grid">
+                <div>
+                    <label data-i18n="language">Langue</label>
+                    <select id="lang-select" onchange="changeLanguage(this.value)" style="width:100%; margin-top:5px;">
+                        <option value="fr">Français</option>
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                <div>
+                    <label data-i18n="theme">Thème</label>
+                    <select id="theme-select" onchange="changeTheme(this.value)" style="width:100%; margin-top:5px;">
+                        <option value="dark">Sombre (Dark)</option>
+                        <option value="light">Clair (Light)</option>
+                        <option value="steampunk">⚙️ Steampunk</option>
+                        <option value="steampunk2" selected>⚙️ Steampunk2 (Industriel)</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="closeModal('settingsModal')" class="primary"
+                    style="width:100px; margin-left:auto;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filename Input Modal -->
+    <div id="filenameModal" class="modal">
+        <div class="modal-content" style="width:600px;">
+            <button class="btn-close" onclick="closeModal('filenameModal')">&times;</button>
+            <h3 style="margin-top:0;">
+                <i class="fas fa-download"></i> Exporter le fichier
+            </h3>
+
+            <div style="margin-bottom: 15px; padding: 10px; background: var(--input-bg); border-radius: 5px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <i class="fas fa-info-circle" style="color: var(--accent-blue);"></i>
+                    <strong>Emplacement :</strong>
+                </div>
+                <div style="font-size: 0.9em;">
+                    Le fichier sera enregistré dans votre <strong>dossier de téléchargements</strong>.<br>
+                    <span style="color: var(--text-muted); font-size: 0.85em;">
+                        (Généralement : C:\Users\VotreNom\Downloads\)
+                    </span>
+                </div>
+            </div>
+
+            <label for="export-filename">Nom du fichier :</label>
+            <input type="text" id="export-filename" style="width:100%; margin: 10px 0 15px 0;"
+                placeholder="Entrez le nom...">
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button onclick="showHelpDownloadLocation()" class="btn-small" style="background: var(--input-bg);">
+                    <i class="fas fa-question-circle"></i> Où sont mes fichiers ?
+                </button>
+
+                <div>
+                    <button onclick="closeModal('filenameModal')" style="margin-right: 10px; background: #555;">
+                        Annuler
+                    </button>
+                    <button id="confirm-export-btn" class="success" style="width:100px;">
+                        Exporter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ajouter une modale d'aide supplémentaire -->
+    <div id="downloadHelpModal" class="modal">
+        <div class="modal-content" style="width:500px;">
+            <button class="btn-close" onclick="closeModal('downloadHelpModal')">&times;</button>
+            <h3 style="margin-top:0;">
+                <i class="fas fa-folder-open"></i> Localisation des fichiers exportés
+            </h3>
+
+            <div style="margin: 15px 0;">
+                <h4><i class="fas fa-windows"></i> Pour Windows :</h4>
+                <ul>
+                    <li>Ouvrez l'Explorateur de fichiers (Win+E)</li>
+                    <li>Allez dans "Ce PC" → "Téléchargements"</li>
+                    <li>Ou tapez directement : <code>C:\Users\[VotreNom]\Downloads\</code></li>
+                </ul>
+
+                <h4><i class="fas fa-apple"></i> Pour Mac :</h4>
+                <ul>
+                    <li>Ouvrez le Finder</li>
+                    <li>Dans la barre latérale, cliquez sur "Téléchargements"</li>
+                    <li>Ou allez dans : <code>/Users/[VotreNom]/Downloads/</code></li>
+                </ul>
+
+                <h4><i class="fas fa-keyboard"></i> Raccourcis utiles :</h4>
+                <ul>
+                    <li><strong>Ctrl+J</strong> : Ouvrir les téléchargements (Chrome/Edge)</li>
+                    <li><strong>Ctrl+T</strong> puis <code>chrome://downloads</code></li>
+                    <li><strong>Ctrl+Shift+Y</strong> : Historique des téléchargements (Firefox)</li>
+                </ul>
+
+                <div style="margin-top: 20px; padding: 10px; background: var(--input-bg); border-radius: 5px;">
+                    <i class="fas fa-lightbulb"></i> <strong>Astuce :</strong> Vous pouvez modifier
+                    le dossier de destination dans les paramètres de votre navigateur.
+                </div>
+            </div>
+
+            <div style="text-align:right;">
+                <button onclick="closeModal('downloadHelpModal')" class="primary" style="width:100px;">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Configuration Modal -->
+    <div id="channel-config-modal" class="modal">
+        <div id="channel-config-modal-content" class="modal-content" style="width:900px; max-width:95vw; max-height:90vh; overflow-y:auto; position:absolute; resize:both;">
+            <button class="btn-close" onclick="closeChannelConfig()">&times;</button>
+            <h3 id="channel-config-modal-header" style="margin-top:0; cursor:move; user-select:none;">
+                <i class="fas fa-cog"></i> Configuration Multi-Canaux
+            </h3>
+
+            <!-- Onglets -->
+            <div style="display:flex; gap:5px; border-bottom:2px solid var(--border-color); margin-bottom:20px;">
+                <button id="tab-btn-canaux" class="config-tab-btn active" onclick="switchConfigTab('canaux')">
+                    <i class="fas fa-list"></i> Canaux
+                </button>
+                <button id="tab-btn-parametres" class="config-tab-btn" onclick="switchConfigTab('parametres')">
+                    <i class="fas fa-sliders-h"></i> Paramètres
+                </button>
+                <button id="tab-btn-instructions" class="config-tab-btn" onclick="switchConfigTab('instructions')">
+                    <i class="fas fa-info-circle"></i> Instructions
+                </button>
+            </div>
+
+            <!-- Onglet Canaux -->
+            <div id="tab-content-canaux" class="config-tab-content" style="display:block;">
+            <div style="margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+                <div style="flex:1; min-width:0;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9em;">
+                        <i class="fas fa-arrows-alt-h"></i> Canal X :
+                    </label>
+                    <select id="x-axis-channel-select" style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.9em;">
+                        <!-- Options ajoutées dynamiquement -->
+                    </select>
+                </div>
+                <div style="flex:0 0 auto;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9em;">
+                        Min (s):
+                    </label>
+                    <input type="number" id="zoom-min" step="0.001" style="width:80px; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px;" onchange="applyTimeZoom()" aria-label="Valeur minimum en secondes">
+                </div>
+                <div style="flex:0 0 auto;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.9em;">
+                        Max (s):
+                    </label>
+                    <input type="number" id="zoom-max" step="0.001" style="width:80px; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px;" onchange="applyTimeZoom()" aria-label="Valeur maximum en secondes">
+                </div>
+            </div>
+
+            <div style="overflow-x:auto; margin-bottom:20px; max-height:400px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse; background:var(--input-bg);">
+                    <thead style="position:sticky; top:0; z-index:10;">
+                        <tr style="background:var(--bg-secondary); border-bottom:2px solid var(--border-color);">
+                            <th style="padding:12px; text-align:left;">
+                                <i class="fas fa-eye"></i>
+                            </th>
+                            <th style="padding:12px; text-align:left;">
+                                <i class="fas fa-tag"></i> Nom
+                            </th>
+                            <th style="padding:12px; text-align:center;">
+                                <i class="fas fa-palette"></i>
+                            </th>
+                            <th style="padding:12px; text-align:center;" title="Axe Y à gauche">
+                                L
+                            </th>
+                            <th style="padding:12px; text-align:center;" title="Axe Y à droite">
+                                R
+                            </th>
+                            <th style="padding:12px; text-align:center;">Y Min</th>
+                            <th style="padding:12px; text-align:center;">Y Max</th>
+                            <th style="padding:12px; text-align:center;">
+                                <i class="fas fa-wave-square"></i> FFT
+                            </th>
+                            <th style="padding:12px; text-align:center;">Preset</th>
+                        </tr>
+                    </thead>
+                    <tbody id="channel-config-tbody" style="color:var(--text-main);">
+                        <!-- Lignes ajoutées dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Presets Y Min/Y Max -->
+            <div style="background:var(--input-bg); padding:15px; border-radius:4px; margin-bottom:15px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h4 style="margin:0; color:var(--text-main);">
+                        <i class="fas fa-sliders-h"></i> Presets Échelle Y
+                    </h4>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="autoPresetYScalesPerChannel()"
+                                style="padding:6px 12px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;"
+                                title="Appliquer automatiquement les échelles Y par canal individuellement">
+                            <i class="fas fa-chart-line"></i> Auto Canal
+                        </button>
+                        <button onclick="autoPresetYScales()"
+                                style="padding:6px 12px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;"
+                                title="Appliquer automatiquement les échelles Y groupées par unité (même échelle pour tous les canaux de même unité)">
+                            <i class="fas fa-chart-line"></i> Auto Groupé
+                        </button>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px;">
+                    <!-- Preset 1 -->
+                    <div style="background:var(--bg-secondary); padding:10px; border-radius:4px;">
+                        <div style="font-weight:bold; margin-bottom:8px; color:var(--accent-blue); font-size:0.85em;">Preset 1</div>
+                        <div style="display:flex; gap:2px; align-items:center;">
+                            <label style="font-size:0.7em;">Min:</label>
+                            <input type="number" id="preset1-ymin" value="0" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                        <div style="display:flex; gap:2px; align-items:center; margin-top:2px;">
+                            <label style="font-size:0.7em;">Max:</label>
+                            <input type="number" id="preset1-ymax" value="50" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                    </div>
+                    <!-- Preset 2 -->
+                    <div style="background:var(--bg-secondary); padding:10px; border-radius:4px;">
+                        <div style="font-weight:bold; margin-bottom:8px; color:var(--accent-green); font-size:0.85em;">Preset 2</div>
+                        <div style="display:flex; gap:2px; align-items:center;">
+                            <label style="font-size:0.7em;">Min:</label>
+                            <input type="number" id="preset2-ymin" value="0" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                        <div style="display:flex; gap:2px; align-items:center; margin-top:2px;">
+                            <label style="font-size:0.7em;">Max:</label>
+                            <input type="number" id="preset2-ymax" value="100" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                    </div>
+                    <!-- Preset 3 -->
+                    <div style="background:var(--bg-secondary); padding:10px; border-radius:4px;">
+                        <div style="font-weight:bold; margin-bottom:8px; color:var(--accent-orange); font-size:0.85em;">Preset 3</div>
+                        <div style="display:flex; gap:2px; align-items:center;">
+                            <label style="font-size:0.7em;">Min:</label>
+                            <input type="number" id="preset3-ymin" value="0" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                        <div style="display:flex; gap:2px; align-items:center; margin-top:2px;">
+                            <label style="font-size:0.7em;">Max:</label>
+                            <input type="number" id="preset3-ymax" value="200" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                    </div>
+                    <!-- Preset 4 -->
+                    <div style="background:var(--bg-secondary); padding:10px; border-radius:4px;">
+                        <div style="font-weight:bold; margin-bottom:8px; color:var(--accent-red); font-size:0.85em;">Preset 4</div>
+                        <div style="display:flex; gap:2px; align-items:center;">
+                            <label style="font-size:0.7em;">Min:</label>
+                            <input type="number" id="preset4-ymin" value="0" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                        <div style="display:flex; gap:2px; align-items:center; margin-top:2px;">
+                            <label style="font-size:0.7em;">Max:</label>
+                            <input type="number" id="preset4-ymax" value="300" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                    </div>
+                    <!-- Preset 5 -->
+                    <div style="background:var(--bg-secondary); padding:10px; border-radius:4px;">
+                        <div style="font-weight:bold; margin-bottom:8px; color:var(--accent-gold); font-size:0.85em;">Preset 5</div>
+                        <div style="display:flex; gap:2px; align-items:center;">
+                            <label style="font-size:0.7em;">Min:</label>
+                            <input type="number" id="preset5-ymin" value="0" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                        <div style="display:flex; gap:2px; align-items:center; margin-top:2px;">
+                            <label style="font-size:0.7em;">Max:</label>
+                            <input type="number" id="preset5-ymax" value="1300" step="0.1"
+                                   style="width:45px; padding:2px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.75em;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div> <!-- Fin onglet Canaux -->
+
+            <!-- Onglet Paramètres -->
+            <div id="tab-content-parametres" class="config-tab-content" style="display:none;">
+                <div style="background:var(--input-bg); padding:15px; border-radius:4px; margin-bottom:15px; border:1px solid var(--border-color);">
+                    <h4 style="margin-top:0; margin-bottom:12px; color:var(--text-main);">
+                        <i class="fas fa-cog"></i> Paramètres Globaux
+                    </h4>
+                    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                        <label style="font-size:0.9em; font-weight:bold;">Épaisseur de trait :</label>
+                        <input type="number" id="global-line-width" value="0.5" min="0.1" max="5" step="0.1"
+                               style="width:80px; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px;"
+                               onchange="updateGlobalLineWidth()">
+                        <span style="font-size:0.8em; color:var(--text-muted);">(Appliqué à toutes les courbes: temporel et FFT)</span>
+                    </div>
+
+                    <!-- Paramètres du fichier -->
+                    <div style="border-top:1px solid var(--border-color); padding-top:15px;">
+                        <h5 style="margin-top:0; margin-bottom:10px; color:var(--text-main);">
+                            <i class="fas fa-file"></i> Fichier
+                        </h5>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label style="font-size:0.85em;">Pas (ms):</label>
+                                <input type="number" id="manual-step-config" value="1" step="0.01" onchange="updateFsFromStep()"
+                                       style="width:80px; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px;">
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label style="font-size:0.85em;">Fs:</label>
+                                <span id="display-fs-config" style="color:var(--accent-blue); font-weight:bold;">1000 Hz</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label style="font-size:0.85em;">Points (N):</label>
+                                <span id="display-n-config" style="color:var(--accent-blue); font-weight:bold;">--</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label style="font-size:0.85em;">Incrément (ms):</label>
+                                <span id="display-increment-config" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Fin onglet Paramètres -->
+
+            <!-- Onglet Instructions -->
+            <div id="tab-content-instructions" class="config-tab-content" style="display:none;">
+                <div style="background:var(--input-bg); padding:15px; border-radius:4px; border-left:4px solid var(--accent-blue);">
+                    <div style="font-size:0.9em; color:var(--text-main); line-height:1.6;">
+                        <h4 style="margin-top:0; margin-bottom:15px; color:var(--accent-blue);">
+                            <i class="fas fa-info-circle"></i> Instructions d'utilisation
+                        </h4>
+                        <p style="margin-bottom:10px;"><strong>Onglet Canaux :</strong></p>
+                        <ul style="margin-left:20px; margin-bottom:15px;">
+                            <li>Cochez les canaux à afficher simultanément dans le domaine temporel et fréquentiel</li>
+                            <li>Renommez les canaux dans la colonne "Nom" pour une identification plus claire</li>
+                            <li>Choisissez une couleur pour chaque canal en cliquant sur le bouton de couleur</li>
+                            <li>Positionnez les échelles Y : <strong>L</strong> (Gauche), <strong>R</strong> (Droite), ou aucune (Masquée)</li>
+                            <li>Définissez min/max manuellement ou laissez vide pour l'échelle automatique</li>
+                            <li>Activez la FFT pour afficher le spectre fréquentiel du canal</li>
+                            <li>Utilisez les presets pour appliquer rapidement les mêmes valeurs Y à plusieurs canaux</li>
+                        </ul>
+                        <p style="margin-bottom:10px;"><strong>Onglet Paramètres :</strong></p>
+                        <ul style="margin-left:20px; margin-bottom:15px;">
+                            <li>Ajustez l'épaisseur de trait pour toutes les courbes (temporel et FFT)</li>
+                            <li>Configurez le pas d'échantillonnage (ms) du fichier</li>
+                            <li>Consultez les informations du fichier (Fs, Points, Incrément)</li>
+                        </ul>
+                        <p style="margin-bottom:10px;"><strong>Onglet Instructions :</strong></p>
+                        <ul style="margin-left:20px;">
+                            <li>Consultez cette aide à tout moment</li>
+                        </ul>
+                    </div>
+                </div>
+            </div> <!-- Fin onglet Instructions -->
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <button onclick="resetChannelConfig()" style="background:#555; padding:10px 20px;">
+                    <i class="fas fa-undo"></i> Réinitialiser
+                </button>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="closeChannelConfig()" style="background:#555; padding:10px 20px;">
+                        Annuler
+                    </button>
+                    <button onclick="applyChannelConfig()" class="success" style="padding:10px 30px;">
+                        <i class="fas fa-check"></i> Appliquer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content" style="width: 700px;">
+            <button class="btn-close" onclick="closeModal('helpModal')">&times;</button>
+            <h2 style="margin-top:0; color:var(--accent-blue);"><i class="fas fa-question-circle"></i> <span
+                    data-i18n="help_title">Aide & Détails Techniques</span></h2>
+
+            <div id="help-content" class="help-body" style="max-height:500px; overflow-y:auto; padding-right:10px;">
+                <!-- Content injected via JS based on Language -->
+            </div>
+            <div style="margin-top:15px; text-align:right;">
+                <button onclick="closeModal('helpModal')" class="primary"
+                    style="width:80px; margin-left:auto;">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generator Modal -->
+    <div id="genModal" class="modal">
+        <div class="modal-content">
+            <button class="btn-close" onclick="closeModal('genModal')">&times;</button>
+            <h3>Générateur de Signal</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div><label>Fs (Hz)</label><input type="number" id="gen-fs" value="1000" style="width:100%"></div>
+                <div><label>Durée (s)</label><input type="number" id="gen-duration" value="5" style="width:100%"></div>
+                <div><label>Bruit (Bar)</label><input type="number" id="gen-noise" value="0.2" style="width:100%"></div>
+                <div><label>DC (Bar)</label><input type="number" id="gen-dc" value="100" style="width:100%"></div>
+            </div>
+            <div style="margin:10px 0; border-top:1px solid var(--border-color); padding-top:10px;">
+                <label>Composantes (Freq | Amp | Phase):</label>
+                <div id="freq-inputs-container"></div>
+                <button onclick="addFreqRow()" class="btn-small" style="margin-top:5px;">+ Ajouter</button>
+            </div>
+            <button onclick="generateSignal()" class="primary" style="width:100%">Générer</button>
+        </div>
+    </div>
+
+    <!-- Modal Sauvegarde Preset -->
+    <div id="save-preset-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="width: 500px; max-width: 90vw;">
+            <h2 style="margin-top: 0; color: var(--accent-blue);">
+                <i class="fas fa-save"></i> Sauvegarder comme Preset
+            </h2>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">
+                    Nom du preset:
+                </label>
+                <input type="text" id="preset-name-input" placeholder="Ex: Ma config vibration"
+                       style="width: 100%; padding: 10px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin: 20px 0;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">
+                    Description (optionnel):
+                </label>
+                <textarea id="preset-desc-input" rows="3" placeholder="Description de ce preset..."
+                          style="width: 100%; padding: 10px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closePresetModal()" style="padding: 10px 20px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    Annuler
+                </button>
+                <button onclick="saveAsPreset(document.getElementById('preset-name-input').value, document.getElementById('preset-desc-input').value)"
+                        style="padding: 10px 20px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Saisie Annotation -->
+    <div id="annotation-input-modal" class="modal" style="display:none;">
+        <div id="annotation-modal-content" class="modal-content" style="width: 600px; max-width: 90vw; padding: 15px; position: relative;">
+            <!-- Bouton de fermeture -->
+            <button onclick="closeAnnotationInputModal()" class="btn-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
+                    onmouseover="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-main)';"
+                    onmouseout="this.style.background='none'; this.style.color='var(--text-muted)';"
+                    title="Fermer sans valider">&times;</button>
+
+            <!-- Titre draggable -->
+            <h2 id="annotation-modal-header" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); font-size: 1.3em; cursor: move; user-select: none; padding-right: 35px;"
+                title="Glissez pour déplacer la fenêtre">
+                <i class="fas fa-sticky-note"></i> <span id="annotation-modal-title">Nouvelle annotation</span>
+            </h2>
+
+            <!-- Canal, Couleur, Diamètre et Fond -->
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
+                        Canal:
+                    </label>
+                    <select id="annotation-channel-select"
+                            style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    </select>
+                </div>
+                <div style="width: 90px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
+                        Couleur:
+                    </label>
+                    <input type="color" id="annotation-color-picker" value="#FFD700"
+                           style="width: 100%; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                </div>
+                <div style="width: 75px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;" title="Diamètre du point d'ancrage">
+                        Ø Ancr.:
+                    </label>
+                    <input type="number" id="annotation-marker-radius" value="6" min="2" max="15" step="1"
+                           style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; text-align: center;">
+                </div>
+                <div style="width: 110px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;" title="Style d'arrière-plan">
+                        Fond:
+                    </label>
+                    <select id="annotation-background-style"
+                            style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                        <option value="blur">Flouté</option>
+                        <option value="transparent">Transparent</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Texte avec formatage -->
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="font-weight: bold; font-size: 0.9em;">
+                        Texte de l'annotation:
+                    </label>
+                    <div style="display: flex; gap: 4px;" id="annotation-format-toolbar">
+                        <button onclick="toggleAnnotationFormat('bold')" id="fmt-bold" title="Gras"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-weight: bold;">
+                            B
+                        </button>
+                        <button onclick="toggleAnnotationFormat('italic')" id="fmt-italic" title="Italique"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-style: italic;">
+                            I
+                        </button>
+                        <button onclick="toggleAnnotationFormat('underline')" id="fmt-underline" title="Souligné"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
+                            U
+                        </button>
+                        <select onchange="setAnnotationFontSize(this.value)" id="fmt-size" title="Taille du texte"
+                                style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <option value="0.7">Petit</option>
+                            <option value="0.85" selected>Normal</option>
+                            <option value="1.0">Grand</option>
+                            <option value="1.2">Très grand</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="annotation-text-input" rows="3"
+                       style="width: 100%; padding: 8px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit;"
+                       placeholder="Entrez votre annotation... (retours à la ligne permis)"></textarea>
+            </div>
+
+            <!-- Info point -->
+            <div style="margin-bottom: 10px; padding: 6px 8px; background: var(--input-bg); border-radius: 4px; border-left: 3px solid var(--accent-blue); font-size: 0.85em;">
+                <span style="color: var(--text-muted);">
+                    <i class="fas fa-info-circle"></i> Temps: <span id="ann-info-time">--</span> | Valeur: <span id="ann-info-value">--</span>
+                </span>
+            </div>
+
+            <!-- Boutons -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button onclick="closeAnnotationInputModal()"
+                        style="padding: 8px 16px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    Annuler
+                </button>
+                <button onclick="confirmAnnotationInput()"
+                        style="padding: 8px 16px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-check"></i> Créer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modification Interval -->
+    <div id="interval-edit-modal" class="modal" style="display:none;">
+        <div id="interval-modal-content" class="modal-content" style="width: 600px; max-width: 90vw; padding: 15px; position: relative;">
+            <!-- Bouton de fermeture -->
+            <button onclick="closeIntervalEditModal()" class="btn-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
+                    onmouseover="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-main)';"
+                    onmouseout="this.style.background='none'; this.style.color='var(--text-muted)';"
+                    title="Fermer sans valider">&times;</button>
+
+            <!-- Titre draggable -->
+            <h2 id="interval-modal-header" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); font-size: 1.3em; cursor: move; user-select: none; padding-right: 35px;"
+                title="Glissez pour déplacer la fenêtre">
+                <i class="fas fa-arrows-alt-h"></i> <span id="interval-modal-title">Modifier l'intervalle</span>
+            </h2>
+
+            <!-- Couleur -->
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="width: 120px;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
+                        Couleur:
+                    </label>
+                    <input type="color" id="interval-color-picker" value="#4ECDC4"
+                           style="width: 100%; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                </div>
+            </div>
+
+            <!-- Champs T start, T end, Hauteur % -->
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
+                        T start (s):
+                    </label>
+                    <input type="number" step="0.001" id="interval-start-input"
+                           oninput="updateIntervalFromModal('start', this.value)"
+                           style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9em;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
+                        T end (s):
+                    </label>
+                    <input type="number" step="0.001" id="interval-end-input"
+                           oninput="updateIntervalFromModal('end', this.value)"
+                           style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9em;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
+                        Hauteur (%):
+                    </label>
+                    <input type="number" step="1" min="0" max="100" id="interval-height-input"
+                           oninput="updateIntervalFromModal('height', this.value)"
+                           style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9em;">
+                </div>
+            </div>
+
+            <!-- Commentaire avec formatage -->
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="font-weight: bold; font-size: 0.9em;">
+                        Commentaire:
+                    </label>
+                    <div style="display: flex; gap: 4px;" id="interval-format-toolbar">
+                        <button onclick="toggleIntervalFormat('bold')" id="int-fmt-bold" title="Gras"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-weight: bold;">
+                            B
+                        </button>
+                        <button onclick="toggleIntervalFormat('italic')" id="int-fmt-italic" title="Italique"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-style: italic;">
+                            I
+                        </button>
+                        <button onclick="toggleIntervalFormat('underline')" id="int-fmt-underline" title="Souligné"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
+                            U
+                        </button>
+                        <select onchange="setIntervalFontSize(this.value)" id="int-fmt-size" title="Taille du texte"
+                                style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <option value="10">Petit</option>
+                            <option value="11" selected>Normal</option>
+                            <option value="13">Grand</option>
+                            <option value="15">Très grand</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="interval-comment-input" rows="3"
+                       style="width: 100%; padding: 8px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit;"
+                       placeholder="Entrez un commentaire..."></textarea>
+            </div>
+
+            <!-- Info intervalle -->
+            <div style="margin-bottom: 10px; padding: 6px 8px; background: var(--input-bg); border-radius: 4px; border-left: 3px solid var(--accent-blue); font-size: 0.85em;">
+                <span style="color: var(--text-muted);">
+                    <i class="fas fa-info-circle"></i> <span id="interval-info-times">--</span> | Durée: <span id="interval-info-duration">--</span>
+                </span>
+            </div>
+
+            <!-- Boutons -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button onclick="closeIntervalEditModal()"
+                        style="padding: 8px 16px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    Annuler
+                </button>
+                <button onclick="confirmIntervalEdit()"
+                        style="padding: 8px 16px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-check"></i> Valider
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script pour toggle Presets -->
+    <script>
+    function togglePresets() {
+        const content = document.getElementById('presets-content');
+        const icon = document.getElementById('presets-toggle-icon');
+
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+    </script>
+
+    <!-- Scripts -->
+    <script src="constants.js"></script>
+    <!-- <script src="fft.js"></script> -->
+    <script src="charts.js"></script>
+    <script src="spectrogram.js"></script>
+    <script src="utils.js"></script>
+    <script src="app.js"></script>
+    <script src="halo.js"></script>
+    
+    <!-- TOUTES LES DÉPENDANCES EN LOCAL ddx -->
+<script src="annotations.js"></script>
+<script src="intervals.js"></script>
+<script src="multi-channel.js"></script>
+<script src="measure-tool.js"></script>
+<script src="diff-canal-tool.js"></script>
+<script src="pan-tool.js"></script>
+<script src="ruler-tool.js"></script>
+<script src="track-tool.js"></script>
+<script src="smoothing.js"></script>
+<script src="calculated-channel.js"></script>
+<script src="canal-quick-view.js"></script>
+<script src="section-reorder.js"></script>
+
+<!-- Nouveaux modules UX -->
+<script src="toast.js"></script>
+<script src="loading.js"></script>
+<script src="history-manager.js"></script>
+<script src="presets.js"></script>
+<script src="keyboard-shortcuts.js"></script>
+<script src="fft-worker-manager.js"></script>
+
+<!-- Initialisation des nouveaux systèmes -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Initialisation des modules UX...');
+
+    // Initialiser tous les systèmes
+    if (typeof initToastSystem === 'function') initToastSystem();
+    if (typeof initLoadingSystem === 'function') initLoadingSystem();
+    if (typeof initKeyboardShortcuts === 'function') initKeyboardShortcuts();
+    if (typeof initIntervals === 'function') initIntervals();
+
+    console.log('✅ Modules UX initialisés');
+
+    // Afficher message de bienvenue
+    setTimeout(() => {
+        showInfo('💡 Appuyez sur H pour voir les raccourcis clavier', 4000);
+    }, 2000);
+});
+</script>
+
+</body>
+
+</html>

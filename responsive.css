@@ -1,0 +1,458 @@
+/* =====================================
+   RESPONSIVE DESIGN
+   ===================================== */
+
+/* ===== BREAKPOINTS ===== */
+/*
+   - Mobile: < 768px
+   - Tablet: 768px - 1200px
+   - Desktop: > 1200px
+*/
+
+/* ===== TABLET (768px - 1200px) ===== */
+
+@media (max-width: 1200px) {
+    /* Sidebar plus large */
+    .sidebar {
+        width: 35% !important;
+        min-width: 300px;
+    }
+
+    /* Zone graphiques ajustée */
+    .plots-area {
+        width: 65% !important;
+    }
+
+    /* Texte légèrement plus petit */
+    body {
+        font-size: 14px;
+    }
+
+    /* Boutons plus petits */
+    button {
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Tableaux compacts */
+    table {
+        font-size: 0.9em;
+    }
+
+    td, th {
+        padding: 6px !important;
+    }
+}
+
+/* ===== MOBILE (< 768px) ===== */
+
+@media (max-width: 768px) {
+    /* Layout en colonne */
+    .main-container {
+        flex-direction: column !important;
+    }
+
+    /* Sidebar en haut, pleine largeur */
+    .sidebar {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: none !important;
+        max-height: 40vh;
+        overflow-y: auto;
+        border-right: none !important;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    /* Zone graphiques pleine largeur */
+    .plots-area {
+        width: 100% !important;
+        height: 60vh;
+    }
+
+    /* Masquer les resizers entre graphiques */
+    .resizer {
+        display: none !important;
+    }
+
+    /* Graphiques empilés verticalement */
+    #plots-container {
+        flex-direction: column !important;
+        height: 100% !important;
+    }
+
+    .plot-container {
+        width: 100% !important;
+        height: 33.33% !important;
+        min-height: 200px;
+    }
+
+    /* Cacher le spectrogramme sur mobile par défaut */
+    #spectro-container {
+        display: none !important;
+    }
+
+    /* Header */
+    .header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.5rem !important;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Boutons header plus petits */
+    .header button {
+        padding: 6px 10px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Accordéons */
+    .control-group h3 {
+        font-size: 1rem !important;
+        padding: 10px !important;
+    }
+
+    .control-group h3 i {
+        font-size: 0.9em !important;
+    }
+
+    /* Formulaires */
+    input, select, textarea {
+        font-size: 16px !important; /* Évite le zoom iOS */
+        padding: 8px !important;
+    }
+
+    label {
+        font-size: 0.9rem !important;
+    }
+
+    /* Grilles de boutons */
+    .spectrogram-controls {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    /* Tableau Canal FFT */
+    #canal-tbody tr,
+    #fft-canal-tbody tr {
+        font-size: 0.85rem;
+    }
+
+    /* Icônes plus petites */
+    .fas, .far {
+        font-size: 1em !important;
+    }
+
+    /* Status bar */
+    .status-bar {
+        font-size: 0.75rem !important;
+        padding: 6px !important;
+    }
+
+    /* Modales */
+    .modal-content {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 10px;
+        padding: 20px !important;
+    }
+
+    /* Toast notifications */
+    .toast-container {
+        bottom: 10px !important;
+        right: 10px !important;
+        left: 10px !important;
+        max-width: none !important;
+    }
+
+    .toast {
+        min-width: auto !important;
+        max-width: 100%;
+        padding: 12px !important;
+    }
+
+    .toast-message {
+        font-size: 0.85em !important;
+    }
+
+    /* Loading overlay */
+    .loading-content {
+        min-width: 250px !important;
+        padding: 30px 20px !important;
+    }
+
+    .loading-spinner {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    /* Keyboard help modal */
+    #keyboard-help-modal table {
+        font-size: 0.85rem;
+    }
+
+    #keyboard-help-modal kbd {
+        padding: 2px 4px !important;
+        font-size: 0.8em !important;
+    }
+
+    /* Masquer certains éléments non essentiels */
+    .desktop-only {
+        display: none !important;
+    }
+
+    /* Simplifier les outils pan/zoom */
+    #pan-content > div {
+        margin-bottom: 10px !important;
+    }
+
+    #pan-content button {
+        padding: 8px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Annotations */
+    #user-notes {
+        width: 100% !important;
+        box-sizing: border-box;
+        font-size: 0.9rem !important;
+    }
+
+    /* Drag handles plus visibles sur mobile */
+    .fa-grip-vertical {
+        font-size: 1.2em !important;
+        margin-right: 12px !important;
+    }
+
+    /* Flex containers */
+    [style*="display:flex"][style*="gap"] {
+        gap: 6px !important;
+    }
+}
+
+/* ===== TRÈS PETIT MOBILE (< 480px) ===== */
+
+@media (max-width: 480px) {
+    /* Texte encore plus petit */
+    body {
+        font-size: 13px;
+    }
+
+    .header h1 {
+        font-size: 1.2rem !important;
+    }
+
+    /* Boutons en colonne si nécessaire */
+    [style*="display:flex"] button:not(:only-child) {
+        flex: 1 1 100%;
+    }
+
+    /* Sidebar scrollable */
+    .sidebar {
+        max-height: 35vh;
+    }
+
+    /* Un seul graphique visible */
+    .plot-container:not(#time-container) {
+        display: none !important;
+    }
+
+    #time-container {
+        height: 100% !important;
+    }
+
+    /* Masquer les undo/redo sur très petit écran */
+    #undo-btn, #redo-btn {
+        font-size: 0 !important;
+    }
+
+    #undo-btn i, #redo-btn i {
+        font-size: 1rem !important;
+        margin: 0 !important;
+    }
+}
+
+/* ===== LANDSCAPE MODE MOBILE ===== */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    /* En mode paysage, sidebar sur le côté */
+    .main-container {
+        flex-direction: row !important;
+    }
+
+    .sidebar {
+        width: 30% !important;
+        max-height: none !important;
+        border-right: 2px solid var(--border-color) !important;
+        border-bottom: none !important;
+    }
+
+    .plots-area {
+        width: 70% !important;
+        height: 100vh;
+    }
+
+    /* Plus de hauteur pour les graphiques */
+    .plot-container {
+        height: 50% !important;
+    }
+
+    #spectro-container {
+        display: block !important;
+        height: 33.33% !important;
+    }
+}
+
+/* ===== PRINT ===== */
+
+@media print {
+    /* Masquer UI */
+    .sidebar,
+    .header,
+    .status-bar,
+    .toast-container,
+    .loading-overlay,
+    .modal {
+        display: none !important;
+    }
+
+    /* Graphiques en pleine page */
+    .plots-area {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .plot-container {
+        page-break-inside: avoid;
+        height: 400px !important;
+        margin-bottom: 20px;
+    }
+
+    /* Fond blanc */
+    * {
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Garder les couleurs des graphiques */
+    canvas {
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+}
+
+/* ===== HIGH DPI SCREENS ===== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Images plus nettes */
+    canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+
+    /* Icônes plus nettes */
+    .fas, .far {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* ===== DARK MODE PRÉFÉRÉ ===== */
+
+@media (prefers-color-scheme: dark) {
+    /* Ajustements automatiques si thème dark détecté */
+    :root:not([data-theme]) {
+        /* Variables déjà définies dans styles.css */
+    }
+}
+
+/* ===== TOUCH DEVICES ===== */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Zones de touch plus grandes */
+    button,
+    input[type="checkbox"],
+    select {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Supprimer hover effects sur touch */
+    button:hover,
+    tr:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Scrollbars plus épaisses sur touch */
+    * {
+        scrollbar-width: auto;
+    }
+
+    *::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* ===== REDUCED DATA MODE ===== */
+
+@media (prefers-reduced-data: reduce) {
+    /* Charger moins de données */
+    canvas {
+        image-rendering: pixelated;
+    }
+}
+
+/* ===== UTILITIES RESPONSIVE ===== */
+
+/* Masquer sur mobile */
+.hide-mobile {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Afficher seulement sur mobile */
+.show-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .show-mobile {
+        display: block !important;
+    }
+}
+
+/* Masquer sur tablette */
+.hide-tablet {
+    display: block;
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
+    .hide-tablet {
+        display: none !important;
+    }
+}
+
+/* Masquer sur desktop */
+.hide-desktop {
+    display: block;
+}
+
+@media (min-width: 1200px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}

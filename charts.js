@@ -81,7 +81,6 @@ appState.charts.time = new Chart(ctxTime, {
             if (typeof drawAnnotationConnectors === 'function') {
                 drawAnnotationConnectors(chart);
             }
-<<<<<<< HEAD
             // Mettre à jour les positions des boîtes d'annotation pour qu'elles suivent le graphique
             if (typeof updateAnnotationPositions === 'function') {
                 updateAnnotationPositions(chart);
@@ -121,8 +120,6 @@ appState.charts.time = new Chart(ctxTime, {
             if (typeof drawTrackCursor === 'function') {
                 drawTrackCursor(chart);
             }
-=======
->>>>>>> c3cfebf3d624be3b0f564aecf725c908a4385a16
         }
     }]
 });

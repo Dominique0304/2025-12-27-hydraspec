@@ -296,10 +296,10 @@ function saveChartZoomLimits(project) {
 
     console.log(`💾 Sauvegarde des limites de zoom pour : ${project.name}`);
 
-    // IMPORTANT : Utiliser appState.charts car tous les projets partagent les mêmes graphiques
-    const charts = window.appState?.charts;
-    if (!charts) {
-        console.warn("⚠️ appState.charts non disponible");
+    // IMPORTANT : Utiliser globalCharts car tous les projets partagent les mêmes graphiques
+    const charts = window.globalCharts;
+    if (!charts || !charts.time) {
+        console.warn("⚠️ globalCharts non disponible");
         return;
     }
 
@@ -380,10 +380,10 @@ function restoreChartZoomLimits(project) {
 
     console.log(`🔄 Restauration des limites de zoom pour : ${project.name}`);
 
-    // IMPORTANT : Utiliser appState.charts car tous les projets partagent les mêmes graphiques
-    const charts = window.appState?.charts;
-    if (!charts) {
-        console.warn("⚠️ appState.charts non disponible");
+    // IMPORTANT : Utiliser globalCharts car tous les projets partagent les mêmes graphiques
+    const charts = window.globalCharts;
+    if (!charts || !charts.time) {
+        console.warn("⚠️ globalCharts non disponible");
         return;
     }
 

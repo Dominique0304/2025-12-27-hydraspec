@@ -1,5 +1,13 @@
 const fftCache = new Map();
 
+// IMPORTANT : Variable globale pour stocker les graphiques Chart.js
+// Indépendante du Proxy appState pour garantir l'accessibilité
+window.globalCharts = {
+    time: null,
+    freq: null,
+    spectro: null
+};
+
 // --- CHARTS INITIALIZATION ---
 function initCharts() {
     const commonOptions = {
@@ -16,7 +24,7 @@ function initCharts() {
 
 // Time Chart
 const ctxTime = document.getElementById('timeChart').getContext('2d');
-appState.charts.time = new Chart(ctxTime, {
+const timeChart = new Chart(ctxTime, {
     type: 'line',
     data: { 
         labels: [], 
@@ -123,10 +131,13 @@ appState.charts.time = new Chart(ctxTime, {
         }
     }]
 });
+// Stocker dans globalCharts et appState.charts
+window.globalCharts.time = timeChart;
+appState.charts.time = timeChart;
 
     // Freq Chart
     const ctxFreq = document.getElementById('freqChart').getContext('2d');
-    appState.charts.freq = new Chart(ctxFreq, {
+    const freqChart = new Chart(ctxFreq, {
         type: 'line',
         data: { 
             labels: [], 
@@ -157,10 +168,13 @@ appState.charts.time = new Chart(ctxTime, {
             afterDatasetsDraw: (chart) => drawPeaks(chart)
         }]
     });
+    // Stocker dans globalCharts et appState.charts
+    window.globalCharts.freq = freqChart;
+    appState.charts.freq = freqChart;
 
     // Spectrogram Chart
     const ctxSpectro = document.getElementById('spectroChart').getContext('2d');
-    appState.charts.spectro = new Chart(ctxSpectro, {
+    const spectroChart = new Chart(ctxSpectro, {
         type: 'scatter',
         data: {
             datasets: [{
@@ -200,6 +214,9 @@ appState.charts.time = new Chart(ctxTime, {
             }
         }
     });
+    // Stocker dans globalCharts et appState.charts
+    window.globalCharts.spectro = spectroChart;
+    appState.charts.spectro = spectroChart;
 }
 
 // --- RESIZERS ---

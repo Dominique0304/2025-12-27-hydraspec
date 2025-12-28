@@ -1299,12 +1299,15 @@ function updateChartFontSize(value) {
     // Mettre à jour Chart.js - Time Chart
     if (window.globalCharts && window.globalCharts.time) {
         const timeChart = window.globalCharts.time;
-        timeChart.options.scales.x.ticks.font = timeChart.options.scales.x.ticks.font || {};
-        timeChart.options.scales.x.ticks.font.size = fontSize;
-        timeChart.options.scales.y.ticks.font = timeChart.options.scales.y.ticks.font || {};
-        timeChart.options.scales.y.ticks.font.size = fontSize;
-        timeChart.options.scales.y.title.font = timeChart.options.scales.y.title.font || {};
-        timeChart.options.scales.y.title.font.size = fontSize;
+        if (timeChart.options.scales.x.ticks.font) {
+            timeChart.options.scales.x.ticks.font.size = fontSize;
+        }
+        if (timeChart.options.scales.y.ticks.font) {
+            timeChart.options.scales.y.ticks.font.size = fontSize;
+        }
+        if (timeChart.options.scales.y.title && timeChart.options.scales.y.title.font) {
+            timeChart.options.scales.y.title.font.size = fontSize;
+        }
         timeChart.update('none');
     }
 
@@ -1314,21 +1317,18 @@ function updateChartFontSize(value) {
 
         // Mettre à jour tous les axes Y (y, y1, y2, y3...)
         Object.keys(freqChart.options.scales).forEach(scaleId => {
-            if (scaleId.startsWith('y')) {
-                if (freqChart.options.scales[scaleId].ticks) {
-                    freqChart.options.scales[scaleId].ticks.font = freqChart.options.scales[scaleId].ticks.font || {};
+            if (typeof scaleId === 'string' && scaleId.startsWith('y')) {
+                if (freqChart.options.scales[scaleId].ticks && freqChart.options.scales[scaleId].ticks.font) {
                     freqChart.options.scales[scaleId].ticks.font.size = fontSize;
                 }
-                if (freqChart.options.scales[scaleId].title && freqChart.options.scales[scaleId].title.display) {
-                    freqChart.options.scales[scaleId].title.font = freqChart.options.scales[scaleId].title.font || {};
+                if (freqChart.options.scales[scaleId].title && freqChart.options.scales[scaleId].title.display && freqChart.options.scales[scaleId].title.font) {
                     freqChart.options.scales[scaleId].title.font.size = fontSize;
                 }
             }
         });
 
         // Mettre à jour l'axe X
-        if (freqChart.options.scales.x && freqChart.options.scales.x.ticks) {
-            freqChart.options.scales.x.ticks.font = freqChart.options.scales.x.ticks.font || {};
+        if (freqChart.options.scales.x && freqChart.options.scales.x.ticks && freqChart.options.scales.x.ticks.font) {
             freqChart.options.scales.x.ticks.font.size = fontSize;
         }
 
@@ -1338,15 +1338,18 @@ function updateChartFontSize(value) {
     // Mettre à jour Chart.js - Spectrogram Chart
     if (window.globalCharts && window.globalCharts.spectro) {
         const spectroChart = window.globalCharts.spectro;
-        spectroChart.options.scales.x.ticks.font = spectroChart.options.scales.x.ticks.font || {};
-        spectroChart.options.scales.x.ticks.font.size = fontSize;
-        spectroChart.options.scales.x.title.font = spectroChart.options.scales.x.title.font || {};
-        spectroChart.options.scales.x.title.font.size = fontSize;
-
-        spectroChart.options.scales.y.ticks.font = spectroChart.options.scales.y.ticks.font || {};
-        spectroChart.options.scales.y.ticks.font.size = fontSize;
-        spectroChart.options.scales.y.title.font = spectroChart.options.scales.y.title.font || {};
-        spectroChart.options.scales.y.title.font.size = fontSize;
+        if (spectroChart.options.scales.x.ticks.font) {
+            spectroChart.options.scales.x.ticks.font.size = fontSize;
+        }
+        if (spectroChart.options.scales.x.title && spectroChart.options.scales.x.title.font) {
+            spectroChart.options.scales.x.title.font.size = fontSize;
+        }
+        if (spectroChart.options.scales.y.ticks.font) {
+            spectroChart.options.scales.y.ticks.font.size = fontSize;
+        }
+        if (spectroChart.options.scales.y.title && spectroChart.options.scales.y.title.font) {
+            spectroChart.options.scales.y.title.font.size = fontSize;
+        }
 
         spectroChart.update('none');
     }

@@ -289,16 +289,23 @@ function createNewProject() {
  * @param {Project} project - Projet dans lequel sauvegarder
  */
 function saveChartZoomLimits(project) {
-    if (!project || !project.charts) {
+    if (!project) {
         console.warn("⚠️ Impossible de sauvegarder le zoom : projet invalide");
         return;
     }
 
     console.log(`💾 Sauvegarde des limites de zoom pour : ${project.name}`);
 
+    // IMPORTANT : Utiliser appState.charts car tous les projets partagent les mêmes graphiques
+    const charts = window.appState?.charts;
+    if (!charts) {
+        console.warn("⚠️ appState.charts non disponible");
+        return;
+    }
+
     // Sauvegarder le graphique temporel
-    if (project.charts.time && project.charts.time.options && project.charts.time.options.scales) {
-        const scales = project.charts.time.options.scales;
+    if (charts.time && charts.time.options && charts.time.options.scales) {
+        const scales = charts.time.options.scales;
 
         // Axe X
         if (scales.x) {
@@ -319,8 +326,8 @@ function saveChartZoomLimits(project) {
     }
 
     // Sauvegarder le graphique fréquentiel
-    if (project.charts.freq && project.charts.freq.options && project.charts.freq.options.scales) {
-        const scales = project.charts.freq.options.scales;
+    if (charts.freq && charts.freq.options && charts.freq.options.scales) {
+        const scales = charts.freq.options.scales;
 
         if (scales.x) {
             project.toolsState.chartLimits.freq.x.min = scales.x.min;
@@ -339,8 +346,8 @@ function saveChartZoomLimits(project) {
     }
 
     // Sauvegarder le spectrogramme
-    if (project.charts.spectro && project.charts.spectro.options && project.charts.spectro.options.scales) {
-        const scales = project.charts.spectro.options.scales;
+    if (charts.spectro && charts.spectro.options && charts.spectro.options.scales) {
+        const scales = charts.spectro.options.scales;
 
         if (scales.x) {
             project.toolsState.chartLimits.spectro.x.min = scales.x.min;
@@ -366,16 +373,23 @@ function saveChartZoomLimits(project) {
  * @param {Project} project - Projet depuis lequel restaurer
  */
 function restoreChartZoomLimits(project) {
-    if (!project || !project.charts || !project.toolsState.chartLimits) {
+    if (!project || !project.toolsState || !project.toolsState.chartLimits) {
         console.warn("⚠️ Impossible de restaurer le zoom : projet invalide");
         return;
     }
 
     console.log(`🔄 Restauration des limites de zoom pour : ${project.name}`);
 
+    // IMPORTANT : Utiliser appState.charts car tous les projets partagent les mêmes graphiques
+    const charts = window.appState?.charts;
+    if (!charts) {
+        console.warn("⚠️ appState.charts non disponible");
+        return;
+    }
+
     // Restaurer le graphique temporel
-    if (project.charts.time && project.charts.time.options && project.charts.time.options.scales) {
-        const scales = project.charts.time.options.scales;
+    if (charts.time && charts.time.options && charts.time.options.scales) {
+        const scales = charts.time.options.scales;
         const limits = project.toolsState.chartLimits.time;
 
         // Axe X
@@ -394,12 +408,12 @@ function restoreChartZoomLimits(project) {
             });
         }
 
-        project.charts.time.update('none');
+        charts.time.update('none');
     }
 
     // Restaurer le graphique fréquentiel
-    if (project.charts.freq && project.charts.freq.options && project.charts.freq.options.scales) {
-        const scales = project.charts.freq.options.scales;
+    if (charts.freq && charts.freq.options && charts.freq.options.scales) {
+        const scales = charts.freq.options.scales;
         const limits = project.toolsState.chartLimits.freq;
 
         if (limits.x) {
@@ -416,12 +430,12 @@ function restoreChartZoomLimits(project) {
             });
         }
 
-        project.charts.freq.update('none');
+        charts.freq.update('none');
     }
 
     // Restaurer le spectrogramme
-    if (project.charts.spectro && project.charts.spectro.options && project.charts.spectro.options.scales) {
-        const scales = project.charts.spectro.options.scales;
+    if (charts.spectro && charts.spectro.options && charts.spectro.options.scales) {
+        const scales = charts.spectro.options.scales;
         const limits = project.toolsState.chartLimits.spectro;
 
         if (limits.x) {
@@ -438,7 +452,7 @@ function restoreChartZoomLimits(project) {
             });
         }
 
-        project.charts.spectro.update('none');
+        charts.spectro.update('none');
     }
 
     console.log(`✅ Zoom restauré pour ${project.name}`);

@@ -236,130 +236,10 @@ async function handleFileUpload_POO(input) {
     }
 }
 
-function handleProjectUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const d = JSON.parse(e.target.result);
-        appState.fs = d.appState.fs;
-        appState.cursorStart = d.appState.cursorStart;
-        appState.cursorEnd = d.appState.cursorEnd;
-        appState.timeIncrement = d.appState.timeIncrement || 1000 / appState.fs;
-        appState.fullDataTime = new Float32Array(d.data.time);
-        appState.fullDataPressure = new Float32Array(d.data.values);
-        document.getElementById('user-notes').value = d.notes || "";
-        document.getElementById('display-fs-config').textContent = appState.fs + " Hz";
-        document.getElementById('display-increment-config').textContent = appState.timeIncrement.toFixed(2) + " ms";
-
-        // Charger les données multi-canaux si présentes
-        if (d.data.allColumnData && d.data.allColumnData.length > 0) {
-            console.log("📊 Loading multi-channel data:", d.data.allColumnData.length, "channels");
-            appState.allColumnData = d.data.allColumnData.map(col => new Float32Array(col));
-            appState.availableColumns = d.appState.availableColumns || [];
-            appState.currentColumnIndex = d.appState.currentColumnIndex || 0;
-            appState.columnNames = d.appState.columnNames || [];
-            appState.channelConfig = d.appState.channelConfig || [];
-            appState.xAxisChannel = d.appState.xAxisChannel || 0;
-            appState.yAxisLabel = d.appState.yAxisLabel || "Valeur";
-
-            // Initialiser les systèmes multi-canaux
-            if (typeof initSmoothingSystem === 'function') {
-                initSmoothingSystem();
-            }
-            if (typeof populateChannelSelector === 'function') {
-                populateChannelSelector(-1);
-            }
-        }
-
-        // Charger les annotations si présentes
-        if (d.appState.annotations && typeof loadAnnotations === 'function') {
-            console.log("📝 Loading annotations from project:", d.appState.annotations.length, "annotations");
-            loadAnnotations(d.appState.annotations);
-        } else {
-            console.log("⚠️ No annotations found in project file");
-        }
-
-        // Charger les intervalles si présents
-        if (d.appState.intervals && typeof loadIntervalsFromProject === 'function') {
-            console.log("📐 Loading intervals from project:", d.appState.intervals.length, "intervals");
-            loadIntervalsFromProject(d.appState.intervals);
-        } else {
-            console.log("⚠️ No intervals found in project file");
-        }
-
-        updateTimeChart();
-        updateStats();
-        performAnalysis();
-        updateSpectrogram();
-
-        // Appliquer auto-config comme pour un CSV (si multi-canaux)
-        if (d.data.allColumnData && d.data.allColumnData.length > 0) {
-            setTimeout(() => {
-                if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
-                    console.log("🔧 Auto-config HSP: Ouverture du configurateur (invisible)...");
-                    openChannelConfig(true); // true = mode silencieux
-
-                    setTimeout(() => {
-                        if (typeof autoPresetYScales === 'function') {
-                            console.log("📊 Application du preset 'Auto Groupé'...");
-                            autoPresetYScales();
-                        }
-
-                        // Réinitialiser le zoom X au maximum
-                        // D'abord, mettre à jour les champs de zoom
-                        const zoomMinInput = document.getElementById('zoom-min');
-                        const zoomMaxInput = document.getElementById('zoom-max');
-                        if (zoomMinInput && zoomMaxInput && appState.fullDataTime.length) {
-                            const t = appState.fullDataTime;
-                            zoomMinInput.value = (t[0] / 1000).toFixed(3);
-                            zoomMaxInput.value = (t[t.length - 1] / 1000).toFixed(3);
-                            console.log("🔍 Zoom X réinitialisé: " + zoomMinInput.value + " à " + zoomMaxInput.value + " sec");
-                        }
-
-                        // Puis mettre à jour le graphique
-                        const chart = appState.charts.time;
-                        if (chart && appState.fullDataTime.length) {
-                            const t = appState.fullDataTime;
-                            chart.options.scales.x.min = t[0];
-                            chart.options.scales.x.max = t[t.length - 1];
-                            chart.update('none');
-                        }
-
-                        // Centrer les curseurs
-                        setTimeout(() => {
-                            if (typeof centerCursors === 'function') {
-                                console.log("🎯 Centrage des curseurs...");
-                                centerCursors();
-                            }
-
-                            setTimeout(() => {
-                                closeChannelConfig(true);
-                                console.log("✅ Auto-config HSP terminée");
-                            }, 100);
-                        }, 100);
-                    }, 200);
-                }
-            }, 300);
-        }
-
-        setStatus("Projet chargé.");
-    };
-    reader.readAsText(file);
-    input.value = '';
-}
+// ⚠️ REMOVED: handleProjectUpload - Now handled by loadHSP() in hsp-manager.js
 
 // --- EXPORT SYSTEM ---
-function initSaveProject() {
-    if (!appState.fullDataTime.length) {
-        alert("Aucune donnée.");
-        return;
-    }
-    appState.currentExportAction = 'save';
-    prepareFilename();
-    openModal('filenameModal');
-    setupExportButton(); // S'assurer que le bouton est configuré
-}
+// ⚠️ REMOVED: initSaveProject - Now handled by saveHSP()/exportToHSP() in hsp-manager.js
 
 function initExportData() {
     if (!appState.fullDataTime.length) {
@@ -425,9 +305,8 @@ function handleExportConfirm() {
     console.log("🔄 Début export - Action:", appState.currentExportAction, "Nom:", name);
 
     try {
-        if (appState.currentExportAction === 'save') {
-            performSaveProject(name);
-        } else if (appState.currentExportAction === 'exportCsv') {
+        // ⚠️ REMOVED: 'save' action - Now handled by hsp-manager.js
+        if (appState.currentExportAction === 'exportCsv') {
             performExportCsv(name);
         } else if (appState.currentExportAction === 'exportPng') {
             performCapture(name);
@@ -446,50 +325,7 @@ function handleExportConfirm() {
     }
 }
 
-async function performSaveProject(filename) {
-    const annotationsToSave = appState.annotations || [];
-    const intervalsToSave = (typeof intervals !== 'undefined') ? intervals : [];
-    console.log("💾 Saving project with", annotationsToSave.length, "annotations and", intervalsToSave.length, "intervals");
-
-    const projectData = {
-        version: "1.5.0", // Version mise à jour pour multi-canaux
-        date: new Date().toISOString(),
-        appState: {
-            fs: appState.fs,
-            cursorStart: appState.cursorStart,
-            cursorEnd: appState.cursorEnd,
-            timeIncrement: appState.timeIncrement,
-            annotations: annotationsToSave,
-            intervals: intervalsToSave,
-            // Multi-canaux
-            yAxisLabel: appState.yAxisLabel,
-            availableColumns: appState.availableColumns,
-            currentColumnIndex: appState.currentColumnIndex,
-            columnNames: appState.columnNames,
-            channelConfig: appState.channelConfig,
-            xAxisChannel: appState.xAxisChannel
-        },
-        data: {
-            time: Array.from(appState.fullDataTime),
-            values: Array.from(appState.fullDataPressure), // Compatibilité ancienne version
-            // Multi-canaux : sauvegarder toutes les colonnes
-            allColumnData: appState.allColumnData ? appState.allColumnData.map(col => Array.from(col)) : []
-        },
-        notes: document.getElementById('user-notes').value
-    };
-
-    console.log("💾 Project data prepared:", {
-        version: projectData.version,
-        annotationCount: projectData.appState.annotations.length,
-        intervalCount: projectData.appState.intervals.length,
-        dataPoints: projectData.data.time.length,
-        channels: projectData.data.allColumnData.length
-    });
-
-    const blob = new Blob([JSON.stringify(projectData)], { type: "application/json" });
-    await downloadBlob(blob, `${filename}.hsp`);
-    setStatus("Projet enregistré.");
-}
+// ⚠️ REMOVED: performSaveProject - Now handled by performHSPSave() in hsp-manager.js
 
 async function performExportCsv(filename) {
     // Exporter TOUTES les données (pas seulement entre les curseurs)

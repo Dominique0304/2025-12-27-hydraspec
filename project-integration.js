@@ -152,7 +152,15 @@ function updateProjectTabs() {
     const acquisitionTitle = document.getElementById('acquisition-title');
     const activeProject = projects.find(p => p.isActive);
     if (acquisitionTitle) {
-        acquisitionTitle.textContent = activeProject ? activeProject.name : 'Exemple';
+        const displayName = activeProject ?
+            (activeProject.isModified ? activeProject.name + ' *' : activeProject.name) :
+            'Exemple';
+        acquisitionTitle.textContent = displayName;
+    }
+
+    // Mettre à jour les boutons du menu Fichier
+    if (typeof updateFileMenuButtons === 'function') {
+        updateFileMenuButtons();
     }
 
     // Si pas de container sidebar, ne rien faire
@@ -191,9 +199,10 @@ function updateProjectTabs() {
         icon.className = 'fas fa-file-alt';
         icon.style.cssText = 'width: 16px; font-size: 0.9rem; margin-top: 2px;';
 
-        // Nom du projet (avec retour à la ligne si trop long)
+        // Nom du projet (avec retour à la ligne si trop long + * si modifié)
         const name = document.createElement('span');
-        name.textContent = project.name;
+        const displayName = project.isModified ? project.name + ' *' : project.name;
+        name.textContent = displayName;
         name.style.cssText = 'flex: 1; font-size: 0.85rem; word-wrap: break-word; line-height: 1.3;';
 
         // Bouton de fermeture
@@ -249,13 +258,37 @@ function switchToProjectTab(projectId) {
  * @param {string} projectId - ID du projet à fermer
  * @param {Event} event - Événement de clic
  */
-function closeProjectTab(projectId, event) {
+async function closeProjectTab(projectId, event) {
     event.stopPropagation();
 
     const project = projectManager.getProject(projectId);
     if (!project) {
         console.warn(`⚠️ Projet ${projectId} introuvable`);
         return;
+    }
+
+    // Vérifier les modifications non sauvegardées
+    if (project.isModified) {
+        const fileName = project.fileName || project.name;
+        const response = confirm(
+            `Le fichier "${fileName}" a été modifié.\n\n` +
+            `Voulez-vous enregistrer les modifications ?`
+        );
+
+        if (response) {
+            // L'utilisateur veut sauvegarder
+            if (project.fileType === 'hsp') {
+                await saveHSP();
+            } else if (project.fileType === 'csv') {
+                // Fichier CSV, demander export
+                const exportResponse = confirm(
+                    "Ce fichier est au format CSV. Voulez-vous l'exporter en .HSP ?"
+                );
+                if (exportResponse) {
+                    await exportToHSP();
+                }
+            }
+        }
     }
 
     // Demander confirmation si c'est le seul projet
@@ -535,6 +568,9 @@ function saveAllToolsState(project) {
         const count = appState.spectroData ? appState.spectroData.length : 0;
         console.log(`📊 Spectrogramme sauvegardé : ${count} points`);
     }
+
+    // Marquer le projet comme modifié
+    project.markModified();
 
     console.log(`✅ États d'outils sauvegardés pour ${project.name}`);
 }
@@ -865,6 +901,9 @@ async function handleFileUpload_POO(input) {
 
         // Créer un nouveau projet depuis le CSV
         const project = await projectManager.createProjectFromCSV(file);
+
+        // Définir les informations de fichier CSV
+        project.setFileInfo('csv', file.name);
 
         console.log(`✅ CSV chargé dans le projet : ${project.name}`);
         console.log(`   - ${project.state.fullDataTime.length} points`);

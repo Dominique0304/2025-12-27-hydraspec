@@ -423,6 +423,49 @@ async function promptSaveBeforeClose() {
     return true;
 }
 
+// ========================================
+// MISE À JOUR DE L'INTERFACE
+// ========================================
+
+/**
+ * Met à jour l'état des boutons du menu Fichier
+ * Appelé à chaque changement de projet actif
+ */
+function updateFileMenuButtons() {
+    const project = projectManager.getActiveProject();
+
+    const btnSaveHSP = document.getElementById('btn-save-hsp');
+    const btnSaveHSPAs = document.getElementById('btn-save-hsp-as');
+    const btnExportToHSP = document.getElementById('btn-export-to-hsp');
+
+    if (!project) {
+        // Aucun projet : tout désactivé
+        if (btnSaveHSP) btnSaveHSP.disabled = true;
+        if (btnSaveHSPAs) btnSaveHSPAs.disabled = true;
+        if (btnExportToHSP) btnExportToHSP.disabled = true;
+        return;
+    }
+
+    if (project.fileType === 'hsp') {
+        // Projet HSP : activer Save/SaveAs, désactiver Export
+        if (btnSaveHSP) btnSaveHSP.disabled = false;
+        if (btnSaveHSPAs) btnSaveHSPAs.disabled = false;
+        if (btnExportToHSP) btnExportToHSP.disabled = true;
+    } else if (project.fileType === 'csv') {
+        // Projet CSV : désactiver Save/SaveAs, activer Export
+        if (btnSaveHSP) btnSaveHSP.disabled = true;
+        if (btnSaveHSPAs) btnSaveHSPAs.disabled = true;
+        if (btnExportToHSP) btnExportToHSP.disabled = false;
+    } else {
+        // Type inconnu : tout désactiver
+        if (btnSaveHSP) btnSaveHSP.disabled = true;
+        if (btnSaveHSPAs) btnSaveHSPAs.disabled = true;
+        if (btnExportToHSP) btnExportToHSP.disabled = true;
+    }
+
+    console.log(`🎛️ Boutons menu mis à jour - Type: ${project.fileType}`);
+}
+
 // Exporter les fonctions globalement
 window.exportToHSP = exportToHSP;
 window.saveHSP = saveHSP;
@@ -430,5 +473,6 @@ window.saveHSPAs = saveHSPAs;
 window.loadHSP = loadHSP;
 window.hasUnsavedChanges = hasUnsavedChanges;
 window.promptSaveBeforeClose = promptSaveBeforeClose;
+window.updateFileMenuButtons = updateFileMenuButtons;
 
 console.log("✅ HSP Manager chargé");

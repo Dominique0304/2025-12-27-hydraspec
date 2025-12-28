@@ -59,21 +59,31 @@
                     <i class="fas fa-folder"></i> <span data-i18n="file">Fichier</span> <i class="fas fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
+                    <!-- Fichiers .HSP -->
                     <button onclick="document.getElementById('projectInput').click()">
-                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="open_proj">Ouvrir fichier .hsp</span>
+                        <i class="fas fa-folder-open" style="width:20px;"></i> <span>Ouvrir fichier .hsp</span>
                     </button>
-                    <button onclick="initSaveProject()">
-                        <i class="fas fa-save" style="width:20px;"></i> <span data-i18n="save_proj">Enregistrer fichier .HSP</span>
+                    <button id="btn-save-hsp" onclick="saveHSP()" disabled>
+                        <i class="fas fa-save" style="width:20px;"></i> <span>Enregistrer .hsp</span>
                     </button>
+                    <button id="btn-save-hsp-as" onclick="saveHSPAs()" disabled>
+                        <i class="fas fa-save" style="width:20px;"></i> <span>Enregistrer .hsp sous</span>
+                    </button>
+
                     <div style="border-top:1px solid var(--border-color); margin:5px 0;"></div>
+
+                    <!-- Import/Export -->
                     <button onclick="document.getElementById('fileInput').click()">
-                        <i class="fas fa-file-import" style="width:20px;"></i> <span data-i18n="load_csv">Importer fichier .csv</span>
+                        <i class="fas fa-file-import" style="width:20px;"></i> <span>Importer fichier .csv</span>
+                    </button>
+                    <button id="btn-export-to-hsp" onclick="exportToHSP()" disabled>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span>Exporter vers .hsp</span>
                     </button>
                     <button onclick="initExportData()">
-                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="export_csv">Exporter fichier .csv</span>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span>Exporter fichier .csv</span>
                     </button>
                     <button onclick="initCaptureScreenshot()">
-                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="export_png">Exporter PNG</span>
+                        <i class="fas fa-image" style="width:20px;"></i> <span>Exporter PNG</span>
                     </button>
                 </div>
             </div>
@@ -127,7 +137,7 @@
                 <input type="file" id="fileInput" style="display:none" accept=".csv,.txt"
                     onchange="handleFileUpload(this)">
                 <input type="file" id="projectInput" style="display:none" accept=".hsp"
-                    onchange="handleProjectUpload(this)">
+                    onchange="if(this.files[0]) loadHSP(this.files[0]).then(() => this.value='')">
 
                 <!-- Bouton avec nom du fichier actif -->
                 <h3 id="acquisition-header" onclick="toggleAcquisition()" style="cursor:pointer; padding:10px; background:var(--bg-secondary); border-radius:4px; border-left:4px solid var(--accent-blue); margin-top:8px;">
@@ -1490,6 +1500,7 @@
     <script src="project.js"></script>
     <script src="project-manager.js"></script>
     <script src="project-integration.js"></script>
+    <script src="hsp-manager.js"></script>
 
     <!-- TOUTES LES DÉPENDANCES EN LOCAL ddx -->
 <script src="annotations.js"></script>

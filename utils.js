@@ -307,13 +307,23 @@ function handleProjectUpload(input) {
                         }
 
                         // Réinitialiser le zoom X au maximum
+                        // D'abord, mettre à jour les champs de zoom
+                        const zoomMinInput = document.getElementById('zoom-min');
+                        const zoomMaxInput = document.getElementById('zoom-max');
+                        if (zoomMinInput && zoomMaxInput && appState.fullDataTime.length) {
+                            const t = appState.fullDataTime;
+                            zoomMinInput.value = (t[0] / 1000).toFixed(3);
+                            zoomMaxInput.value = (t[t.length - 1] / 1000).toFixed(3);
+                            console.log("🔍 Zoom X réinitialisé: " + zoomMinInput.value + " à " + zoomMaxInput.value + " sec");
+                        }
+
+                        // Puis mettre à jour le graphique
                         const chart = appState.charts.time;
                         if (chart && appState.fullDataTime.length) {
                             const t = appState.fullDataTime;
                             chart.options.scales.x.min = t[0];
                             chart.options.scales.x.max = t[t.length - 1];
                             chart.update('none');
-                            console.log("🔍 Zoom X réinitialisé");
                         }
 
                         // Centrer les curseurs

@@ -196,41 +196,35 @@ async function handleFileUpload_POO(input) {
             updateSpectrogram();
         }
 
-        // Ouvrir et fermer automatiquement le configurateur multi-canaux
-        // Cela réinitialise certaines propriétés nécessaires au bon fonctionnement
-        if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
-            console.log("🔧 Auto-config: Ouverture/fermeture du configurateur...");
-            openChannelConfig();
-            setTimeout(() => {
-                closeChannelConfig();
-                console.log("✅ Auto-config terminée");
-            }, 50);
-        }
-
-        // Reset zoom pour améliorer l'expérience utilisateur
+        // Ouvrir le configurateur, appliquer auto-groupé, puis fermer (invisible pour l'utilisateur)
         setTimeout(() => {
-            if (typeof resetAllZoom === 'function') {
-                console.log("🔍 Reset zoom...");
-                resetAllZoom();
-            } else {
-                if (typeof resetTimeZoom === 'function') resetTimeZoom();
-                if (typeof resetFreqZoom === 'function') resetFreqZoom();
-            }
+            if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
+                console.log("🔧 Auto-config: Ouverture du configurateur...");
+                openChannelConfig();
 
-            // Appliquer le preset "Auto Groupé"
-            if (typeof autoPresetYScales === 'function') {
-                console.log("📊 Application du preset 'Auto Groupé'...");
-                autoPresetYScales();
-            }
+                // Attendre que le DOM soit prêt, puis appliquer auto-groupé PENDANT que c'est ouvert
+                setTimeout(() => {
+                    if (typeof autoPresetYScales === 'function') {
+                        console.log("📊 Application du preset 'Auto Groupé' (configurateur ouvert)...");
+                        autoPresetYScales();
+                    }
 
-            // Centrer les curseurs après auto groupé
-            setTimeout(() => {
-                if (typeof centerCursors === 'function') {
-                    console.log("🎯 Centrage des curseurs...");
-                    centerCursors();
-                }
-            }, 50);
-        }, 100);
+                    // Centrer les curseurs
+                    setTimeout(() => {
+                        if (typeof centerCursors === 'function') {
+                            console.log("🎯 Centrage des curseurs...");
+                            centerCursors();
+                        }
+
+                        // Fermer le configurateur après tout
+                        setTimeout(() => {
+                            closeChannelConfig();
+                            console.log("✅ Auto-config terminée (configurateur fermé)");
+                        }, 100);
+                    }, 100);
+                }, 200);
+            }
+        }, 300);
 
         setStatus(`Fichier chargé : ${project.name}`);
 

@@ -20,6 +20,12 @@
  * Uniquement disponible si le projet est de type CSV
  */
 function exportToHSP() {
+    const projectManager = window.projectManager;
+    if (!projectManager) {
+        alert("Système de projets non initialisé");
+        return;
+    }
+
     const project = projectManager.getActiveProject();
 
     if (!project) {
@@ -51,6 +57,12 @@ function exportToHSP() {
  * Uniquement disponible si projet de type HSP et déjà sauvegardé
  */
 function saveHSP() {
+    const projectManager = window.projectManager;
+    if (!projectManager) {
+        alert("Système de projets non initialisé");
+        return;
+    }
+
     const project = projectManager.getActiveProject();
 
     if (!project) {
@@ -77,6 +89,12 @@ function saveHSP() {
  * Enregistre le projet HSP avec un nouveau nom (dialogue)
  */
 function saveHSPAs() {
+    const projectManager = window.projectManager;
+    if (!projectManager) {
+        alert("Système de projets non initialisé");
+        return;
+    }
+
     const project = projectManager.getActiveProject();
 
     if (!project) {
@@ -224,6 +242,12 @@ function getChartZoomState(project) {
  */
 async function loadHSP(file) {
     console.log("📂 Chargement HSP:", file.name);
+
+    const projectManager = window.projectManager;
+    if (!projectManager) {
+        alert("Système de projets non initialisé");
+        return Promise.reject("ProjectManager non disponible");
+    }
 
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -382,6 +406,9 @@ function applyAutoConfig() {
  * @returns {boolean}
  */
 function hasUnsavedChanges() {
+    const projectManager = window.projectManager;
+    if (!projectManager) return false;
+
     const project = projectManager.getActiveProject();
     return project && project.isModified;
 }
@@ -391,6 +418,9 @@ function hasUnsavedChanges() {
  * @returns {Promise<boolean>} true si on peut continuer, false si annulé
  */
 async function promptSaveBeforeClose() {
+    const projectManager = window.projectManager;
+    if (!projectManager) return true;
+
     const project = projectManager.getActiveProject();
 
     if (!project || !project.isModified) {
@@ -432,6 +462,13 @@ async function promptSaveBeforeClose() {
  * Appelé à chaque changement de projet actif
  */
 function updateFileMenuButtons() {
+    // Accéder au projectManager global
+    const projectManager = window.projectManager;
+    if (!projectManager) {
+        console.warn("⚠️ ProjectManager non disponible");
+        return;
+    }
+
     const project = projectManager.getActiveProject();
 
     const btnSaveHSP = document.getElementById('btn-save-hsp');

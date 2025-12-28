@@ -1918,3 +1918,20 @@ button:focus, input:focus, select:focus {
 .sidebar.collapsed .control-group {
     opacity: 0;
 }
+
+/* ========================================
+   BOUTONS DISABLED (HSP SYSTEM)
+   ======================================== */
+button:disabled,
+button[disabled] {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.dropdown-content button:disabled,
+.dropdown-content button[disabled] {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    color: var(--text-secondary) !important;
+}

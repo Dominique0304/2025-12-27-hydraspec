@@ -155,10 +155,16 @@ function updateProjectTabs() {
     const acquisitionTitle = document.getElementById('acquisition-title');
     const activeProject = projects.find(p => p.isActive);
     if (acquisitionTitle) {
-        const displayName = activeProject ?
-            (activeProject.isModified ? activeProject.name + ' *' : activeProject.name) :
-            'Exemple';
-        acquisitionTitle.textContent = displayName;
+        if (activeProject) {
+            // Utiliser fileName (avec extension) si disponible, sinon project.name
+            let displayName = activeProject.fileName || activeProject.name;
+            if (activeProject.isModified) {
+                displayName += ' *';
+            }
+            acquisitionTitle.textContent = displayName;
+        } else {
+            acquisitionTitle.textContent = 'Exemple';
+        }
     }
 
     // Mettre à jour les boutons du menu Fichier
@@ -202,9 +208,15 @@ function updateProjectTabs() {
         icon.className = 'fas fa-file-alt';
         icon.style.cssText = 'width: 16px; font-size: 0.9rem; margin-top: 2px;';
 
-        // Nom du projet (avec retour à la ligne si trop long + * si modifié)
+        // Nom du projet (avec extension si disponible, + * si modifié)
         const name = document.createElement('span');
-        const displayName = project.isModified ? project.name + ' *' : project.name;
+
+        // Utiliser fileName (avec extension) si disponible, sinon project.name
+        let displayName = project.fileName || project.name;
+        if (project.isModified) {
+            displayName += ' *';
+        }
+
         name.textContent = displayName;
         name.style.cssText = 'flex: 1; font-size: 0.85rem; word-wrap: break-word; line-height: 1.3;';
 

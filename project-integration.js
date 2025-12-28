@@ -27,6 +27,9 @@ function initProjectManager() {
     // Créer le gestionnaire global
     projectManager = new ProjectManager();
 
+    // IMPORTANT: Exporter vers window IMMÉDIATEMENT après création
+    window.projectManager = projectManager;
+
     // Créer un projet vide par défaut
     const defaultProject = projectManager.createProject("Projet vide");
 
@@ -1009,11 +1012,11 @@ function initPOOSystem() {
 }
 
 // Export global pour debugging
-window.projectManager = projectManager;
+// Note: window.projectManager est assigné dans initProjectManager()
 window.getActiveProject = getActiveProject;
 window.initPOOSystem = initPOOSystem;
 window.updateProjectTabs = updateProjectTabs;
-window.createNewProject = createNewProject;
+// window.createNewProject supprimé - fonction n'existe plus
 window.saveChartZoomLimits = saveChartZoomLimits;
 window.restoreChartZoomLimits = restoreChartZoomLimits;
 window.saveAllToolsState = saveAllToolsState;

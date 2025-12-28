@@ -1037,6 +1037,21 @@ function toggleAnnotations() {
     }
 }
 
+function toggleAcquisition() {
+    const content = document.getElementById('acquisition-content');
+    const icon = document.getElementById('acquisition-toggle-icon');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
 function toggleTools() {
     const content = document.getElementById('tools-content');
     const icon = document.getElementById('tools-toggle-icon');

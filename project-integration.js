@@ -135,72 +135,96 @@ function onProjectSwitched(project) {
  * Met à jour la barre d'onglets avec tous les projets ouverts
  */
 function updateProjectTabs() {
-    const container = document.getElementById('project-tabs-container');
-    if (!container) {
-        console.warn("⚠️ Container d'onglets non trouvé");
-        return;
-    }
-
-    // Vider le container
-    container.innerHTML = '';
+    // Container dans la sidebar (nouveau)
+    const sidebarContainer = document.getElementById('project-list-container');
 
     // Récupérer tous les projets
     const projects = projectManager.getAllProjects();
 
     // Filtrer les projets vides (masquer uniquement "Projet vide" sans données)
     const projectsWithData = projects.filter(project => {
-        // Masquer seulement si c'est "Projet vide" ET qu'il n'y a pas de données
         const isEmptyDefault = project.name === "Projet vide";
         const hasNoData = project.state.fullDataTime.length === 0 && project.state.allColumnData.length === 0;
-
-        // Afficher si ce n'est PAS un projet vide par défaut sans données
         return !(isEmptyDefault && hasNoData);
     });
 
-    if (projectsWithData.length === 0) {
-        // Ne rien afficher si aucun projet avec données
-        container.innerHTML = '';
+    // Mettre à jour le titre "Acquisition" avec le projet actif
+    const acquisitionTitle = document.getElementById('acquisition-title');
+    const activeProject = projects.find(p => p.isActive);
+    if (acquisitionTitle) {
+        acquisitionTitle.textContent = activeProject ? activeProject.name : 'Exemple';
+    }
+
+    // Si pas de container sidebar, ne rien faire
+    if (!sidebarContainer) {
+        console.warn("⚠️ Container de liste de projets non trouvé");
         return;
     }
 
-    // Créer un onglet pour chaque projet avec données
-    projectsWithData.forEach(project => {
-        const tab = document.createElement('div');
-        tab.className = 'project-tab' + (project.isActive ? ' active' : '');
-        tab.setAttribute('data-project-id', project.id);
-        tab.setAttribute('title', project.name);
+    // Vider le container
+    sidebarContainer.innerHTML = '';
 
-        // Icône du projet
+    if (projectsWithData.length === 0) {
+        sidebarContainer.innerHTML = '<div style="padding:8px; text-align:center; color:var(--text-muted); font-size:0.8rem; font-style:italic;">Aucun projet</div>';
+        return;
+    }
+
+    // Créer une liste pour chaque projet
+    projectsWithData.forEach(project => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: ${project.isActive ? 'var(--accent-blue)' : 'var(--bg-secondary)'};
+            color: ${project.isActive ? 'white' : 'var(--text-main)'};
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        `;
+        item.setAttribute('data-project-id', project.id);
+
+        // Icône
         const icon = document.createElement('i');
         icon.className = 'fas fa-file-alt';
+        icon.style.cssText = 'width: 16px; font-size: 0.9rem;';
 
         // Nom du projet
         const name = document.createElement('span');
-        name.className = 'project-tab-name';
         name.textContent = project.name;
+        name.style.cssText = 'flex: 1; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
 
         // Bouton de fermeture
         const closeBtn = document.createElement('span');
-        closeBtn.className = 'project-tab-close';
         closeBtn.innerHTML = '×';
-        closeBtn.onclick = (e) => closeProjectTab(project.id, e);
+        closeBtn.style.cssText = 'font-size: 1.2rem; font-weight: bold; opacity: 0.7; cursor: pointer;';
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            closeProjectTab(project.id, e);
+        };
 
-        // Assembler l'onglet
-        tab.appendChild(icon);
-        tab.appendChild(name);
-        tab.appendChild(closeBtn);
+        // Hover effect
+        if (!project.isActive) {
+            item.onmouseenter = () => item.style.background = 'var(--border-color)';
+            item.onmouseleave = () => item.style.background = 'var(--bg-secondary)';
+        }
 
-        // Événement de clic sur l'onglet (sauf sur le bouton de fermeture)
-        tab.onclick = (e) => {
-            if (!e.target.classList.contains('project-tab-close')) {
+        // Click handler
+        item.onclick = (e) => {
+            if (!e.target.closest('span[style*="×"]')) {
                 switchToProjectTab(project.id);
             }
         };
 
-        container.appendChild(tab);
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.appendChild(closeBtn);
+        sidebarContainer.appendChild(item);
     });
 
-    console.log(`📑 Onglets mis à jour : ${projectsWithData.length} projet(s) visible(s)`);
+    console.log(`📑 Liste de projets mise à jour : ${projectsWithData.length} projet(s)`);
 }
 
 /**

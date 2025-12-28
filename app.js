@@ -1698,20 +1698,24 @@ window.initMouseHalo = initMouseHalo;
 
 function toggleSidebar() {
     const sidebar = document.getElementById('main-sidebar');
-    const toggleBtn = document.getElementById('sidebar-toggle-btn');
-    const icon = toggleBtn.querySelector('i');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn-header'); // Nouveau bouton dans le header
+    const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
 
     if (sidebar.classList.contains('collapsed')) {
         // Déplier
         sidebar.classList.remove('collapsed');
-        icon.classList.remove('fa-chevron-right');
-        icon.classList.add('fa-chevron-left');
+        if (icon) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        }
         console.log("✅ Sidebar dépliée");
     } else {
         // Replier
         sidebar.classList.add('collapsed');
-        icon.classList.remove('fa-chevron-left');
-        icon.classList.add('fa-chevron-right');
+        if (icon) {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
         console.log("✅ Sidebar repliée");
     }
 

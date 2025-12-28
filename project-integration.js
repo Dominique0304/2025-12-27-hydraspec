@@ -775,6 +775,12 @@ function updateAllInterface() {
         }
     }
 
+    // CRITIQUE : Synchroniser les curseurs d'analyse
+    // Le Proxy ne suffit pas toujours pour les plugins Chart.js
+    appState.cursorStart = project.state.cursorStart;
+    appState.cursorEnd = project.state.cursorEnd;
+    console.log(`🎯 Curseurs synchronisés : ${appState.cursorStart}s à ${appState.cursorEnd}s`);
+
     // Mettre à jour les graphiques
     if (typeof updateTimeChart === 'function') updateTimeChart();
     if (typeof updateStats === 'function') updateStats();

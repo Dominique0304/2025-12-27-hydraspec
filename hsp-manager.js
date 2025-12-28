@@ -130,6 +130,12 @@ function saveHSPAs() {
 async function performHSPSave(project, fileName, isNewFile) {
     console.log("💾 Sauvegarde HSP:", fileName);
 
+    // CRITIQUE: Sauvegarder l'état actuel AVANT l'export
+    if (typeof saveAllToolsState === 'function') {
+        saveAllToolsState(project);
+        console.log("✅ État des outils sauvegardé avant export HSP");
+    }
+
     // Préparer les données à sauvegarder
     const hspData = {
         version: "2.0.0",
@@ -192,6 +198,8 @@ async function performHSPSave(project, fileName, isNewFile) {
         channels: hspData.state.allColumnData.length,
         annotations: hspData.annotations.length,
         intervals: hspData.intervals.length,
+        toolsState_annotations: project.toolsState.annotations?.length || 0,
+        toolsState_intervals: project.toolsState.intervals?.length || 0,
         dataPoints: hspData.state.fullDataTime.length
     });
 

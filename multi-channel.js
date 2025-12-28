@@ -919,16 +919,25 @@ function autoPresetYScales() {
 function resetZoomAndAutoGroup() {
     console.log("🔄 Reset zoom complet : X + Auto Groupé");
 
-    // 1. Réinitialiser le zoom X au maximum (toute la durée d'enregistrement)
+    // 1. Réinitialiser les champs de zoom X (important pour que updateTimeChart utilise la plage complète)
+    const zoomMinInput = document.getElementById('zoom-min');
+    const zoomMaxInput = document.getElementById('zoom-max');
+    if (zoomMinInput && zoomMaxInput && appState.fullDataTime.length) {
+        const t = appState.fullDataTime;
+        zoomMinInput.value = (t[0] / 1000).toFixed(3); // Convertir ms en s
+        zoomMaxInput.value = (t[t.length - 1] / 1000).toFixed(3);
+        console.log("🔍 Zoom X réinitialisé: " + zoomMinInput.value + " à " + zoomMaxInput.value + " sec");
+    }
+
+    // 2. Réinitialiser directement le zoom X du graphique
     const chart = appState.charts.time;
     if (chart && appState.fullDataTime.length) {
         const t = appState.fullDataTime;
         chart.options.scales.x.min = t[0];
         chart.options.scales.x.max = t[t.length - 1];
-        console.log("🔍 Zoom X réinitialisé: 0 à " + t[t.length - 1].toFixed(2) + " sec");
     }
 
-    // 2. Appliquer Auto Groupé sur les axes Y
+    // 3. Appliquer Auto Groupé sur les axes Y (cela appellera updateTimeChart qui utilisera les valeurs des inputs)
     autoPresetYScales();
 }
 

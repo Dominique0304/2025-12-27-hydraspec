@@ -252,6 +252,26 @@ function handleProjectUpload(input) {
         document.getElementById('display-fs-config').textContent = appState.fs + " Hz";
         document.getElementById('display-increment-config').textContent = appState.timeIncrement.toFixed(2) + " ms";
 
+        // Charger les données multi-canaux si présentes
+        if (d.data.allColumnData && d.data.allColumnData.length > 0) {
+            console.log("📊 Loading multi-channel data:", d.data.allColumnData.length, "channels");
+            appState.allColumnData = d.data.allColumnData.map(col => new Float32Array(col));
+            appState.availableColumns = d.appState.availableColumns || [];
+            appState.currentColumnIndex = d.appState.currentColumnIndex || 0;
+            appState.columnNames = d.appState.columnNames || [];
+            appState.channelConfig = d.appState.channelConfig || [];
+            appState.xAxisChannel = d.appState.xAxisChannel || 0;
+            appState.yAxisLabel = d.appState.yAxisLabel || "Valeur";
+
+            // Initialiser les systèmes multi-canaux
+            if (typeof initSmoothingSystem === 'function') {
+                initSmoothingSystem();
+            }
+            if (typeof populateChannelSelector === 'function') {
+                populateChannelSelector(-1);
+            }
+        }
+
         // Charger les annotations si présentes
         if (d.appState.annotations && typeof loadAnnotations === 'function') {
             console.log("📝 Loading annotations from project:", d.appState.annotations.length, "annotations");
@@ -272,6 +292,47 @@ function handleProjectUpload(input) {
         updateStats();
         performAnalysis();
         updateSpectrogram();
+
+        // Appliquer auto-config comme pour un CSV (si multi-canaux)
+        if (d.data.allColumnData && d.data.allColumnData.length > 0) {
+            setTimeout(() => {
+                if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
+                    console.log("🔧 Auto-config HSP: Ouverture du configurateur (invisible)...");
+                    openChannelConfig(true); // true = mode silencieux
+
+                    setTimeout(() => {
+                        if (typeof autoPresetYScales === 'function') {
+                            console.log("📊 Application du preset 'Auto Groupé'...");
+                            autoPresetYScales();
+                        }
+
+                        // Réinitialiser le zoom X au maximum
+                        const chart = appState.charts.time;
+                        if (chart && appState.fullDataTime.length) {
+                            const t = appState.fullDataTime;
+                            chart.options.scales.x.min = t[0];
+                            chart.options.scales.x.max = t[t.length - 1];
+                            chart.update('none');
+                            console.log("🔍 Zoom X réinitialisé");
+                        }
+
+                        // Centrer les curseurs
+                        setTimeout(() => {
+                            if (typeof centerCursors === 'function') {
+                                console.log("🎯 Centrage des curseurs...");
+                                centerCursors();
+                            }
+
+                            setTimeout(() => {
+                                closeChannelConfig(true);
+                                console.log("✅ Auto-config HSP terminée");
+                            }, 100);
+                        }, 100);
+                    }, 200);
+                }
+            }, 300);
+        }
+
         setStatus("Projet chargé.");
     };
     reader.readAsText(file);
@@ -381,19 +442,28 @@ async function performSaveProject(filename) {
     console.log("💾 Saving project with", annotationsToSave.length, "annotations and", intervalsToSave.length, "intervals");
 
     const projectData = {
-        version: "1.4.0",
+        version: "1.5.0", // Version mise à jour pour multi-canaux
         date: new Date().toISOString(),
         appState: {
             fs: appState.fs,
             cursorStart: appState.cursorStart,
             cursorEnd: appState.cursorEnd,
             timeIncrement: appState.timeIncrement,
-            annotations: annotationsToSave, // Sauvegarder les annotations
-            intervals: intervalsToSave // Sauvegarder les intervalles
+            annotations: annotationsToSave,
+            intervals: intervalsToSave,
+            // Multi-canaux
+            yAxisLabel: appState.yAxisLabel,
+            availableColumns: appState.availableColumns,
+            currentColumnIndex: appState.currentColumnIndex,
+            columnNames: appState.columnNames,
+            channelConfig: appState.channelConfig,
+            xAxisChannel: appState.xAxisChannel
         },
         data: {
             time: Array.from(appState.fullDataTime),
-            values: Array.from(appState.fullDataPressure)
+            values: Array.from(appState.fullDataPressure), // Compatibilité ancienne version
+            // Multi-canaux : sauvegarder toutes les colonnes
+            allColumnData: appState.allColumnData ? appState.allColumnData.map(col => Array.from(col)) : []
         },
         notes: document.getElementById('user-notes').value
     };
@@ -402,7 +472,8 @@ async function performSaveProject(filename) {
         version: projectData.version,
         annotationCount: projectData.appState.annotations.length,
         intervalCount: projectData.appState.intervals.length,
-        dataPoints: projectData.data.time.length
+        dataPoints: projectData.data.time.length,
+        channels: projectData.data.allColumnData.length
     });
 
     const blob = new Blob([JSON.stringify(projectData)], { type: "application/json" });

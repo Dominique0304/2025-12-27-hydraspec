@@ -88,10 +88,6 @@
                             Projet</span>
                     </button>
                     <div style="border-top:1px solid var(--border-color); margin:5px 0;"></div>
-                    <button onclick="openModal('genModal')">
-                        <i class="fas fa-wave-square" style="width:20px;"></i> <span
-                            data-i18n="generator">Générateur</span>
-                    </button>
                     <button onclick="initExportData()">
                         <i class="fas fa-file-alt" style="width:20px;"></i> <span data-i18n="export_csv">Exporter
                             fichier .csv</span>
@@ -1214,26 +1210,6 @@
                 <button onclick="closeModal('helpModal')" class="primary"
                     style="width:80px; margin-left:auto;">Fermer</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Generator Modal -->
-    <div id="genModal" class="modal">
-        <div class="modal-content">
-            <button class="btn-close" onclick="closeModal('genModal')">&times;</button>
-            <h3>Générateur de Signal</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div><label>Fs (Hz)</label><input type="number" id="gen-fs" value="1000" style="width:100%"></div>
-                <div><label>Durée (s)</label><input type="number" id="gen-duration" value="5" style="width:100%"></div>
-                <div><label>Bruit (Bar)</label><input type="number" id="gen-noise" value="0.2" style="width:100%"></div>
-                <div><label>DC (Bar)</label><input type="number" id="gen-dc" value="100" style="width:100%"></div>
-            </div>
-            <div style="margin:10px 0; border-top:1px solid var(--border-color); padding-top:10px;">
-                <label>Composantes (Freq | Amp | Phase):</label>
-                <div id="freq-inputs-container"></div>
-                <button onclick="addFreqRow()" class="btn-small" style="margin-top:5px;">+ Ajouter</button>
-            </div>
-            <button onclick="generateSignal()" class="primary" style="width:100%">Générer</button>
         </div>
     </div>
 

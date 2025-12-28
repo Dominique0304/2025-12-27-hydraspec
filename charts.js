@@ -1171,7 +1171,7 @@ function updateChartSizes() {
 function centerCursors() {
     console.log("🎯 centerCursors() called");
 
-    const chart = appState.charts.time;
+    const chart = window.globalCharts?.time;
     if (!chart || !appState.fullDataTime.length) {
         console.error("❌ Cannot center cursors: chart or data not ready");
         setStatus("Aucune donnée à centrer");

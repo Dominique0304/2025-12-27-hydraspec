@@ -188,69 +188,6 @@ class Project {
     // ========================================
 
     /**
-     * Génère un signal synthétique
-     * @param {Object} params - Paramètres du générateur
-     */
-    generateSignal(params = {}) {
-        const fs = params.fs || 1000;
-        const duration = params.duration || 10;
-        const noise = params.noise || 0.1;
-        const dc = params.dc || 5;
-        const frequencies = params.frequencies || [
-            { freq: 50, amp: 5, phase: 0 },
-            { freq: 180, amp: 1.5, phase: 45 }
-        ];
-
-        // Mettre à jour les paramètres
-        this.state.fs = fs;
-        this.state.timeIncrement = 1000 / fs;
-
-        const n = Math.floor(fs * duration);
-        const t = new Float32Array(n);
-        const v = new Float32Array(n);
-
-        // Générer le signal
-        for (let i = 0; i < n; i++) {
-            const time = i / fs;
-            t[i] = time * 1000; // Convertir en ms
-
-            // Composante DC
-            let val = dc;
-
-            // Ajouter les fréquences
-            frequencies.forEach(comp => {
-                val += comp.amp * Math.sin(
-                    2 * Math.PI * comp.freq * time +
-                    comp.phase * Math.PI / 180
-                );
-            });
-
-            // Ajouter le bruit
-            v[i] = val + (Math.random() - 0.5) * 2 * noise;
-        }
-
-        // Sauvegarder les données
-        this.state.fullDataTime = t;
-        this.state.fullDataPressure = v;
-        this.state.cursorStart = duration * 0.2;
-        this.state.cursorEnd = duration * 0.8;
-
-        // Réinitialiser le label pour les signaux générés
-        this.state.yAxisLabel = "Pression (Bar)";
-        this.state.availableColumns = [];
-        this.state.currentColumnIndex = 0;
-        this.state.allColumnData = [];
-
-        console.log(`📊 Signal généré: ${n} points @ ${fs}Hz (${duration}s)`);
-
-        return {
-            points: n,
-            duration: duration,
-            fs: fs
-        };
-    }
-
-    /**
      * Charge des données depuis un fichier CSV
      * @param {File} file - Fichier CSV
      * @returns {Promise<Object>} Informations sur les données chargées

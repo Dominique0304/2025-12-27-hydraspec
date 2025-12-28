@@ -1263,9 +1263,6 @@ window.onload = function() {
     
     initCharts();
     setupResizers();
-    addFreqRow(50, 5, 0);   
-    addFreqRow(180, 1.5, 45); 
-    generateSignal(); 
     setupCanvasInteractions();
     changeLanguage('fr');
     updateColorScale();

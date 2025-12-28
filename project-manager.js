@@ -80,18 +80,6 @@ class ProjectManager {
     }
 
     /**
-     * Crée un projet avec un signal généré
-     * @param {Object} params - Paramètres du générateur
-     * @returns {Project} Le projet créé
-     */
-    createProjectFromGenerator(params = {}) {
-        const project = this.createProject("Signal Généré");
-        project.generateSignal(params);
-        console.log(`🎵 Projet créé avec signal généré: ${project.name}`);
-        return project;
-    }
-
-    /**
      * Supprime un projet
      * @param {string} projectId - ID du projet à supprimer
      * @returns {boolean} True si supprimé, False sinon

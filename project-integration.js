@@ -27,22 +27,10 @@ function initProjectManager() {
     // Créer le gestionnaire global
     projectManager = new ProjectManager();
 
-    // Créer un projet par défaut
-    const defaultProject = projectManager.createProject("Projet par défaut");
+    // Créer un projet vide par défaut
+    const defaultProject = projectManager.createProject("Projet vide");
 
-    // Générer un signal initial pour avoir des données
-    defaultProject.generateSignal({
-        fs: 1000,
-        duration: 10,
-        noise: 0.1,
-        dc: 5,
-        frequencies: [
-            { freq: 50, amp: 5, phase: 0 },
-            { freq: 180, amp: 1.5, phase: 45 }
-        ]
-    });
-
-    console.log("✅ ProjectManager initialisé avec un projet par défaut");
+    console.log("✅ ProjectManager initialisé avec un projet vide");
 
     // Enregistrer des listeners pour synchroniser l'interface
     projectManager.on('projectCreated', onProjectCreated);
@@ -830,53 +818,6 @@ function updateAllInterface() {
 }
 
 // ========================================
-// MIGRATION : GÉNÉRATEUR DE SIGNAL
-// ========================================
-
-/**
- * Version migrée de generateSignal()
- * Utilise Project.generateSignal() en interne
- */
-function generateSignal_POO() {
-    // Récupérer les paramètres de l'interface
-    const fs = parseFloat(document.getElementById('gen-fs').value);
-    const duration = parseFloat(document.getElementById('gen-duration').value);
-    const noise = parseFloat(document.getElementById('gen-noise').value);
-    const dc = parseFloat(document.getElementById('gen-dc').value);
-
-    // Récupérer les fréquences
-    const rows = document.querySelectorAll('#freq-inputs-container .row-removable');
-    const frequencies = [];
-    rows.forEach(r => {
-        frequencies.push({
-            freq: parseFloat(r.querySelector('.gen-f').value),
-            amp: parseFloat(r.querySelector('.gen-a').value),
-            phase: parseFloat(r.querySelector('.gen-p').value)
-        });
-    });
-
-    // Créer un nouveau projet pour le signal généré
-    const projectName = `Signal ${new Date().toLocaleTimeString()}`;
-    const project = projectManager.createProject(projectName);
-
-    // Générer le signal
-    project.generateSignal({
-        fs: fs,
-        duration: duration,
-        noise: noise,
-        dc: dc,
-        frequencies: frequencies
-    });
-
-    console.log(`✅ Signal généré dans le projet : ${projectName}`);
-
-    // Mettre à jour l'interface
-    updateAllInterface();
-    closeModal('genModal');
-    setStatus(`Signal généré : ${projectName}`);
-}
-
-// ========================================
 // MIGRATION : CHARGEMENT CSV
 // ========================================
 
@@ -905,6 +846,14 @@ async function handleFileUpload_POO(input) {
 
         // Mettre à jour l'interface
         updateAllInterface();
+
+        // Centrer les curseurs sur les données visibles
+        setTimeout(() => {
+            if (typeof centerCursors === 'function') {
+                centerCursors();
+            }
+        }, 200);
+
         setStatus(`Fichier chargé : ${project.name}`);
 
     } catch (error) {

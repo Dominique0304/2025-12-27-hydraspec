@@ -491,6 +491,14 @@ function updateXAxisSelector() {
 // Appliquer la configuration et fermer
 function applyChannelConfig() {
     console.log("✅ Configuration des canaux appliquée");
+
+    // IMPORTANT : Sauvegarder la config dans le projet actif
+    const project = typeof getActiveProject === 'function' ? getActiveProject() : null;
+    if (project && appState.channelConfig) {
+        project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
+        console.log(`💾 Configuration sauvegardée dans le projet : ${project.name}`);
+    }
+
     updateTimeChart();
     closeChannelConfig();
 }

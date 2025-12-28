@@ -755,10 +755,21 @@ function updateAllInterface() {
         appState.currentColumnIndex = project.state.currentColumnIndex;
         appState.yAxisLabel = project.state.yAxisLabel;
 
-        // Initialiser le système multi-canaux
-        if (typeof initChannelConfig === 'function') {
-            initChannelConfig();
+        // CRITIQUE : Restaurer la configuration multi-canaux si elle existe
+        if (project.state.channelConfig && project.state.channelConfig.length > 0) {
+            // La configuration existe déjà dans le projet, la restaurer
+            console.log(`✅ Restauration de la configuration multi-canaux (${project.state.channelConfig.length} canaux)`);
+            appState.channelConfig = JSON.parse(JSON.stringify(project.state.channelConfig));
+        } else {
+            // Première fois, initialiser la configuration par défaut
+            console.log(`🆕 Initialisation nouvelle configuration multi-canaux`);
+            if (typeof initChannelConfig === 'function') {
+                initChannelConfig();
+                // Sauvegarder la nouvelle config dans le projet
+                project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
+            }
         }
+
         if (typeof updateColumnSelector === 'function') {
             updateColumnSelector();
         }

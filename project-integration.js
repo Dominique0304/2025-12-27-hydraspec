@@ -760,6 +760,15 @@ function updateAllInterface() {
     appState.cursorEnd = project.state.cursorEnd;
     console.log(`🎯 Curseurs synchronisés : ${appState.cursorStart}s à ${appState.cursorEnd}s`);
 
+    // CRITIQUE : Synchroniser la taille de police globale
+    appState.chartFontSize = project.state.chartFontSize || 12;
+    window.chartFontSize = appState.chartFontSize;
+    const fontSizeInput = document.getElementById('font-size-input');
+    if (fontSizeInput) {
+        fontSizeInput.value = window.chartFontSize;
+    }
+    console.log(`✏️ Taille de police restaurée : ${window.chartFontSize}px`);
+
     // CRITIQUE : Synchroniser les données du spectrogramme
     appState.spectroData = project.state.spectroData;
     console.log(`📊 Spectrogramme synchronisé : ${appState.spectroData ? appState.spectroData.length + ' points' : 'aucune donnée'}`);

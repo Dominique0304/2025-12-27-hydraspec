@@ -47,6 +47,7 @@ class Project {
 
             // Paramètres
             timeIncrement: 1.0,
+            chartFontSize: 12,
 
             // État d'interaction
             isDragging: false,

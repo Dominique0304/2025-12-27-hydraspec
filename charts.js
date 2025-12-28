@@ -1299,15 +1299,24 @@ function updateChartFontSize(value) {
     // Mettre à jour Chart.js - Time Chart
     if (window.globalCharts && window.globalCharts.time) {
         const timeChart = window.globalCharts.time;
+
+        // Mettre à jour l'axe X
         if (timeChart.options.scales.x.ticks.font) {
             timeChart.options.scales.x.ticks.font.size = fontSize;
         }
-        if (timeChart.options.scales.y.ticks.font) {
-            timeChart.options.scales.y.ticks.font.size = fontSize;
-        }
-        if (timeChart.options.scales.y.title && timeChart.options.scales.y.title.font) {
-            timeChart.options.scales.y.title.font.size = fontSize;
-        }
+
+        // Mettre à jour TOUS les axes Y (y, y-time0, y-time1, etc.)
+        Object.keys(timeChart.options.scales).forEach(scaleId => {
+            if (typeof scaleId === 'string' && scaleId.startsWith('y')) {
+                if (timeChart.options.scales[scaleId].ticks && timeChart.options.scales[scaleId].ticks.font) {
+                    timeChart.options.scales[scaleId].ticks.font.size = fontSize;
+                }
+                if (timeChart.options.scales[scaleId].title && timeChart.options.scales[scaleId].title.font) {
+                    timeChart.options.scales[scaleId].title.font.size = fontSize;
+                }
+            }
+        });
+
         timeChart.update('none');
     }
 
@@ -1354,9 +1363,10 @@ function updateChartFontSize(value) {
         spectroChart.update('none');
     }
 
-    // Sauvegarder dans le projet actif
-    if (typeof appState !== 'undefined' && appState.chartFontSize !== undefined) {
+    // Sauvegarder dans le projet actif (via le Proxy appState)
+    if (typeof appState !== 'undefined') {
         appState.chartFontSize = fontSize;
+        console.log(`💾 Taille de police sauvegardée dans le projet : ${fontSize}px`);
     }
 
     console.log("✅ Toutes les polices des graphiques mises à jour");

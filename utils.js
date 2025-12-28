@@ -142,6 +142,17 @@ function generateSignal_POO() {
 
 // --- FILE HANDLING ---
 function handleFileUpload(input) {
+    console.log("📂 handleFileUpload() appelée");
+
+    // Vérifier si le système POO est actif
+    if (typeof projectManager !== 'undefined' && projectManager !== null) {
+        console.log("✅ Système POO actif - Utilisation de handleFileUpload_POO()");
+        return handleFileUpload_POO(input);
+    }
+
+    // ANCIEN CODE (fallback si POO non actif)
+    console.log("⚠️ Système POO inactif - Utilisation de l'ancien code");
+
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -210,148 +221,129 @@ function handleFileUpload(input) {
                 }
             }
 
- if (validLines > 1) {
-    // CONFIGURER L'ÉTAT
-    appState.columnNames = columnNames;
-    appState.allColumnData = allData;
-    appState.availableColumns = [];
-    
-    // Préparer les colonnes disponibles (sauf temps)
-    for (let i = 1; i < columnNames.length; i++) {
-        let label = columnNames[i].replace(/\[.*?\]/g, '').trim();
-        const unitMatch = columnNames[i].match(/\[(.*?)\]/);
-        if (unitMatch && !label.includes('(')) {
-            label += ` (${unitMatch[1]})`;
-        }
-        
-        appState.availableColumns.push({
-            index: i,
-            name: columnNames[i],
-            label: label
-        });
-    }
-    
-    appState.currentColumnIndex = 0;
-    
-    // Configurer les données temps
-    const timeData = allData[0];
-    
-    // Convertir secondes → millisecondes
-    const timeInMs = timeData.map(t => t * 1000);
-    appState.fullDataTime = new Float32Array(timeInMs);
-    
-    // CALCULER L'INCRÉMENT ET Fs
-    if (timeData.length >= 2) {
-        // Calcul de l'incrément moyen (en secondes)
-        let totalDiff = 0;
-        let count = 0;
-        
-        for (let i = 1; i < timeData.length; i++) {
-            const diff = timeData[i] - timeData[i-1];
-            if (diff > 0) {
-                totalDiff += diff;
-                count++;
-            }
-        }
-        
-        const avgIncrementSec = count > 0 ? totalDiff / count : 0.001;
-        const avgIncrementMs = avgIncrementSec * 1000;
-        
-        // Calculer Fs
-        appState.fs = 1000 / avgIncrementMs;
-        appState.timeIncrement = avgIncrementMs / 1000;
-        
-        // Mettre à jour l'interface
-        document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
-        document.getElementById('manual-step-config').value = avgIncrementMs.toFixed(1);
-        document.getElementById('display-increment-config').textContent = avgIncrementMs.toFixed(1) + " ms";
-    } else {
-        // Valeurs par défaut
-        appState.fs = 1000;
-        appState.timeIncrement = 0.001;
-        document.getElementById('display-fs-config').textContent = "1000.0 Hz";
-        document.getElementById('manual-step-config').value = "1.0";
-        document.getElementById('display-increment-config').textContent = "1.0 ms";
-    }
+            if (validLines > 1) {
+                // CONFIGURER L'ÉTAT
+                appState.columnNames = columnNames;
+                appState.allColumnData = allData;
+                appState.availableColumns = [];
 
-    document.getElementById('display-n-config').textContent = timeData.length;
-    
-    // Charger la première colonne
-    loadCurrentColumnData();
-    updateColumnSelector();
+                // Préparer les colonnes disponibles (sauf temps)
+                for (let i = 1; i < columnNames.length; i++) {
+                    let label = columnNames[i].replace(/\[.*?\]/g, '').trim();
+                    const unitMatch = columnNames[i].match(/\[(.*?)\]/);
+                    if (unitMatch && !label.includes('(')) {
+                        label += ` (${unitMatch[1]})`;
+                    }
 
-    // Initialiser la configuration multi-canaux
-    if (typeof initChannelConfig === 'function') {
-        initChannelConfig();
-        // Mettre à jour le graphique pour afficher tous les canaux immédiatement
-        if (typeof updateTimeChart === 'function') {
-            updateTimeChart();
-        }
+                    appState.availableColumns.push({
+                        index: i,
+                        name: columnNames[i],
+                        label: label
+                    });
+                }
 
-        // Ouvrir et fermer automatiquement le configurateur pour initialiser tous les paramètres
-        // (invisible pour l'utilisateur, se fait en quelques millisecondes)
-        if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
-            openChannelConfig();
-            setTimeout(() => closeChannelConfig(), 10); // Fermeture après 10ms
-        }
-    }
+                appState.currentColumnIndex = 0;
 
-    // Initialiser le système de lissage
-    if (typeof initSmoothingSystem === 'function') {
-        initSmoothingSystem();
-    }
+                // Configurer les données temps
+                const timeData = allData[0];
 
-    // Initialiser le système de canal calculé
-    if (typeof initCalculatedChannelSystem === 'function') {
-        initCalculatedChannelSystem();
-    }
+                // Convertir secondes → millisecondes
+                const timeInMs = timeData.map(t => t * 1000);
+                appState.fullDataTime = new Float32Array(timeInMs);
 
-    // Attendre que le graphique soit prêt avant d'effectuer les opérations
-    setTimeout(() => {
-        console.log("🔧 Post-load operations...");
+                // CALCULER L'INCRÉMENT ET Fs
+                if (timeData.length >= 2) {
+                    // Calcul de l'incrément moyen (en secondes)
+                    let totalDiff = 0;
+                    let count = 0;
 
-        // Effacer toutes les annotations existantes
-        if (typeof clearAnnotations === 'function') {
-            console.log("✅ Clearing annotations...");
-            clearAnnotations();
-        } else {
-            console.error("❌ clearAnnotations function not found!");
-        }
+                    for (let i = 1; i < timeData.length; i++) {
+                        const diff = timeData[i] - timeData[i - 1];
+                        if (diff > 0) {
+                            totalDiff += diff;
+                            count++;
+                        }
+                    }
 
-        // Effacer tous les intervalles existants
-        if (typeof clearAllIntervals === 'function') {
-            console.log("✅ Clearing intervals...");
-            clearAllIntervals();
-        } else {
-            console.error("❌ clearAllIntervals function not found!");
-        }
+                    const avgIncrementSec = count > 0 ? totalDiff / count : 0.001;
+                    const avgIncrementMs = avgIncrementSec * 1000;
 
-        // Centrer les curseurs automatiquement après que le chart soit mis à jour
-        setTimeout(() => {
-            if (typeof centerCursors === 'function') {
-                console.log("✅ Calling centerCursors...");
-                centerCursors();
+                    // Calculer Fs
+                    appState.fs = 1000 / avgIncrementMs;
+                    appState.timeIncrement = avgIncrementMs / 1000;
+
+                    // Mettre à jour l'interface
+                    document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
+                    document.getElementById('manual-step-config').value = avgIncrementMs.toFixed(1);
+                    document.getElementById('display-increment-config').textContent = avgIncrementMs.toFixed(1) + " ms";
+                } else {
+                    // Valeurs par défaut
+                    appState.fs = 1000;
+                    appState.timeIncrement = 0.001;
+                    document.getElementById('display-fs-config').textContent = "1000.0 Hz";
+                    document.getElementById('manual-step-config').value = "1.0";
+                    document.getElementById('display-increment-config').textContent = "1.0 ms";
+                }
+
+                // Charger la première colonne par défaut
+                loadColumnData(0);
+
             } else {
-                console.error("❌ centerCursors function not found!");
+                setStatus("Pas assez de données valides dans le fichier");
             }
-        }, 400); // Délai supplémentaire pour le chart.update()
-    }, 200); // Délai pour assurer que le chart est prêt
-
-    setStatus(`Fichier chargé: ${validLines} points, ${appState.availableColumns.length} colonnes, Fs: ${appState.fs.toFixed(1)} Hz`);
-    
-} else {
-    setStatus("Données insuffisantes");
-}
-        } catch (error) {
-            console.error("Erreur chargement CSV:", error);
-            setStatus("Erreur lors du chargement");
+        } catch (err) {
+            console.error("Erreur lors du parsing CSV:", err);
+            setStatus("Erreur lors du chargement du fichier");
         }
-    };
-    reader.onerror = function () {
-        setStatus("Erreur lecture fichier");
     };
     reader.readAsText(file);
-    input.value = '';
+}
+
+/**
+ * Version POO du chargement CSV
+ * Crée un nouveau projet avec les données du fichier
+ */
+async function handleFileUpload_POO(input) {
+    console.log("📂 handleFileUpload_POO() - Chargement avec système POO");
+
+    const file = input.files[0];
+    if (!file) return;
+
+    try {
+        setStatus(`Chargement de ${file.name}...`);
+
+        console.log(`📂 Création du projet depuis : ${file.name}`);
+
+        // Créer un nouveau projet depuis le CSV
+        const project = await projectManager.createProjectFromCSV(file);
+
+        console.log(`✅ CSV chargé dans le projet : ${project.name}`);
+        console.log(`   - ${project.state.fullDataTime.length} points`);
+        console.log(`   - Fs: ${project.state.fs.toFixed(1)} Hz`);
+        console.log(`   - ${project.state.availableColumns.length} canaux`);
+
+        // Mettre à jour le titre de l'acquisition
+        setAcquisitionTitle(project.name);
+
+        // Mettre à jour l'interface
+        if (typeof updateAllInterface === 'function') {
+            updateAllInterface();
+        } else {
+            // Fallback
+            updateTimeChart();
+            updateStats();
+            performAnalysis();
+            updateSpectrogram();
+        }
+
+        setStatus(`Fichier chargé : ${project.name}`);
+
+        return project;
+
+    } catch (error) {
+        console.error("❌ Erreur lors du chargement CSV :", error);
+        setStatus(`Erreur : ${error.message}`);
+    }
 }
 
 function handleProjectUpload(input) {

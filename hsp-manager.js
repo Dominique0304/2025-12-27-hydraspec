@@ -26,7 +26,7 @@ function exportToHSP() {
         return;
     }
 
-    const project = projectManager.getActiveProject();
+    const project = projectManager.getActive();
 
     if (!project) {
         alert("Aucun projet actif");
@@ -63,7 +63,7 @@ function saveHSP() {
         return;
     }
 
-    const project = projectManager.getActiveProject();
+    const project = projectManager.getActive();
 
     if (!project) {
         alert("Aucun projet actif");
@@ -95,7 +95,7 @@ function saveHSPAs() {
         return;
     }
 
-    const project = projectManager.getActiveProject();
+    const project = projectManager.getActive();
 
     if (!project) {
         alert("Aucun projet actif");
@@ -409,7 +409,7 @@ function hasUnsavedChanges() {
     const projectManager = window.projectManager;
     if (!projectManager) return false;
 
-    const project = projectManager.getActiveProject();
+    const project = projectManager.getActive();
     return project && project.isModified;
 }
 
@@ -421,7 +421,7 @@ async function promptSaveBeforeClose() {
     const projectManager = window.projectManager;
     if (!projectManager) return true;
 
-    const project = projectManager.getActiveProject();
+    const project = projectManager.getActive();
 
     if (!project || !project.isModified) {
         return true; // Pas de modifications, on peut continuer
@@ -469,7 +469,7 @@ function updateFileMenuButtons() {
         return;
     }
 
-    const project = projectManager.getActiveProject();
+    const project = projectManager.getActive();
 
     const btnSaveHSP = document.getElementById('btn-save-hsp');
     const btnSaveHSPAs = document.getElementById('btn-save-hsp-as');

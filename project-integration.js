@@ -528,6 +528,13 @@ function saveAllToolsState(project) {
         project.toolsState.diffCanal.nextId = nextDiffCanalId;
     }
 
+    // CRITIQUE : Sauvegarder les curseurs d'analyse depuis appState vers project.state
+    if (typeof appState !== 'undefined' && appState.cursorStart !== undefined && appState.cursorEnd !== undefined) {
+        project.state.cursorStart = appState.cursorStart;
+        project.state.cursorEnd = appState.cursorEnd;
+        console.log(`📍 Curseurs sauvegardés : ${appState.cursorStart}s à ${appState.cursorEnd}s`);
+    }
+
     console.log(`✅ États d'outils sauvegardés pour ${project.name}`);
 }
 

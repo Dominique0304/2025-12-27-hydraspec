@@ -165,21 +165,43 @@ class ProjectManager {
             return false;
         }
 
-        // Désactiver le projet actuel
+        // ÉTAPE 1 : Sauvegarder l'état du projet actuel
         if (this.activeProjectId) {
             const currentProject = this.projects.get(this.activeProjectId);
             if (currentProject) {
+                // Sauvegarder les limites de zoom
+                if (typeof saveChartZoomLimits === 'function') {
+                    saveChartZoomLimits(currentProject);
+                }
+
+                // Sauvegarder tous les états d'outils
+                if (typeof saveAllToolsState === 'function') {
+                    saveAllToolsState(currentProject);
+                }
+
+                // Désactiver le projet
                 currentProject.isActive = false;
             }
         }
 
-        // Activer le nouveau projet
+        // ÉTAPE 2 : Activer le nouveau projet
         this.activeProjectId = projectId;
         project.isActive = true;
 
         console.log(`🔄 Basculé vers: ${project.name}`);
 
-        // Notifier les listeners
+        // ÉTAPE 3 : Restaurer l'état du nouveau projet
+        // Restaurer les limites de zoom
+        if (typeof restoreChartZoomLimits === 'function') {
+            restoreChartZoomLimits(project);
+        }
+
+        // Restaurer tous les états d'outils
+        if (typeof restoreAllToolsState === 'function') {
+            restoreAllToolsState(project);
+        }
+
+        // ÉTAPE 4 : Notifier les listeners
         this._emit('projectSwitched', project);
 
         return true;

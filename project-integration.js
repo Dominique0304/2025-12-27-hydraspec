@@ -281,6 +281,371 @@ function createNewProject() {
 }
 
 // ========================================
+// SAUVEGARDE/RESTAURATION DES ÉTATS D'OUTILS
+// ========================================
+
+/**
+ * Sauvegarde les limites de zoom de tous les graphiques dans le projet
+ * @param {Project} project - Projet dans lequel sauvegarder
+ */
+function saveChartZoomLimits(project) {
+    if (!project || !project.charts) {
+        console.warn("⚠️ Impossible de sauvegarder le zoom : projet invalide");
+        return;
+    }
+
+    console.log(`💾 Sauvegarde des limites de zoom pour : ${project.name}`);
+
+    // Sauvegarder le graphique temporel
+    if (project.charts.time && project.charts.time.options && project.charts.time.options.scales) {
+        const scales = project.charts.time.options.scales;
+
+        // Axe X
+        if (scales.x) {
+            project.toolsState.chartLimits.time.x.min = scales.x.min;
+            project.toolsState.chartLimits.time.x.max = scales.x.max;
+        }
+
+        // Tous les axes Y (y, y2, y3, ...)
+        project.toolsState.chartLimits.time.y = {};
+        Object.keys(scales).forEach(scaleKey => {
+            if (scaleKey.startsWith('y')) {
+                project.toolsState.chartLimits.time.y[scaleKey] = {
+                    min: scales[scaleKey].min,
+                    max: scales[scaleKey].max
+                };
+            }
+        });
+    }
+
+    // Sauvegarder le graphique fréquentiel
+    if (project.charts.freq && project.charts.freq.options && project.charts.freq.options.scales) {
+        const scales = project.charts.freq.options.scales;
+
+        if (scales.x) {
+            project.toolsState.chartLimits.freq.x.min = scales.x.min;
+            project.toolsState.chartLimits.freq.x.max = scales.x.max;
+        }
+
+        project.toolsState.chartLimits.freq.y = {};
+        Object.keys(scales).forEach(scaleKey => {
+            if (scaleKey.startsWith('y')) {
+                project.toolsState.chartLimits.freq.y[scaleKey] = {
+                    min: scales[scaleKey].min,
+                    max: scales[scaleKey].max
+                };
+            }
+        });
+    }
+
+    // Sauvegarder le spectrogramme
+    if (project.charts.spectro && project.charts.spectro.options && project.charts.spectro.options.scales) {
+        const scales = project.charts.spectro.options.scales;
+
+        if (scales.x) {
+            project.toolsState.chartLimits.spectro.x.min = scales.x.min;
+            project.toolsState.chartLimits.spectro.x.max = scales.x.max;
+        }
+
+        project.toolsState.chartLimits.spectro.y = {};
+        Object.keys(scales).forEach(scaleKey => {
+            if (scaleKey.startsWith('y')) {
+                project.toolsState.chartLimits.spectro.y[scaleKey] = {
+                    min: scales[scaleKey].min,
+                    max: scales[scaleKey].max
+                };
+            }
+        });
+    }
+
+    console.log(`✅ Zoom sauvegardé pour ${project.name}`);
+}
+
+/**
+ * Restaure les limites de zoom de tous les graphiques depuis le projet
+ * @param {Project} project - Projet depuis lequel restaurer
+ */
+function restoreChartZoomLimits(project) {
+    if (!project || !project.charts || !project.toolsState.chartLimits) {
+        console.warn("⚠️ Impossible de restaurer le zoom : projet invalide");
+        return;
+    }
+
+    console.log(`🔄 Restauration des limites de zoom pour : ${project.name}`);
+
+    // Restaurer le graphique temporel
+    if (project.charts.time && project.charts.time.options && project.charts.time.options.scales) {
+        const scales = project.charts.time.options.scales;
+        const limits = project.toolsState.chartLimits.time;
+
+        // Axe X
+        if (limits.x) {
+            scales.x.min = limits.x.min;
+            scales.x.max = limits.x.max;
+        }
+
+        // Tous les axes Y
+        if (limits.y) {
+            Object.keys(limits.y).forEach(scaleKey => {
+                if (scales[scaleKey]) {
+                    scales[scaleKey].min = limits.y[scaleKey].min;
+                    scales[scaleKey].max = limits.y[scaleKey].max;
+                }
+            });
+        }
+
+        project.charts.time.update('none');
+    }
+
+    // Restaurer le graphique fréquentiel
+    if (project.charts.freq && project.charts.freq.options && project.charts.freq.options.scales) {
+        const scales = project.charts.freq.options.scales;
+        const limits = project.toolsState.chartLimits.freq;
+
+        if (limits.x) {
+            scales.x.min = limits.x.min;
+            scales.x.max = limits.x.max;
+        }
+
+        if (limits.y) {
+            Object.keys(limits.y).forEach(scaleKey => {
+                if (scales[scaleKey]) {
+                    scales[scaleKey].min = limits.y[scaleKey].min;
+                    scales[scaleKey].max = limits.y[scaleKey].max;
+                }
+            });
+        }
+
+        project.charts.freq.update('none');
+    }
+
+    // Restaurer le spectrogramme
+    if (project.charts.spectro && project.charts.spectro.options && project.charts.spectro.options.scales) {
+        const scales = project.charts.spectro.options.scales;
+        const limits = project.toolsState.chartLimits.spectro;
+
+        if (limits.x) {
+            scales.x.min = limits.x.min;
+            scales.x.max = limits.x.max;
+        }
+
+        if (limits.y) {
+            Object.keys(limits.y).forEach(scaleKey => {
+                if (scales[scaleKey]) {
+                    scales[scaleKey].min = limits.y[scaleKey].min;
+                    scales[scaleKey].max = limits.y[scaleKey].max;
+                }
+            });
+        }
+
+        project.charts.spectro.update('none');
+    }
+
+    console.log(`✅ Zoom restauré pour ${project.name}`);
+}
+
+/**
+ * Sauvegarde tous les états d'outils dans le projet
+ * @param {Project} project - Projet dans lequel sauvegarder
+ */
+function saveAllToolsState(project) {
+    if (!project) {
+        console.warn("⚠️ Impossible de sauvegarder les outils : projet invalide");
+        return;
+    }
+
+    console.log(`💾 Sauvegarde des états d'outils pour : ${project.name}`);
+
+    // Sauvegarder Intervals
+    if (typeof intervals !== 'undefined') {
+        project.toolsState.intervals = JSON.parse(JSON.stringify(intervals));
+        project.toolsState.isCreatingInterval = isCreatingInterval;
+        project.toolsState.nextIntervalId = nextIntervalId;
+    }
+
+    // Sauvegarder Measure Tool
+    if (typeof measureState !== 'undefined') {
+        project.toolsState.measureTool = {
+            active: measureState.active,
+            point1: measureState.point1 ? {...measureState.point1} : null,
+            point2: measureState.point2 ? {...measureState.point2} : null,
+            dragging: measureState.dragging
+        };
+    }
+
+    // Sauvegarder Annotations
+    if (typeof annotations !== 'undefined') {
+        project.toolsState.annotations = JSON.parse(JSON.stringify(annotations));
+        project.toolsState.isCreatingAnnotation = isCreatingAnnotation;
+        project.toolsState.annotationsVisible = annotationsVisible;
+    }
+
+    // Sauvegarder Pan Tool
+    if (typeof panState !== 'undefined') {
+        project.toolsState.panTool = {
+            active: panState.active,
+            mode: panState.mode,
+            y0Active: panState.y0Active,
+            zoomMode: panState.zoomMode
+        };
+    }
+
+    // Sauvegarder Ruler Tool
+    if (typeof rulerState !== 'undefined') {
+        project.toolsState.rulerTool = {
+            active: rulerState.active,
+            point: rulerState.point ? {...rulerState.point} : null
+        };
+    }
+
+    // Sauvegarder Track Tool
+    if (typeof trackState !== 'undefined') {
+        project.toolsState.trackTool = {
+            active: trackState.active,
+            currentX: trackState.currentX,
+            values: {...trackState.values},
+            locked: trackState.locked
+        };
+    }
+
+    // Sauvegarder Diff Canal
+    if (typeof diffCanalIntervals !== 'undefined') {
+        project.toolsState.diffCanal.intervals = JSON.parse(JSON.stringify(diffCanalIntervals));
+        project.toolsState.diffCanal.nextId = nextDiffCanalId;
+    }
+
+    console.log(`✅ États d'outils sauvegardés pour ${project.name}`);
+}
+
+/**
+ * Restaure tous les états d'outils depuis le projet
+ * @param {Project} project - Projet depuis lequel restaurer
+ */
+function restoreAllToolsState(project) {
+    if (!project) {
+        console.warn("⚠️ Impossible de restaurer les outils : projet invalide");
+        return;
+    }
+
+    console.log(`🔄 Restauration des états d'outils pour : ${project.name}`);
+
+    // Restaurer Intervals
+    if (typeof intervals !== 'undefined' && project.toolsState.intervals) {
+        intervals.length = 0; // Vider le tableau
+        intervals.push(...JSON.parse(JSON.stringify(project.toolsState.intervals)));
+        isCreatingInterval = project.toolsState.isCreatingInterval;
+        nextIntervalId = project.toolsState.nextIntervalId;
+
+        // Mettre à jour l'affichage
+        if (typeof updateIntervalsList === 'function') {
+            updateIntervalsList();
+        }
+    }
+
+    // Restaurer Measure Tool
+    if (typeof measureState !== 'undefined' && project.toolsState.measureTool) {
+        const wasActive = measureState.active;
+        const shouldBeActive = project.toolsState.measureTool.active;
+
+        measureState.active = shouldBeActive;
+        measureState.point1 = project.toolsState.measureTool.point1 ? {...project.toolsState.measureTool.point1} : null;
+        measureState.point2 = project.toolsState.measureTool.point2 ? {...project.toolsState.measureTool.point2} : null;
+
+        // Mettre à jour l'UI du bouton
+        const btn = document.getElementById('measure-diff-btn');
+        const results = document.getElementById('measure-results');
+        if (btn && results) {
+            btn.style.background = shouldBeActive ? 'var(--accent-green)' : 'var(--accent-blue)';
+            results.style.display = shouldBeActive ? 'block' : 'none';
+        }
+
+        // Mettre à jour les valeurs affichées
+        if (typeof updateMeasureDisplay === 'function') {
+            updateMeasureDisplay();
+        }
+    }
+
+    // Restaurer Annotations
+    if (typeof annotations !== 'undefined' && project.toolsState.annotations) {
+        annotations.length = 0; // Vider le tableau
+        annotations.push(...JSON.parse(JSON.stringify(project.toolsState.annotations)));
+        isCreatingAnnotation = project.toolsState.isCreatingAnnotation;
+        annotationsVisible = project.toolsState.annotationsVisible;
+
+        // Mettre à jour l'affichage
+        if (typeof updateAnnotationsList === 'function') {
+            updateAnnotationsList();
+        }
+    }
+
+    // Restaurer Pan Tool
+    if (typeof panState !== 'undefined' && project.toolsState.panTool) {
+        panState.active = project.toolsState.panTool.active;
+        panState.mode = project.toolsState.panTool.mode;
+        panState.y0Active = project.toolsState.panTool.y0Active;
+        panState.zoomMode = project.toolsState.panTool.zoomMode;
+
+        // Mettre à jour l'UI des boutons pan
+        if (typeof updatePanToolButtons === 'function') {
+            updatePanToolButtons();
+        }
+    }
+
+    // Restaurer Ruler Tool
+    if (typeof rulerState !== 'undefined' && project.toolsState.rulerTool) {
+        const shouldBeActive = project.toolsState.rulerTool.active;
+
+        rulerState.active = shouldBeActive;
+        rulerState.point = project.toolsState.rulerTool.point ? {...project.toolsState.rulerTool.point} : null;
+
+        // Mettre à jour l'UI
+        const btn = document.getElementById('ruler-tool-btn');
+        const results = document.getElementById('ruler-results');
+        if (btn && results) {
+            btn.style.background = shouldBeActive ? 'var(--accent-green)' : 'var(--accent-blue)';
+            results.style.display = shouldBeActive ? 'block' : 'none';
+        }
+    }
+
+    // Restaurer Track Tool
+    if (typeof trackState !== 'undefined' && project.toolsState.trackTool) {
+        const shouldBeActive = project.toolsState.trackTool.active;
+
+        trackState.active = shouldBeActive;
+        trackState.currentX = project.toolsState.trackTool.currentX;
+        trackState.values = {...project.toolsState.trackTool.values};
+        trackState.locked = project.toolsState.trackTool.locked;
+
+        // Mettre à jour l'UI
+        const btn = document.getElementById('track-tool-btn');
+        const results = document.getElementById('track-results');
+        if (btn && results) {
+            btn.style.background = shouldBeActive ? 'var(--accent-green)' : 'var(--accent-blue)';
+            results.style.display = shouldBeActive ? 'block' : 'none';
+        }
+    }
+
+    // Restaurer Diff Canal
+    if (typeof diffCanalIntervals !== 'undefined' && project.toolsState.diffCanal.intervals) {
+        diffCanalIntervals.length = 0;
+        diffCanalIntervals.push(...JSON.parse(JSON.stringify(project.toolsState.diffCanal.intervals)));
+        nextDiffCanalId = project.toolsState.diffCanal.nextId;
+
+        // Mettre à jour l'affichage
+        if (typeof updateDiffCanalList === 'function') {
+            updateDiffCanalList();
+        }
+    }
+
+    // Forcer le rafraîchissement des graphiques
+    if (project.charts.time) {
+        project.charts.time.update('none');
+    }
+
+    console.log(`✅ États d'outils restaurés pour ${project.name}`);
+}
+
+// ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
 
@@ -489,5 +854,9 @@ window.getActiveProject = getActiveProject;
 window.initPOOSystem = initPOOSystem;
 window.updateProjectTabs = updateProjectTabs;
 window.createNewProject = createNewProject;
+window.saveChartZoomLimits = saveChartZoomLimits;
+window.restoreChartZoomLimits = restoreChartZoomLimits;
+window.saveAllToolsState = saveAllToolsState;
+window.restoreAllToolsState = restoreAllToolsState;
 
 console.log("📦 Module project-integration.js chargé");

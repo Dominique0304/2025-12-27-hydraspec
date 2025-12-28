@@ -59,6 +59,116 @@ class Project {
             fftTimeout: null
         };
 
+        // États des outils isolés pour CE projet
+        this.toolsState = {
+            // Intervals
+            intervals: [],
+            isCreatingInterval: false,
+            pendingIntervalData: null,
+            nextIntervalId: 1,
+            intervalDragState: {
+                active: false,
+                interval: null,
+                dragType: null,
+                initialMouseY: 0
+            },
+            currentEditingInterval: null,
+
+            // Measure Tool
+            measureTool: {
+                active: false,
+                point1: null,
+                point2: null,
+                dragging: null
+            },
+
+            // Annotations
+            annotations: [],
+            isCreatingAnnotation: false,
+            tempAnnotation: null,
+            currentHoveredAnnotation: null,
+            annotationsVisible: true,
+            currentAnnotationFormat: {
+                bold: false,
+                italic: false,
+                underline: false,
+                fontSize: 0.85
+            },
+            pendingAnnotationData: null,
+
+            // Pan Tool
+            panTool: {
+                active: false,
+                dragging: false,
+                lastX: 0,
+                lastY: 0,
+                mode: 'free',
+                y0Active: false,
+                zoomMode: null
+            },
+            gridZoomState: {
+                active: false,
+                startX: null,
+                startY: null,
+                endX: null,
+                endY: null
+            },
+
+            // Ruler Tool
+            rulerTool: {
+                active: false,
+                point: null,
+                dragging: false
+            },
+
+            // Track Tool
+            trackTool: {
+                active: false,
+                currentX: null,
+                values: {},
+                locked: false,
+                dragging: false
+            },
+
+            // Diff Canal Tool
+            diffCanal: {
+                intervals: [],
+                isCreating: false,
+                selectedChannelIndex: null,
+                pendingPoint: null,
+                nextId: 1,
+                state: {
+                    active: false,
+                    dragging: null,
+                    draggedInterval: null,
+                    dragStartX: 0,
+                    dragStartY: 0
+                }
+            },
+
+            // Calculated Channels
+            currentEditingCalculatedChannelId: null,
+
+            // Smoothing
+            currentEditingChannelId: null,
+
+            // Chart Zoom Limits (CRITIQUE !)
+            chartLimits: {
+                time: {
+                    x: { min: null, max: null },
+                    y: {} // {y: {min, max}, y2: {min, max}, ...}
+                },
+                freq: {
+                    x: { min: null, max: null },
+                    y: {}
+                },
+                spectro: {
+                    x: { min: null, max: null },
+                    y: {}
+                }
+            }
+        };
+
         // Graphiques Chart.js isolés
         this.charts = {
             time: null,

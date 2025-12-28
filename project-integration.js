@@ -180,9 +180,19 @@ function updateAllInterface() {
 
     console.log(`🔄 Mise à jour de l'interface pour : ${project.name}`);
 
-    // Initialiser la configuration multi-canaux si disponible
+    // IMPORTANT : Synchroniser EXPLICITEMENT les données du projet vers appState
+    // Le Proxy ne suffit pas pour certaines fonctions qui lisent directement appState
     if (project.state.availableColumns && project.state.availableColumns.length > 0) {
-        console.log(`🎨 Initialisation multi-canaux : ${project.state.availableColumns.length} canaux`);
+        console.log(`🎨 Synchronisation multi-canaux : ${project.state.availableColumns.length} canaux`);
+
+        // Copier toutes les données CSV nécessaires
+        appState.columnNames = project.state.columnNames;
+        appState.allColumnData = project.state.allColumnData;
+        appState.availableColumns = project.state.availableColumns;
+        appState.currentColumnIndex = project.state.currentColumnIndex;
+        appState.yAxisLabel = project.state.yAxisLabel;
+
+        // Initialiser le système multi-canaux
         if (typeof initChannelConfig === 'function') {
             initChannelConfig();
         }

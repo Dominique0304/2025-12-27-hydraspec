@@ -267,6 +267,13 @@ async function handleFileUpload_POO(input) {
         const project = await projectManager.createProjectFromCSV(file);
 
         console.log(`✅ CSV chargé dans le projet : ${project.name}`);
+        console.log(`   - ${project.state.fullDataTime.length} points`);
+        console.log(`   - Fs: ${project.state.fs.toFixed(1)} Hz`);
+        console.log(`   - ${project.state.availableColumns.length} canaux`);
+
+        // IMPORTANT : Basculer vers le nouveau projet
+        projectManager.switchTo(project.id);
+        console.log(`🔄 Basculé vers le nouveau projet : ${project.name}`);
 
         // Mettre à jour l'interface
         updateAllInterface();

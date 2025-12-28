@@ -9,6 +9,17 @@ function addFreqRow(f = 50, a = 1, p = 0) {
 }
 
 function generateSignal() {
+    console.log("🎵 generateSignal() appelée");
+
+    // Vérifier si le système POO est actif
+    if (typeof projectManager !== 'undefined' && projectManager !== null) {
+        console.log("✅ Système POO actif - Utilisation de generateSignal_POO()");
+        return generateSignal_POO();
+    }
+
+    // ANCIEN CODE (fallback si POO non actif)
+    console.log("⚠️ Système POO inactif - Utilisation de l'ancien code");
+
     const fs = parseFloat(document.getElementById('gen-fs').value);
     const duration = parseFloat(document.getElementById('gen-duration').value);
     const noise = parseFloat(document.getElementById('gen-noise').value);
@@ -63,6 +74,70 @@ function generateSignal() {
     performAnalysis();
     updateSpectrogram();
     closeModal('genModal');
+}
+
+/**
+ * Version POO du générateur de signal
+ * Crée un nouveau projet avec le signal généré
+ */
+function generateSignal_POO() {
+    console.log("🎵 generateSignal_POO() - Génération avec système POO");
+
+    // Récupérer les paramètres de l'interface
+    const fs = parseFloat(document.getElementById('gen-fs').value);
+    const duration = parseFloat(document.getElementById('gen-duration').value);
+    const noise = parseFloat(document.getElementById('gen-noise').value);
+    const dc = parseFloat(document.getElementById('gen-dc').value);
+
+    // Récupérer les fréquences
+    const rows = document.querySelectorAll('#freq-inputs-container .row-removable');
+    const frequencies = [];
+    rows.forEach(r => {
+        frequencies.push({
+            freq: parseFloat(r.querySelector('.gen-f').value),
+            amp: parseFloat(r.querySelector('.gen-a').value),
+            phase: parseFloat(r.querySelector('.gen-p').value)
+        });
+    });
+
+    // Créer un nom de projet descriptif
+    const freqList = frequencies.map(f => `${f.freq}Hz`).join('+');
+    const projectName = `Signal ${freqList} @ ${new Date().toLocaleTimeString()}`;
+
+    console.log(`📂 Création du projet : ${projectName}`);
+
+    // Créer un nouveau projet pour le signal généré
+    const project = projectManager.createProject(projectName);
+
+    // Générer le signal
+    project.generateSignal({
+        fs: fs,
+        duration: duration,
+        noise: noise,
+        dc: dc,
+        frequencies: frequencies
+    });
+
+    console.log(`✅ Signal généré dans le projet : ${projectName}`);
+    console.log(`   - ${project.state.fullDataTime.length} points`);
+    console.log(`   - Fs: ${project.state.fs} Hz`);
+    console.log(`   - Durée: ${duration} s`);
+
+    // Mettre à jour l'interface
+    if (typeof updateAllInterface === 'function') {
+        updateAllInterface();
+    } else {
+        // Fallback
+        updateTimeChart();
+        updateStats();
+        performAnalysis();
+        updateSpectrogram();
+    }
+
+    closeModal('genModal');
+    setStatus(`Signal généré : ${projectName}`);
+
+    return project;
 }
 
 // --- FILE HANDLING ---

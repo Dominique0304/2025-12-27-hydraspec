@@ -48,33 +48,15 @@
         </div>
 
         <div style="display:flex; gap:8px; align-items:center;">
-            <!-- Menu Graphiques (Accordéon) -->
-            <div class="dropdown">
-                <button class="header-btn" id="btn-graphs">
-                    <i class="fas fa-chart-line"></i> <span>Graphiques</span> <i class="fas fa-caret-down"></i>
-                </button>
-                <div class="dropdown-content">
-                    <button id="toggle-time-btn" class="toggle-btn active" onclick="toggleTimeDomain()" style="width:100%; text-align:left;">
-                        <i class="fas fa-stopwatch" style="width:20px;"></i> <span>Temps</span>
-                    </button>
-                    <button id="toggle-freq-btn" class="toggle-btn active" onclick="toggleFreqDomain()" style="width:100%; text-align:left;">
-                        <i class="fas fa-wave-square" style="width:20px;"></i> <span>Fréquence</span>
-                    </button>
-                    <button id="toggle-spectro-btn" class="toggle-btn active" onclick="toggleSpectrogram()" style="width:100%; text-align:left;">
-                        <i class="fas fa-chart-area" style="width:20px;"></i> <span>Spectro</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Configurateur Multi-Canaux -->
-            <button onclick="openChannelConfig()" class="header-btn" title="Configuration Multi-Canaux" style="color:var(--accent-blue);">
-                <i class="fas fa-layer-group"></i>
+            <!-- Bouton Toggle Sidebar -->
+            <button id="sidebar-toggle-btn-header" onclick="toggleSidebar()" class="header-btn" title="Afficher/Masquer Sidebar">
+                <i class="fas fa-bars"></i>
             </button>
 
-            <!-- Outils Menu -->
+            <!-- Fichier Menu (renommé depuis Outils) -->
             <div class="dropdown">
                 <button class="header-btn" id="btn-tools">
-                    <i class="fas fa-tools"></i> <span data-i18n="tools">Outils</span> <i class="fas fa-caret-down"></i>
+                    <i class="fas fa-folder"></i> <span data-i18n="file">Fichier</span> <i class="fas fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
                     <button onclick="document.getElementById('fileInput').click()">
@@ -99,6 +81,29 @@
                 </div>
             </div>
 
+            <!-- Menu Graphiques (Accordéon) -->
+            <div class="dropdown">
+                <button class="header-btn" id="btn-graphs">
+                    <i class="fas fa-chart-line"></i> <span>Graphiques</span> <i class="fas fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button id="toggle-time-btn" class="toggle-btn active" onclick="toggleTimeDomain()" style="width:100%; text-align:left;">
+                        <i class="fas fa-stopwatch" style="width:20px;"></i> <span>Temps</span>
+                    </button>
+                    <button id="toggle-freq-btn" class="toggle-btn active" onclick="toggleFreqDomain()" style="width:100%; text-align:left;">
+                        <i class="fas fa-wave-square" style="width:20px;"></i> <span>Fréquence</span>
+                    </button>
+                    <button id="toggle-spectro-btn" class="toggle-btn active" onclick="toggleSpectrogram()" style="width:100%; text-align:left;">
+                        <i class="fas fa-chart-area" style="width:20px;"></i> <span>Spectro</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configurateur Multi-Canaux -->
+            <button onclick="openChannelConfig()" class="header-btn" title="Configuration Multi-Canaux" style="color:var(--accent-blue);">
+                <i class="fas fa-layer-group"></i>
+            </button>
+
             <button onclick="openModal('settingsModal')" class="header-btn" title="Paramètres">
                 <i class="fas fa-cog"></i> <span data-i18n="settings">Paramètres</span>
             </button>
@@ -119,11 +124,6 @@
     <div class="main-container" id="capture-area">
         <!-- Sidebar -->
         <aside class="sidebar" id="main-sidebar">
-            <!-- Bouton de collapse/expand -->
-            <button id="sidebar-toggle-btn" class="sidebar-toggle" onclick="toggleSidebar()" title="Replier/Déployer la barre latérale">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-
             <!-- Acquisition -->
             <div class="control-group">
                 <h3><i class="fas fa-satellite-dish"></i> <span data-i18n="acquisition">Acquisition</span></h3>

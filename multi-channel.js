@@ -43,7 +43,7 @@ function initChannelConfig() {
 }
 
 // Ouvrir la modale de configuration
-function openChannelConfig() {
+function openChannelConfig(silent = false) {
     const modal = document.getElementById('channel-config-modal');
     if (!modal) {
         console.error("❌ Modale de configuration non trouvée");
@@ -60,12 +60,26 @@ function openChannelConfig() {
     setupModalDrag();
 
     modal.style.display = 'flex';
+
+    // Mode silencieux : rendre invisible mais garder le DOM actif
+    if (silent) {
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+    } else {
+        modal.style.opacity = '1';
+        modal.style.pointerEvents = 'auto';
+    }
 }
 
 // Fermer la modale
-function closeChannelConfig() {
+function closeChannelConfig(silent = false) {
     const modal = document.getElementById('channel-config-modal');
     if (modal) {
+        // En mode silencieux, restaurer d'abord l'opacité avant de masquer
+        if (silent) {
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+        }
         modal.style.display = 'none';
     }
 }

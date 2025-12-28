@@ -846,8 +846,8 @@ async function handleFileUpload_POO(input) {
         // Ouvrir le configurateur, appliquer auto-groupé, puis fermer (invisible pour l'utilisateur)
         setTimeout(() => {
             if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
-                console.log("🔧 Auto-config: Ouverture du configurateur...");
-                openChannelConfig();
+                console.log("🔧 Auto-config: Ouverture du configurateur (invisible)...");
+                openChannelConfig(true); // true = mode silencieux
 
                 // Attendre que le DOM soit prêt, puis appliquer auto-groupé PENDANT que c'est ouvert
                 setTimeout(() => {
@@ -875,8 +875,8 @@ async function handleFileUpload_POO(input) {
 
                         // Fermer le configurateur après tout
                         setTimeout(() => {
-                            closeChannelConfig();
-                            console.log("✅ Auto-config terminée (configurateur fermé)");
+                            closeChannelConfig(true); // true = mode silencieux
+                            console.log("✅ Auto-config terminée (configurateur invisible fermé)");
                         }, 100);
                     }, 100);
                 }, 200);

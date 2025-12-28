@@ -147,13 +147,24 @@ function updateProjectTabs() {
     // Récupérer tous les projets
     const projects = projectManager.getAllProjects();
 
-    if (projects.length === 0) {
-        container.innerHTML = '<div style="padding: 8px; color: var(--text-muted); font-size: 0.85rem; font-style: italic;">Aucun projet ouvert</div>';
+    // Filtrer les projets vides (masquer uniquement "Projet vide" sans données)
+    const projectsWithData = projects.filter(project => {
+        // Masquer seulement si c'est "Projet vide" ET qu'il n'y a pas de données
+        const isEmptyDefault = project.name === "Projet vide";
+        const hasNoData = project.state.fullDataTime.length === 0 && project.state.allColumnData.length === 0;
+
+        // Afficher si ce n'est PAS un projet vide par défaut sans données
+        return !(isEmptyDefault && hasNoData);
+    });
+
+    if (projectsWithData.length === 0) {
+        // Ne rien afficher si aucun projet avec données
+        container.innerHTML = '';
         return;
     }
 
-    // Créer un onglet pour chaque projet
-    projects.forEach(project => {
+    // Créer un onglet pour chaque projet avec données
+    projectsWithData.forEach(project => {
         const tab = document.createElement('div');
         tab.className = 'project-tab' + (project.isActive ? ' active' : '');
         tab.setAttribute('data-project-id', project.id);
@@ -189,7 +200,7 @@ function updateProjectTabs() {
         container.appendChild(tab);
     });
 
-    console.log(`📑 Onglets mis à jour : ${projects.length} projet(s)`);
+    console.log(`📑 Onglets mis à jour : ${projectsWithData.length} projet(s) visible(s)`);
 }
 
 /**

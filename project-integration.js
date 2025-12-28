@@ -180,6 +180,17 @@ function updateAllInterface() {
 
     console.log(`🔄 Mise à jour de l'interface pour : ${project.name}`);
 
+    // Initialiser la configuration multi-canaux si disponible
+    if (project.state.availableColumns && project.state.availableColumns.length > 0) {
+        console.log(`🎨 Initialisation multi-canaux : ${project.state.availableColumns.length} canaux`);
+        if (typeof initChannelConfig === 'function') {
+            initChannelConfig();
+        }
+        if (typeof updateColumnSelector === 'function') {
+            updateColumnSelector();
+        }
+    }
+
     // Mettre à jour les graphiques
     if (typeof updateTimeChart === 'function') updateTimeChart();
     if (typeof updateStats === 'function') updateStats();

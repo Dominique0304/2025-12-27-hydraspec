@@ -104,12 +104,17 @@ function computeFFT(signal) {
  */
 function restoreSpectrogramDisplay() {
     if (!appState.spectroData || appState.spectroData.length === 0) {
-        console.log("Aucune donnée spectrogramme à restaurer");
-        // Vider le graphique
-        if (window.globalCharts && window.globalCharts.spectro) {
-            window.globalCharts.spectro.data.datasets[0].data = [];
-            window.globalCharts.spectro.data.datasets[0].pointBackgroundColor = [];
-            window.globalCharts.spectro.update('none');
+        console.log("Aucune donnée spectrogramme à restaurer, calcul initial...");
+        // Si pas de données, calculer le spectrogramme
+        if (appState.fullDataPressure && appState.fullDataPressure.length > 0) {
+            updateSpectrogram();
+        } else {
+            // Vider le graphique si pas de données
+            if (window.globalCharts && window.globalCharts.spectro) {
+                window.globalCharts.spectro.data.datasets[0].data = [];
+                window.globalCharts.spectro.data.datasets[0].pointBackgroundColor = [];
+                window.globalCharts.spectro.update('none');
+            }
         }
         return;
     }

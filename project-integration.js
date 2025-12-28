@@ -180,7 +180,7 @@ function updateProjectTabs() {
             border-radius: 4px;
             cursor: pointer;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             transition: background 0.2s;
         `;
@@ -189,17 +189,17 @@ function updateProjectTabs() {
         // Icône
         const icon = document.createElement('i');
         icon.className = 'fas fa-file-alt';
-        icon.style.cssText = 'width: 16px; font-size: 0.9rem;';
+        icon.style.cssText = 'width: 16px; font-size: 0.9rem; margin-top: 2px;';
 
-        // Nom du projet
+        // Nom du projet (avec retour à la ligne si trop long)
         const name = document.createElement('span');
         name.textContent = project.name;
-        name.style.cssText = 'flex: 1; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+        name.style.cssText = 'flex: 1; font-size: 0.85rem; word-wrap: break-word; line-height: 1.3;';
 
         // Bouton de fermeture
         const closeBtn = document.createElement('span');
         closeBtn.innerHTML = '×';
-        closeBtn.style.cssText = 'font-size: 1.2rem; font-weight: bold; opacity: 0.7; cursor: pointer;';
+        closeBtn.style.cssText = 'font-size: 1.2rem; font-weight: bold; opacity: 0.7; cursor: pointer; margin-top: -2px;';
         closeBtn.onclick = (e) => {
             e.stopPropagation();
             closeProjectTab(project.id, e);

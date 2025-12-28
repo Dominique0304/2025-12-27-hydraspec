@@ -129,21 +129,21 @@
                 <input type="file" id="projectInput" style="display:none" accept=".hsp"
                     onchange="handleProjectUpload(this)">
 
-
-
-                <h3 id="acquisition-header" onclick="toggleAcquisition()" style="cursor:pointer; padding:10px; background:var(--bg-secondary); border-radius:4px; border-left:4px solid var(--accent-blue);">
+                <!-- Bouton avec nom du fichier actif -->
+                <h3 id="acquisition-header" onclick="toggleAcquisition()" style="cursor:pointer; padding:10px; background:var(--bg-secondary); border-radius:4px; border-left:4px solid var(--accent-blue); margin-top:8px;">
                     <i class="fas fa-file"></i> <span id="acquisition-title">Exemple</span>
                     <i id="acquisition-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
                 </h3>
 
                 <!-- Liste des projets (accordéon) -->
-                <div id="acquisition-content" style="display:none; padding:8px 0;">
+                <div id="acquisition-content" style="display:none; padding:4px 0;">
                     <div id="project-list-container" style="max-height:200px; overflow-y:auto;">
                         <!-- Liste des projets sera ajoutée dynamiquement ici -->
                     </div>
                 </div>
+            </div>
 
-                <!-- Canal -->
+            <!-- Canal -->
                 <div class="control-group">
                     <h3 id="canal-header" onclick="toggleCanal()" style="cursor:pointer;">
                         <i class="fas fa-signal"></i> Canal

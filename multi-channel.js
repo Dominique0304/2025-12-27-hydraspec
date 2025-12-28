@@ -897,6 +897,23 @@ function autoPresetYScales() {
     }
 }
 
+// Reset zoom complet : dézoomer X au maximum + Auto Groupé sur Y
+function resetZoomAndAutoGroup() {
+    console.log("🔄 Reset zoom complet : X + Auto Groupé");
+
+    // 1. Réinitialiser le zoom X au maximum (toute la durée d'enregistrement)
+    const chart = appState.charts.time;
+    if (chart && appState.fullDataTime.length) {
+        const t = appState.fullDataTime;
+        chart.options.scales.x.min = t[0];
+        chart.options.scales.x.max = t[t.length - 1];
+        console.log("🔍 Zoom X réinitialisé: 0 à " + t[t.length - 1].toFixed(2) + " sec");
+    }
+
+    // 2. Appliquer Auto Groupé sur les axes Y
+    autoPresetYScales();
+}
+
 // Auto-preset intelligent par CANAL (applique individuellement à chaque canal)
 function autoPresetYScalesPerChannel() {
     console.log("🎯 Auto-Preset Canal: Analyse par canal individuel...");

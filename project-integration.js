@@ -856,6 +856,16 @@ async function handleFileUpload_POO(input) {
                         autoPresetYScales();
                     }
 
+                    // Réinitialiser le zoom X au maximum (toute la durée d'enregistrement)
+                    const chart = appState.charts.time;
+                    if (chart && appState.fullDataTime.length) {
+                        const t = appState.fullDataTime;
+                        chart.options.scales.x.min = t[0];
+                        chart.options.scales.x.max = t[t.length - 1];
+                        chart.update('none');
+                        console.log("🔍 Zoom X réinitialisé: 0 à " + t[t.length - 1].toFixed(2) + " sec");
+                    }
+
                     // Centrer les curseurs
                     setTimeout(() => {
                         if (typeof centerCursors === 'function') {

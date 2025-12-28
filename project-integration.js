@@ -843,12 +843,35 @@ async function handleFileUpload_POO(input) {
         // Mettre à jour l'interface
         updateAllInterface();
 
-        // Centrer les curseurs sur les données visibles
+        // Ouvrir le configurateur, appliquer auto-groupé, puis fermer (invisible pour l'utilisateur)
         setTimeout(() => {
-            if (typeof centerCursors === 'function') {
-                centerCursors();
+            if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
+                console.log("🔧 Auto-config: Ouverture du configurateur...");
+                openChannelConfig();
+
+                // Attendre que le DOM soit prêt, puis appliquer auto-groupé PENDANT que c'est ouvert
+                setTimeout(() => {
+                    if (typeof autoPresetYScales === 'function') {
+                        console.log("📊 Application du preset 'Auto Groupé' (configurateur ouvert)...");
+                        autoPresetYScales();
+                    }
+
+                    // Centrer les curseurs
+                    setTimeout(() => {
+                        if (typeof centerCursors === 'function') {
+                            console.log("🎯 Centrage des curseurs...");
+                            centerCursors();
+                        }
+
+                        // Fermer le configurateur après tout
+                        setTimeout(() => {
+                            closeChannelConfig();
+                            console.log("✅ Auto-config terminée (configurateur fermé)");
+                        }, 100);
+                    }, 100);
+                }, 200);
             }
-        }, 200);
+        }, 300);
 
         setStatus(`Fichier chargé : ${project.name}`);
 

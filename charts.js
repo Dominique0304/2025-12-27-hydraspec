@@ -1127,7 +1127,7 @@ function updateFFTChartWithResults(fftResults) {
             ticks: {
                 color: fftData.config.color,
                 font: {
-                    size: 12,
+                    size: window.chartFontSize,
                     weight: 'normal'
                 }
             },
@@ -1136,7 +1136,7 @@ function updateFFTChartWithResults(fftResults) {
                 text: fftData.config.label + (fftData.config.unit ? ` (${fftData.config.unit})` : ''),
                 color: fftData.config.color,
                 font: {
-                    size: 13,
+                    size: window.chartFontSize,
                     weight: 'normal'
                 }
             }

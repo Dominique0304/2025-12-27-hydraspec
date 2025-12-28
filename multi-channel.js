@@ -634,7 +634,7 @@ function updateTimeChartMultiChannel() {
             ticks: {
                 color: config.color,
                 font: {
-                    size: 12,
+                    size: window.chartFontSize,
                     weight: 'normal'
                 }
             },
@@ -643,7 +643,7 @@ function updateTimeChartMultiChannel() {
                 text: config.label + (config.unit ? ` (${config.unit})` : ''),
                 color: config.color,
                 font: {
-                    size: 13,
+                    size: window.chartFontSize,
                     weight: 'normal'
                 }
             }

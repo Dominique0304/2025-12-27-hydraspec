@@ -535,6 +535,13 @@ function saveAllToolsState(project) {
         console.log(`📍 Curseurs sauvegardés : ${appState.cursorStart}s à ${appState.cursorEnd}s`);
     }
 
+    // CRITIQUE : Sauvegarder les données du spectrogramme
+    if (typeof appState !== 'undefined' && appState.spectroData !== undefined) {
+        project.state.spectroData = appState.spectroData;
+        const count = appState.spectroData ? appState.spectroData.length : 0;
+        console.log(`📊 Spectrogramme sauvegardé : ${count} points`);
+    }
+
     console.log(`✅ États d'outils sauvegardés pour ${project.name}`);
 }
 
@@ -788,11 +795,21 @@ function updateAllInterface() {
     appState.cursorEnd = project.state.cursorEnd;
     console.log(`🎯 Curseurs synchronisés : ${appState.cursorStart}s à ${appState.cursorEnd}s`);
 
+    // CRITIQUE : Synchroniser les données du spectrogramme
+    appState.spectroData = project.state.spectroData;
+    console.log(`📊 Spectrogramme synchronisé : ${appState.spectroData ? appState.spectroData.length + ' points' : 'aucune donnée'}`);
+
     // Mettre à jour les graphiques
     if (typeof updateTimeChart === 'function') updateTimeChart();
     if (typeof updateStats === 'function') updateStats();
     if (typeof performAnalysis === 'function') performAnalysis();
-    if (typeof updateSpectrogram === 'function') updateSpectrogram();
+
+    // Restaurer le spectrogramme existant ou le recalculer si nécessaire
+    if (typeof restoreSpectrogramDisplay === 'function') {
+        restoreSpectrogramDisplay();
+    } else if (typeof updateSpectrogram === 'function') {
+        updateSpectrogram();
+    }
 
     // Mettre à jour les onglets
     if (typeof updateProjectTabs === 'function') updateProjectTabs();

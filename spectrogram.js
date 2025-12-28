@@ -98,6 +98,65 @@ function computeFFT(signal) {
     return { re, im };
 }
 
+/**
+ * Restaure l'affichage du spectrogramme depuis les données déjà calculées
+ * Utilisé lors du changement de projet pour éviter de recalculer
+ */
+function restoreSpectrogramDisplay() {
+    if (!appState.spectroData || appState.spectroData.length === 0) {
+        console.log("Aucune donnée spectrogramme à restaurer");
+        // Vider le graphique
+        if (window.globalCharts && window.globalCharts.spectro) {
+            window.globalCharts.spectro.data.datasets[0].data = [];
+            window.globalCharts.spectro.data.datasets[0].pointBackgroundColor = [];
+            window.globalCharts.spectro.update('none');
+        }
+        return;
+    }
+
+    console.log(`🔄 Restauration spectrogramme : ${appState.spectroData.length} points`);
+
+    const freqMax = parseFloat(document.getElementById('stft-freq-max').value);
+
+    // Filtrer par fréquence maximale et appliquer les couleurs
+    const filteredData = [];
+    const colors = [];
+
+    let maxVal = 0;
+    for (const point of appState.spectroData) {
+        if (point.y <= freqMax && point.v > maxVal) {
+            maxVal = point.v;
+        }
+    }
+
+    for (const point of appState.spectroData) {
+        if (point.y <= freqMax) {
+            filteredData.push({
+                x: point.x,
+                y: point.y,
+                v: point.v
+            });
+
+            // Calcul de la couleur basée sur l'amplitude
+            const normalized = point.v / maxVal;
+            colors.push(getColorForValue(normalized));
+        }
+    }
+
+    // Mise à jour du graphique
+    if (window.globalCharts && window.globalCharts.spectro) {
+        window.globalCharts.spectro.data.datasets[0].data = filteredData;
+        window.globalCharts.spectro.data.datasets[0].pointBackgroundColor = colors;
+
+        // Mettre à jour le titre de l'axe Y avec le nom du canal
+        const currentChannel = appState.availableColumns && appState.availableColumns[appState.currentColumnIndex];
+        const channelName = currentChannel ? currentChannel.label : '';
+        window.globalCharts.spectro.options.scales.y.title.text = channelName ? `${channelName} (Hz)` : '(Hz)';
+
+        window.globalCharts.spectro.update('none');
+    }
+}
+
 function updateSpectrogram() {
 
     if (!appState.fullDataPressure.length) {
@@ -149,15 +208,17 @@ function updateSpectrogram() {
         }
 
         // Mise à jour du graphique
-        appState.charts.spectro.data.datasets[0].data = filteredData;
-        appState.charts.spectro.data.datasets[0].pointBackgroundColor = colors;
+        if (window.globalCharts && window.globalCharts.spectro) {
+            window.globalCharts.spectro.data.datasets[0].data = filteredData;
+            window.globalCharts.spectro.data.datasets[0].pointBackgroundColor = colors;
 
-        // Mettre à jour le titre de l'axe Y avec le nom du canal
-        const currentChannel = appState.availableColumns && appState.availableColumns[appState.currentColumnIndex];
-        const channelName = currentChannel ? currentChannel.label : '';
-        appState.charts.spectro.options.scales.y.title.text = channelName ? `${channelName} (Hz)` : '(Hz)';
+            // Mettre à jour le titre de l'axe Y avec le nom du canal
+            const currentChannel = appState.availableColumns && appState.availableColumns[appState.currentColumnIndex];
+            const channelName = currentChannel ? currentChannel.label : '';
+            window.globalCharts.spectro.options.scales.y.title.text = channelName ? `${channelName} (Hz)` : '(Hz)';
 
-        appState.charts.spectro.update();
+            window.globalCharts.spectro.update();
+        }
 
         setStatus("Spectrogramme calculé.");
     }, 100);

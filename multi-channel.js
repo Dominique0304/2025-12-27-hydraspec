@@ -546,8 +546,12 @@ function updateTimeChartMultiChannel() {
     const visibleChannels = appState.channelConfig.filter(config => config.visible);
 
     if (visibleChannels.length === 0) {
-        console.log("⚠️ Aucun canal visible");
-        return false;
+        console.log("⚠️ Aucun canal visible - effacement du graphique");
+        // Effacer complètement le graphique
+        chart.data.labels = [];
+        chart.data.datasets = [];
+        chart.update('none');
+        return true; // Retourner true car on a bien géré le cas multi-canaux
     }
 
     // Déterminer les données de l'axe X

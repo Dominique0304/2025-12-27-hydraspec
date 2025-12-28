@@ -59,24 +59,21 @@
                     <i class="fas fa-folder"></i> <span data-i18n="file">Fichier</span> <i class="fas fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
-                    <button onclick="document.getElementById('fileInput').click()">
-                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="load_csv">Importer .csv</span>
-                    </button>
                     <button onclick="document.getElementById('projectInput').click()">
-                        <i class="fas fa-project-diagram" style="width:20px;"></i> <span data-i18n="open_proj">Ouvrir
-                            Projet (.hsp)</span>
+                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="open_proj">Ouvrir fichier .hsp</span>
                     </button>
                     <button onclick="initSaveProject()">
-                        <i class="fas fa-save" style="width:20px;"></i> <span data-i18n="save_proj">Enregistrer
-                            Projet</span>
+                        <i class="fas fa-save" style="width:20px;"></i> <span data-i18n="save_proj">Enregistrer fichier .HSP</span>
                     </button>
                     <div style="border-top:1px solid var(--border-color); margin:5px 0;"></div>
+                    <button onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-file-import" style="width:20px;"></i> <span data-i18n="load_csv">Importer fichier .csv</span>
+                    </button>
                     <button onclick="initExportData()">
-                        <i class="fas fa-file-alt" style="width:20px;"></i> <span data-i18n="export_csv">Exporter .CSV</span>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="export_csv">Exporter fichier .csv</span>
                     </button>
                     <button onclick="initCaptureScreenshot()">
-                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="export_png">Exporter
-                            PNG</span>
+                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="export_png">Exporter PNG</span>
                     </button>
                 </div>
             </div>

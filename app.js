@@ -2,10 +2,10 @@ console.log("Chargement de l'application...");
 // --- TRANSLATIONS ---
 const i18n = {
     fr: {
-        tools: "Outils",
-        load_csv: "Charger fichier .csv",
-        open_proj: "Ouvrir Projet (.hsp)",
-        save_proj: "Enregistrer Projet",
+        file: "Fichier",
+        load_csv: "Importer fichier .csv",
+        open_proj: "Ouvrir fichier .hsp",
+        save_proj: "Enregistrer fichier .HSP",
         generator: "Générateur",
         export_csv: "Exporter fichier .csv",
         export_png: "Exporter PNG",
@@ -240,10 +240,10 @@ const i18n = {
         `
     },
     en: {
-        tools: "Tools",
-        load_csv: "Load .csv File",
-        open_proj: "Open Project (.hsp)",
-        save_proj: "Save Project",
+        file: "File",
+        load_csv: "Import .csv File",
+        open_proj: "Open .hsp File",
+        save_proj: "Save .HSP File",
         generator: "Generator",
         export_csv: "Export .csv File",
         export_png: "Export PNG",
@@ -478,12 +478,12 @@ const i18n = {
         `
     },
     de: {
-        tools: "Werkzeuge",
-        load_csv: ".csv Datei laden",
-        open_proj: "Projekt öffnen (.hsp)",
-        save_proj: "Projekt speichern",
+        file: "Datei",
+        load_csv: ".csv Datei importieren",
+        open_proj: ".hsp Datei öffnen",
+        save_proj: ".HSP Datei speichern",
         generator: "Generator",
-        export_csv: ".csv exportieren",
+        export_csv: ".csv Datei exportieren",
         export_png: "PNG exportieren",
         settings: "Einstellungen",
         help: "Hilfe",

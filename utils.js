@@ -374,23 +374,61 @@ async function performExportCsv(filename) {
     const startIdx = 0;
     const endIdx = appState.fullDataTime.length;
 
-    // Utiliser les noms de colonnes originaux ou par défaut
-    const timeColName = "Zeit [s]";  // Format européen standard
-    const pressureColName = appState.yAxisLabel || "S1: P1 [bar]";  // Utiliser le label de l'axe Y
+    // Vérifier si nous avons des données multi-canaux
+    const hasMultiChannel = appState.allColumnData &&
+                           appState.availableColumns &&
+                           appState.availableColumns.length > 0;
 
-    // Header avec format européen (crochets, pas parenthèses)
-    let content = `${timeColName};${pressureColName}\n`;
+    let content = "";
 
-    // Exporter les données avec format européen (virgule décimale)
-    for (let i = startIdx; i < endIdx; i++) {
-        // Convertir ms en s (diviser par 1000) et utiliser virgule comme séparateur décimal
-        const timeInSeconds = (appState.fullDataTime[i] / 1000).toFixed(3).replace('.', ',');
-        const pressure = appState.fullDataPressure[i].toFixed(2).replace('.', ',');
-        content += `${timeInSeconds};${pressure}\n`;
+    if (hasMultiChannel) {
+        // MODE MULTI-CANAUX : Exporter toutes les colonnes
+        console.log(`📊 Export multi-canaux : ${appState.availableColumns.length} canaux`);
+
+        // Construire le header avec tous les noms de colonnes
+        const timeColName = "Zeit [s]";
+        const columnNames = appState.availableColumns.map(col => {
+            // Utiliser le label original de la colonne (ex: "S1: P1 [bar]")
+            return col.label + (col.unit ? ` [${col.unit}]` : '');
+        });
+
+        content = timeColName + ";" + columnNames.join(";") + "\n";
+
+        // Exporter les données ligne par ligne
+        for (let i = startIdx; i < endIdx; i++) {
+            // Temps en secondes avec format européen (virgule)
+            const timeInSeconds = (appState.fullDataTime[i] / 1000).toFixed(3).replace('.', ',');
+
+            // Toutes les valeurs des colonnes avec format européen
+            const values = appState.availableColumns.map(col => {
+                const value = appState.allColumnData[col.index][i];
+                return value.toFixed(2).replace('.', ',');
+            });
+
+            content += timeInSeconds + ";" + values.join(";") + "\n";
+        }
+
+        setStatus(`Fichier CSV exporté : ${appState.availableColumns.length} canaux, ${endIdx} points`);
+
+    } else {
+        // MODE MONO-CANAL : Export simple (compatibilité)
+        console.log("📊 Export mono-canal");
+
+        const timeColName = "Zeit [s]";
+        const pressureColName = appState.yAxisLabel || "S1: P1 [bar]";
+
+        content = `${timeColName};${pressureColName}\n`;
+
+        for (let i = startIdx; i < endIdx; i++) {
+            const timeInSeconds = (appState.fullDataTime[i] / 1000).toFixed(3).replace('.', ',');
+            const pressure = appState.fullDataPressure[i].toFixed(2).replace('.', ',');
+            content += `${timeInSeconds};${pressure}\n`;
+        }
+
+        setStatus("Fichier CSV exporté (1 canal, toutes les données, format européen).");
     }
 
     await downloadBlob(new Blob([content], { type: "text/csv;charset=utf-8" }), `${filename}.csv`);
-    setStatus("Fichier CSV exporté (toutes les données, format européen).");
 }
 
 function performCapture(filename) {

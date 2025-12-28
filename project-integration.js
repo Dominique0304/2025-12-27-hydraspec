@@ -140,6 +140,147 @@ function onProjectSwitched(project) {
 }
 
 // ========================================
+// INTERFACE : GESTION DES ONGLETS
+// ========================================
+
+/**
+ * Met à jour la barre d'onglets avec tous les projets ouverts
+ */
+function updateProjectTabs() {
+    const container = document.getElementById('project-tabs-container');
+    if (!container) {
+        console.warn("⚠️ Container d'onglets non trouvé");
+        return;
+    }
+
+    // Vider le container
+    container.innerHTML = '';
+
+    // Récupérer tous les projets
+    const projects = projectManager.getAllProjects();
+
+    if (projects.length === 0) {
+        container.innerHTML = '<div style="padding: 8px; color: var(--text-muted); font-size: 0.85rem; font-style: italic;">Aucun projet ouvert</div>';
+        return;
+    }
+
+    // Créer un onglet pour chaque projet
+    projects.forEach(project => {
+        const tab = document.createElement('div');
+        tab.className = 'project-tab' + (project.isActive ? ' active' : '');
+        tab.setAttribute('data-project-id', project.id);
+        tab.setAttribute('title', project.name);
+
+        // Icône du projet
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-file-alt';
+
+        // Nom du projet
+        const name = document.createElement('span');
+        name.className = 'project-tab-name';
+        name.textContent = project.name;
+
+        // Bouton de fermeture
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'project-tab-close';
+        closeBtn.innerHTML = '×';
+        closeBtn.onclick = (e) => closeProjectTab(project.id, e);
+
+        // Assembler l'onglet
+        tab.appendChild(icon);
+        tab.appendChild(name);
+        tab.appendChild(closeBtn);
+
+        // Événement de clic sur l'onglet (sauf sur le bouton de fermeture)
+        tab.onclick = (e) => {
+            if (!e.target.classList.contains('project-tab-close')) {
+                switchToProjectTab(project.id);
+            }
+        };
+
+        container.appendChild(tab);
+    });
+
+    console.log(`📑 Onglets mis à jour : ${projects.length} projet(s)`);
+}
+
+/**
+ * Bascule vers un projet en cliquant sur son onglet
+ * @param {string} projectId - ID du projet
+ */
+function switchToProjectTab(projectId) {
+    if (!projectManager.switchTo(projectId)) {
+        console.error(`❌ Impossible de basculer vers le projet ${projectId}`);
+        return;
+    }
+
+    const project = projectManager.getActive();
+    console.log(`🔄 Basculé vers : ${project.name}`);
+
+    // Mettre à jour l'interface
+    updateAllInterface();
+}
+
+/**
+ * Ferme un projet depuis son onglet
+ * @param {string} projectId - ID du projet à fermer
+ * @param {Event} event - Événement de clic
+ */
+function closeProjectTab(projectId, event) {
+    event.stopPropagation();
+
+    const project = projectManager.getProject(projectId);
+    if (!project) {
+        console.warn(`⚠️ Projet ${projectId} introuvable`);
+        return;
+    }
+
+    // Demander confirmation si c'est le seul projet
+    const projectCount = projectManager.getProjectCount();
+    if (projectCount === 1) {
+        const confirmClose = confirm(`Voulez-vous vraiment fermer le projet "${project.name}" ?\n\nAttention : C'est le dernier projet ouvert.`);
+        if (!confirmClose) return;
+    }
+
+    const projectName = project.name;
+    projectManager.deleteProject(projectId);
+
+    console.log(`🗑️ Projet fermé : ${projectName}`);
+    setStatus(`Projet fermé : ${projectName}`);
+}
+
+/**
+ * Crée un nouveau projet vide
+ */
+function createNewProject() {
+    const projectName = prompt("Nom du nouveau projet :", `Nouveau Projet ${new Date().toLocaleTimeString()}`);
+
+    if (!projectName || projectName.trim() === '') {
+        console.log("⚠️ Création de projet annulée");
+        return;
+    }
+
+    const project = projectManager.createProject(projectName.trim());
+
+    // Générer un signal par défaut pour avoir des données
+    project.generateSignal({
+        fs: 1000,
+        duration: 10,
+        noise: 0.1,
+        dc: 5,
+        frequencies: [
+            { freq: 50, amp: 5, phase: 0 }
+        ]
+    });
+
+    console.log(`✅ Nouveau projet créé : ${project.name}`);
+
+    // Mettre à jour l'interface
+    updateAllInterface();
+    setStatus(`Nouveau projet créé : ${project.name}`);
+}
+
+// ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
 
@@ -206,6 +347,9 @@ function updateAllInterface() {
     if (typeof updateStats === 'function') updateStats();
     if (typeof performAnalysis === 'function') performAnalysis();
     if (typeof updateSpectrogram === 'function') updateSpectrogram();
+
+    // Mettre à jour les onglets
+    if (typeof updateProjectTabs === 'function') updateProjectTabs();
 
     // Mettre à jour les champs de configuration
     if (document.getElementById('display-fs-config')) {
@@ -332,6 +476,7 @@ function initPOOSystem() {
     // Charger les données du projet par défaut dans l'interface
     setTimeout(() => {
         updateAllInterface();
+        updateProjectTabs();
     }, 100);
 
     console.log("✅ Système POO initialisé avec succès");
@@ -342,5 +487,7 @@ function initPOOSystem() {
 window.projectManager = projectManager;
 window.getActiveProject = getActiveProject;
 window.initPOOSystem = initPOOSystem;
+window.updateProjectTabs = updateProjectTabs;
+window.createNewProject = createNewProject;
 
 console.log("📦 Module project-integration.js chargé");

@@ -530,9 +530,21 @@ function restoreAllToolsState(project) {
     console.log(`🔄 Restauration des états d'outils pour : ${project.name}`);
 
     // Restaurer Intervals
-    if (typeof intervals !== 'undefined' && project.toolsState.intervals) {
+    if (typeof intervals !== 'undefined' && typeof Interval !== 'undefined' && project.toolsState.intervals) {
         intervals.length = 0; // Vider le tableau
-        intervals.push(...JSON.parse(JSON.stringify(project.toolsState.intervals)));
+
+        // Recréer les instances de la classe Interval
+        project.toolsState.intervals.forEach(data => {
+            const interval = new Interval(data.id, data.startTime, data.endTime, data.comment, data.yPosition);
+            interval.color = data.color;
+            interval.visible = data.visible;
+            interval.fontSize = data.fontSize;
+            interval.fontWeight = data.fontWeight;
+            interval.fontStyle = data.fontStyle;
+            interval.textDecoration = data.textDecoration;
+            intervals.push(interval);
+        });
+
         isCreatingInterval = project.toolsState.isCreatingInterval;
         nextIntervalId = project.toolsState.nextIntervalId;
 
@@ -566,9 +578,29 @@ function restoreAllToolsState(project) {
     }
 
     // Restaurer Annotations
-    if (typeof annotations !== 'undefined' && project.toolsState.annotations) {
+    if (typeof annotations !== 'undefined' && typeof Annotation !== 'undefined' && project.toolsState.annotations) {
         annotations.length = 0; // Vider le tableau
-        annotations.push(...JSON.parse(JSON.stringify(project.toolsState.annotations)));
+
+        // Recréer les instances de la classe Annotation
+        project.toolsState.annotations.forEach(data => {
+            const annotation = new Annotation(data.id, data.time, data.yValue, data.text, data.color, data.isFreeFloating);
+            annotation.width = data.width;
+            annotation.height = data.height;
+            annotation.offsetX = data.offsetX;
+            annotation.offsetY = data.offsetY;
+            annotation.pinned = data.pinned;
+            annotation.visible = data.visible;
+            annotation.columnIndex = data.columnIndex;
+            annotation.markerRadius = data.markerRadius;
+            annotation.backgroundStyle = data.backgroundStyle;
+            annotation.fontSize = data.fontSize;
+            annotation.fontWeight = data.fontWeight;
+            annotation.fontStyle = data.fontStyle;
+            annotation.textDecoration = data.textDecoration;
+            annotation.zIndex = data.zIndex;
+            annotations.push(annotation);
+        });
+
         isCreatingAnnotation = project.toolsState.isCreatingAnnotation;
         annotationsVisible = project.toolsState.annotationsVisible;
 
@@ -626,9 +658,20 @@ function restoreAllToolsState(project) {
     }
 
     // Restaurer Diff Canal
-    if (typeof diffCanalIntervals !== 'undefined' && project.toolsState.diffCanal.intervals) {
+    if (typeof diffCanalIntervals !== 'undefined' && typeof DiffCanalInterval !== 'undefined' && project.toolsState.diffCanal.intervals) {
         diffCanalIntervals.length = 0;
-        diffCanalIntervals.push(...JSON.parse(JSON.stringify(project.toolsState.diffCanal.intervals)));
+
+        // Recréer les instances de la classe DiffCanalInterval
+        project.toolsState.diffCanal.intervals.forEach(data => {
+            const diffInterval = new DiffCanalInterval(data.id, data.channelIndex, data.point1, data.point2);
+            diffInterval.labelOffset = data.labelOffset;
+            diffInterval.horizontalLabelOffsetX = data.horizontalLabelOffsetX;
+            diffInterval.verticalLabelOffsetY = data.verticalLabelOffsetY;
+            diffInterval.visible = data.visible;
+            diffInterval.color = data.color;
+            diffCanalIntervals.push(diffInterval);
+        });
+
         nextDiffCanalId = project.toolsState.diffCanal.nextId;
 
         // Mettre à jour l'affichage

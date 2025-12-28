@@ -559,20 +559,6 @@
                             </button>
                         </div>
 
-                        <!-- Boutons Undo/Redo -->
-                        <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <button onclick="handleUndo()" id="undo-btn"
-                                    title="Annuler (Ctrl+Z)"
-                                    style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem; transition: all 0.2s;">
-                                <i class="fas fa-undo"></i> Annuler
-                            </button>
-                            <button onclick="handleRedo()" id="redo-btn"
-                                    title="Refaire (Ctrl+Y)"
-                                    style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem; transition: all 0.2s;">
-                                <i class="fas fa-redo"></i> Refaire
-                            </button>
-                        </div>
-
                         <!-- Liste des annotations -->
                         <div style="margin-bottom:10px;">
                             <div style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border-color);">
@@ -844,7 +830,7 @@
                     <label for="font-size-input">Taille Police (px)</label>
                     <input type="number" id="font-size-input" value="12" min="8" max="24" step="1"
                            onchange="updateChartFontSize(this.value)"
-                           style="width:100%; margin-top:5px; padding:6px;">
+                           style="width:60px; margin-top:5px; padding:6px;">
                     <small style="color: var(--text-muted); font-size: 0.8em;">Taille des textes dans les graphiques (8-24px)</small>
                 </div>
             </div>

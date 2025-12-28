@@ -1626,6 +1626,9 @@ function saveAnnotations() {
 
     console.log("✅ Annotations saved to appState:", appState.annotations.length);
 
+    // Mettre à jour la liste des annotations dans la sidebar
+    updateAnnotationsList();
+
     // NOTE: Ne pas mettre à jour les notes utilisateur automatiquement
     // Les annotations sont déjà visibles dans les fenêtres flottantes
     // updateUserNotesWithAnnotations();
@@ -1661,6 +1664,7 @@ function loadAnnotations(savedAnnotations) {
 
     console.log("✅ Loaded", annotations.length, "annotations successfully");
     updateAnnotationsDisplay();
+    updateAnnotationsList();
 }
 
 // Mettre à jour les notes utilisateur avec le résumé des annotations
@@ -1806,12 +1810,134 @@ document.addEventListener('DOMContentLoaded', function() {
     addAnnotationToolsToMenu();
 });
 
+// Mettre à jour la liste des annotations dans la sidebar
+function updateAnnotationsList() {
+    const listContainer = document.getElementById('annotations-list');
+    if (!listContainer) return;
+
+    // Vider la liste
+    listContainer.innerHTML = '';
+
+    // Si aucune annotation
+    if (annotations.length === 0) {
+        listContainer.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">Aucune annotation</div>';
+        return;
+    }
+
+    // Ajouter chaque annotation
+    annotations.forEach((ann, index) => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+            padding: 6px;
+            margin-bottom: 4px;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+
+        // Récupérer le nom du canal
+        let canalName = 'Libre';
+        if (ann.columnIndex >= 0 && appState.channelConfig && appState.channelConfig[ann.columnIndex]) {
+            canalName = appState.channelConfig[ann.columnIndex].label || `Canal ${ann.columnIndex + 1}`;
+        }
+
+        // Tronquer le texte si trop long
+        const displayText = ann.text.length > 30 ? ann.text.substring(0, 30) + '...' : ann.text;
+
+        item.innerHTML = `
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:${ann.color};">★</span>
+                <span style="flex:1; font-weight:bold; color:var(--text-muted); font-size:0.75rem;">${canalName}</span>
+                <button onclick="event.stopPropagation(); jumpToAnnotation('${ann.id}')"
+                        style="padding:2px 6px; background:var(--accent-green); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.7rem;"
+                        title="Voir">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button onclick="event.stopPropagation(); editAnnotationFromList('${ann.id}')"
+                        style="padding:2px 6px; background:var(--accent-blue); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.7rem;"
+                        title="Éditer">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="event.stopPropagation(); deleteAnnotationFromList('${ann.id}')"
+                        style="padding:2px 6px; background:var(--accent-red); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.7rem;"
+                        title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div style="margin-top:4px; font-size:0.75rem; color:var(--text-main);">${displayText}</div>
+        `;
+
+        // Clic sur l'item pour centrer sur l'annotation
+        item.addEventListener('click', () => jumpToAnnotation(ann.id));
+
+        // Hover effect
+        item.addEventListener('mouseenter', () => {
+            item.style.background = 'var(--bg-secondary)';
+            item.style.borderColor = ann.color;
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.background = 'var(--bg-main)';
+            item.style.borderColor = 'var(--border-color)';
+        });
+
+        listContainer.appendChild(item);
+    });
+}
+
+// Aller à une annotation
+function jumpToAnnotation(annotationId) {
+    const ann = annotations.find(a => a.id === annotationId);
+    if (!ann) return;
+
+    // Centrer les curseurs autour de l'annotation
+    const duration = 2.0; // 2 secondes de part et d'autre
+    appState.cursorStart = Math.max(0, ann.time - duration);
+    appState.cursorEnd = Math.min(appState.fullDataTime[appState.fullDataTime.length - 1] / 1000, ann.time + duration);
+
+    // Mettre à jour les graphiques
+    updateTimeChart();
+    performAnalysis();
+    updateSpectrogram();
+}
+
+// Éditer une annotation depuis la liste
+function editAnnotationFromList(annotationId) {
+    const ann = annotations.find(a => a.id === annotationId);
+    if (!ann) return;
+
+    // Ouvrir la modale d'édition
+    openAnnotationEditModal(ann);
+}
+
+// Supprimer une annotation depuis la liste
+function deleteAnnotationFromList(annotationId) {
+    if (!confirm('Supprimer cette annotation ?')) return;
+
+    const index = annotations.findIndex(a => a.id === annotationId);
+    if (index === -1) return;
+
+    annotations.splice(index, 1);
+    appState.annotations = annotations;
+
+    updateAnnotationsDisplay();
+    updateAnnotationsList();
+
+    const chart = window.globalCharts.time;
+    if (chart && chart.update) {
+        chart.update('none');
+    }
+}
+
 // Fonction pour effacer toutes les annotations (utilisée lors du chargement de nouveaux fichiers)
 function clearAnnotations() {
     console.log("🗑️ Clearing", annotations.length, "annotations");
     annotations = [];
     appState.annotations = []; // Également vider appState
     updateAnnotationsDisplay();
+    updateAnnotationsList();
     const chart = appState.charts.time;
     if (chart && chart.update) {
         chart.update('none');

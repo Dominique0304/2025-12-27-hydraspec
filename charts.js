@@ -1299,8 +1299,11 @@ function updateChartFontSize(value) {
     // Mettre à jour Chart.js - Time Chart
     if (window.globalCharts && window.globalCharts.time) {
         const timeChart = window.globalCharts.time;
+        timeChart.options.scales.x.ticks.font = timeChart.options.scales.x.ticks.font || {};
         timeChart.options.scales.x.ticks.font.size = fontSize;
+        timeChart.options.scales.y.ticks.font = timeChart.options.scales.y.ticks.font || {};
         timeChart.options.scales.y.ticks.font.size = fontSize;
+        timeChart.options.scales.y.title.font = timeChart.options.scales.y.title.font || {};
         timeChart.options.scales.y.title.font.size = fontSize;
         timeChart.update('none');
     }

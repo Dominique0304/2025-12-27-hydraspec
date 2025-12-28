@@ -1151,24 +1151,25 @@ function updateAnnotationsDisplay() {
     const chart = appState.charts.time;
     if (!chart) return;
 
-    // Filtrer les annotations selon le canal actuel
-    const currentColumnIndex = appState.currentColumnIndex || 0;
-
-    // Créer les éléments d'annotation
+    // En mode multi-canaux, afficher TOUTES les annotations des canaux visibles
     annotations.forEach(annotation => {
-        // Vérifier si l'annotation correspond au canal actuel
-        const belongsToCurrentChannel = annotation.columnIndex === currentColumnIndex;
-        
-        // Masquer si canal différent OU si visibilité globale désactivée
-        if (!belongsToCurrentChannel || !annotationsVisible) {
-            annotation.visible = false;
-            return;
+        // Vérifier si le canal de l'annotation est visible
+        let channelVisible = true;
+        if (appState.channelConfig && annotation.columnIndex >= 0) {
+            const config = appState.channelConfig[annotation.columnIndex];
+            if (config) {
+                channelVisible = config.visible;
+            }
         }
-        
-        annotation.visible = true;
+
+        // Masquer si canal invisible OU si l'annotation est marquée invisible OU si visibilité globale désactivée
+        if (!channelVisible || !annotation.visible || !annotationsVisible) {
+            return; // Ne pas afficher cette annotation
+        }
+
         createAnnotationElement(annotation, chart, container);
     });
-    
+
     // Dessiner les lignes de connexion
     drawAnnotationConnectors(chart);
 }

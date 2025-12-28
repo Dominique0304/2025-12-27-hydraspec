@@ -757,6 +757,12 @@ function updateAllInterface() {
         appState.currentColumnIndex = project.state.currentColumnIndex;
         appState.yAxisLabel = project.state.yAxisLabel;
 
+        // CRITIQUE : Synchroniser les données brutes pour les graphiques
+        appState.fullDataTime = project.state.fullDataTime;
+        appState.fullDataPressure = project.state.fullDataPressure;
+        appState.fs = project.state.fs;
+        appState.timeIncrement = project.state.timeIncrement;
+
         // CRITIQUE : Restaurer la configuration multi-canaux si elle existe
         if (project.state.channelConfig && project.state.channelConfig.length > 0) {
             // La configuration existe déjà dans le projet, la restaurer

@@ -15,6 +15,12 @@ class Project {
         this.name = name;
         this.createdAt = new Date();
 
+        // Informations de fichier (pour système HSP)
+        this.fileType = null;        // 'csv' ou 'hsp'
+        this.fileName = null;        // Nom du fichier avec extension
+        this.filePath = null;        // Chemin complet (optionnel)
+        this.isModified = false;     // Fichier modifié depuis dernière sauvegarde
+
         // État isolé pour CE projet uniquement
         this.state = {
             // Données brutes
@@ -344,6 +350,42 @@ class Project {
             reader.onerror = () => reject(new Error("Erreur de lecture du fichier"));
             reader.readAsText(file);
         });
+    }
+
+    // ========================================
+    // GESTION DES FICHIERS HSP
+    // ========================================
+
+    /**
+     * Marque le projet comme modifié
+     */
+    markModified() {
+        if (this.fileType === 'hsp') {
+            this.isModified = true;
+            console.log(`📝 Projet ${this.name} marqué comme modifié`);
+        }
+    }
+
+    /**
+     * Marque le projet comme sauvegardé
+     */
+    markSaved() {
+        this.isModified = false;
+        console.log(`💾 Projet ${this.name} marqué comme sauvegardé`);
+    }
+
+    /**
+     * Définit les informations de fichier
+     * @param {string} fileType - 'csv' ou 'hsp'
+     * @param {string} fileName - Nom du fichier avec extension
+     * @param {string} filePath - Chemin complet (optionnel)
+     */
+    setFileInfo(fileType, fileName, filePath = null) {
+        this.fileType = fileType;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.isModified = false;
+        console.log(`📄 Fichier défini: ${fileType} - ${fileName}`);
     }
 
     /**

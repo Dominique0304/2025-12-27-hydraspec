@@ -1138,7 +1138,8 @@ function updateFFTChartWithResults(fftResults) {
                 font: {
                     size: window.chartFontSize,
                     weight: 'normal'
-                }
+                },
+                rotation: position === 'right' ? 90 : -90
             }
         };
     });

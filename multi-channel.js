@@ -645,7 +645,8 @@ function updateTimeChartMultiChannel() {
                 font: {
                     size: window.chartFontSize,
                     weight: 'normal'
-                }
+                },
+                rotation: config.yAxisPosition === 'right' ? 90 : -90
             }
         };
     });

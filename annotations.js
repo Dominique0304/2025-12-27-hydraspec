@@ -32,6 +32,44 @@ function getChannelUnitByIndex(channelIndex) {
     return unit || config.unit || appState.yAxisLabel || 'Bar';
 }
 
+// Détecter le canal sur lequel on a cliqué en fonction de la position Y
+function detectChannelFromYPosition(yPixel, chart, timeInSeconds) {
+    if (!appState.channelConfig || appState.channelConfig.length === 0) {
+        return 0; // Par défaut, canal 0
+    }
+
+    let closestChannel = 0;
+    let minDistance = Infinity;
+
+    // Parcourir tous les canaux visibles
+    appState.channelConfig.forEach((config, index) => {
+        if (!config.visible) return;
+
+        // Récupérer la valeur du canal à ce temps
+        const yValue = getValueOnCurve(index, timeInSeconds);
+        if (yValue === null || yValue === undefined) return;
+
+        // Récupérer l'échelle Y de ce canal
+        const yAxisID = config.yAxisID || `y-time${index}`;
+        const yScale = chart.scales[yAxisID];
+        if (!yScale) return;
+
+        // Convertir la valeur en pixels
+        const yValuePixel = yScale.getPixelForValue(yValue);
+
+        // Calculer la distance entre le clic et la courbe
+        const distance = Math.abs(yPixel - yValuePixel);
+
+        // Garder le canal le plus proche
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestChannel = index;
+        }
+    });
+
+    return closestChannel;
+}
+
 // Fonction pour obtenir la valeur Y réelle sur une courbe à un temps donné
 function getValueOnCurve(channelIndex, timeInSeconds) {
     const timeMs = timeInSeconds * 1000; // Convertir en ms
@@ -417,6 +455,7 @@ function setupAnnotationEvents(canvas) {
 
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
         // Récupérer les données du point cliqué
         const chart = appState.charts.time;
@@ -428,12 +467,22 @@ function setupAnnotationEvents(canvas) {
         if (timeValue && timeValue >= 0) {
             const timeInSeconds = timeValue / 1000; // conversion ms → s
 
-            // SNAP sur la courbe du canal actuel
-            const channelIndex = appState.currentColumnIndex || 0;
+            // Détecter le canal sur lequel on a cliqué en fonction de la position Y
+            const channelIndex = detectChannelFromYPosition(y, chart, timeInSeconds);
+            console.log(`📍 Annotation créée sur canal ${channelIndex}`);
+
+            // SNAP sur la courbe du canal détecté
             const yValue = getValueOnCurve(channelIndex, timeInSeconds);
 
             if (yValue !== null && yValue !== undefined) {
+                // Mettre à jour le canal actuel temporairement
+                const previousChannel = appState.currentColumnIndex;
+                appState.currentColumnIndex = channelIndex;
+
                 createAnnotation(timeInSeconds, yValue);
+
+                // Restaurer le canal précédent
+                appState.currentColumnIndex = previousChannel;
             }
         }
     });
@@ -1806,8 +1855,8 @@ function importAnnotations() {
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initAnnotationSystem, 1000); // Attendre que l'application soit chargée
 
-    // Ajouter les fonctions d'export/import au menu Outils
-    addAnnotationToolsToMenu();
+    // NOTE: Boutons export/import/effacer annotations désactivés (non souhaités par l'utilisateur)
+    // addAnnotationToolsToMenu();
 });
 
 // Mettre à jour la liste des annotations dans la sidebar
@@ -1851,9 +1900,9 @@ function updateAnnotationsList() {
             <div style="display:flex; align-items:center; gap:6px;">
                 <span style="color:${ann.color};">★</span>
                 <span style="flex:1; font-weight:bold; color:var(--text-muted); font-size:0.75rem;">${canalName}</span>
-                <button onclick="event.stopPropagation(); jumpToAnnotation('${ann.id}')"
+                <button onclick="event.stopPropagation(); toggleAnnotationVisibility('${ann.id}')"
                         style="padding:2px 6px; background:var(--accent-green); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.7rem;"
-                        title="Voir">
+                        title="Afficher/Masquer">
                     <i class="fas fa-eye"></i>
                 </button>
                 <button onclick="event.stopPropagation(); editAnnotationFromList('${ann.id}')"
@@ -1887,7 +1936,7 @@ function updateAnnotationsList() {
     });
 }
 
-// Aller à une annotation
+// Aller à une annotation (clic sur l'item)
 function jumpToAnnotation(annotationId) {
     const ann = annotations.find(a => a.id === annotationId);
     if (!ann) return;
@@ -1903,13 +1952,34 @@ function jumpToAnnotation(annotationId) {
     updateSpectrogram();
 }
 
-// Éditer une annotation depuis la liste
+// Basculer la visibilité d'une annotation (bouton vert)
+function toggleAnnotationVisibility(annotationId) {
+    const ann = annotations.find(a => a.id === annotationId);
+    if (!ann) return;
+
+    // Inverser la visibilité
+    ann.visible = !ann.visible;
+
+    // Sauvegarder et mettre à jour
+    saveAnnotations();
+    updateAnnotationsDisplay();
+    updateAnnotationsList();
+
+    const chart = window.globalCharts.time;
+    if (chart && chart.update) {
+        chart.update('none');
+    }
+
+    console.log(`👁️ Annotation ${ann.id} visibilité: ${ann.visible ? 'visible' : 'masquée'}`);
+}
+
+// Éditer une annotation depuis la liste (bouton bleu)
 function editAnnotationFromList(annotationId) {
     const ann = annotations.find(a => a.id === annotationId);
     if (!ann) return;
 
-    // Ouvrir la modale d'édition
-    openAnnotationEditModal(ann);
+    // Utiliser la fonction d'édition existante
+    editAnnotation(ann);
 }
 
 // Supprimer une annotation depuis la liste

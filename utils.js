@@ -196,6 +196,34 @@ async function handleFileUpload_POO(input) {
             updateSpectrogram();
         }
 
+        // Ouvrir et fermer automatiquement le configurateur multi-canaux
+        // Cela réinitialise certaines propriétés nécessaires au bon fonctionnement
+        if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
+            console.log("🔧 Auto-config: Ouverture/fermeture du configurateur...");
+            openChannelConfig();
+            setTimeout(() => {
+                closeChannelConfig();
+                console.log("✅ Auto-config terminée");
+            }, 50);
+        }
+
+        // Reset zoom pour améliorer l'expérience utilisateur
+        setTimeout(() => {
+            if (typeof resetAllZoom === 'function') {
+                console.log("🔍 Reset zoom...");
+                resetAllZoom();
+            } else {
+                if (typeof resetTimeZoom === 'function') resetTimeZoom();
+                if (typeof resetFreqZoom === 'function') resetFreqZoom();
+            }
+
+            // Appliquer le preset "Auto Groupé"
+            if (typeof autoPresetYScales === 'function') {
+                console.log("📊 Application du preset 'Auto Groupé'...");
+                autoPresetYScales();
+            }
+        }, 100);
+
         setStatus(`Fichier chargé : ${project.name}`);
 
         return project;

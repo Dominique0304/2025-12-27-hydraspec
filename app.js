@@ -1280,9 +1280,16 @@ window.onload = function() {
     
     // Initialiser les boutons toggle
     initToggleButtons();
-    
+
     console.timeEnd('Initialisation');
-    setStatus("Application prête");
+
+    // Initialiser le système POO Multi-Projets
+    if (typeof initPOOSystem === 'function') {
+        initPOOSystem();
+        setStatus("Application prête (Système multi-projets activé)");
+    } else {
+        setStatus("Application prête");
+    }
 };
 // --- TRANSLATION ---
 function changeLanguage(lang) {

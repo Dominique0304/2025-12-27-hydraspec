@@ -222,6 +222,14 @@ async function handleFileUpload_POO(input) {
                 console.log("📊 Application du preset 'Auto Groupé'...");
                 autoPresetYScales();
             }
+
+            // Centrer les curseurs après auto groupé
+            setTimeout(() => {
+                if (typeof centerCursors === 'function') {
+                    console.log("🎯 Centrage des curseurs...");
+                    centerCursors();
+                }
+            }, 50);
         }, 100);
 
         setStatus(`Fichier chargé : ${project.name}`);

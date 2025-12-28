@@ -48,21 +48,23 @@
         </div>
 
         <div style="display:flex; gap:8px; align-items:center;">
-            <!-- Boutons de contrôle de visibilité -->
-            <button id="toggle-time-btn" class="header-btn toggle-btn active" onclick="toggleTimeDomain()"
-                title="Afficher/Masquer le domaine temporel">
-                <i class="fas fa-stopwatch"></i> <span>Temps</span>
-            </button>
-
-            <button id="toggle-freq-btn" class="header-btn toggle-btn active" onclick="toggleFreqDomain()"
-                title="Afficher/Masquer le domaine fréquentiel">
-                <i class="fas fa-wave-square"></i> <span>Fréquence</span>
-            </button>
-
-            <button id="toggle-spectro-btn" class="header-btn toggle-btn active" onclick="toggleSpectrogram()"
-                title="Afficher/Masquer le spectrogramme">
-                <i class="fas fa-chart-area"></i> <span>Spectro</span>
-            </button>
+            <!-- Menu Graphiques (Accordéon) -->
+            <div class="dropdown">
+                <button class="header-btn" id="btn-graphs">
+                    <i class="fas fa-chart-line"></i> <span>Graphiques</span> <i class="fas fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <button id="toggle-time-btn" class="toggle-btn active" onclick="toggleTimeDomain()" style="width:100%; text-align:left;">
+                        <i class="fas fa-stopwatch" style="width:20px;"></i> <span>Temps</span>
+                    </button>
+                    <button id="toggle-freq-btn" class="toggle-btn active" onclick="toggleFreqDomain()" style="width:100%; text-align:left;">
+                        <i class="fas fa-wave-square" style="width:20px;"></i> <span>Fréquence</span>
+                    </button>
+                    <button id="toggle-spectro-btn" class="toggle-btn active" onclick="toggleSpectrogram()" style="width:100%; text-align:left;">
+                        <i class="fas fa-chart-area" style="width:20px;"></i> <span>Spectro</span>
+                    </button>
+                </div>
+            </div>
 
             <!-- Configurateur Multi-Canaux -->
             <button onclick="openChannelConfig()" class="header-btn" title="Configuration Multi-Canaux" style="color:var(--accent-blue);">
@@ -76,8 +78,7 @@
                 </button>
                 <div class="dropdown-content">
                     <button onclick="document.getElementById('fileInput').click()">
-                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="load_csv">Charger
-                            fichier .csv</span>
+                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="load_csv">Importer .csv</span>
                     </button>
                     <button onclick="document.getElementById('projectInput').click()">
                         <i class="fas fa-project-diagram" style="width:20px;"></i> <span data-i18n="open_proj">Ouvrir
@@ -89,8 +90,7 @@
                     </button>
                     <div style="border-top:1px solid var(--border-color); margin:5px 0;"></div>
                     <button onclick="initExportData()">
-                        <i class="fas fa-file-alt" style="width:20px;"></i> <span data-i18n="export_csv">Exporter
-                            fichier .csv</span>
+                        <i class="fas fa-file-alt" style="width:20px;"></i> <span data-i18n="export_csv">Exporter .CSV</span>
                     </button>
                     <button onclick="initCaptureScreenshot()">
                         <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="export_png">Exporter
@@ -118,8 +118,11 @@
 
     <div class="main-container" id="capture-area">
         <!-- Sidebar -->
-        <aside class="sidebar">
-
+        <aside class="sidebar" id="main-sidebar">
+            <!-- Bouton de collapse/expand -->
+            <button id="sidebar-toggle-btn" class="sidebar-toggle" onclick="toggleSidebar()" title="Replier/Déployer la barre latérale">
+                <i class="fas fa-chevron-left"></i>
+            </button>
 
             <!-- Acquisition -->
             <div class="control-group">

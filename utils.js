@@ -370,17 +370,27 @@ async function performSaveProject(filename) {
 }
 
 async function performExportCsv(filename) {
-    const startIdx = appState.fullDataTime.findIndex(t => t >= appState.cursorStart * 1000);
-    let endIdx = appState.fullDataTime.findIndex(t => t >= appState.cursorEnd * 1000);
-    if (endIdx === -1) endIdx = appState.fullDataTime.length;
+    // Exporter TOUTES les données (pas seulement entre les curseurs)
+    const startIdx = 0;
+    const endIdx = appState.fullDataTime.length;
 
-    let content = "Temps(ms);Valeur(Bar)\n";
+    // Utiliser les noms de colonnes originaux ou par défaut
+    const timeColName = "Zeit [s]";  // Format européen standard
+    const pressureColName = appState.yAxisLabel || "S1: P1 [bar]";  // Utiliser le label de l'axe Y
+
+    // Header avec format européen (crochets, pas parenthèses)
+    let content = `${timeColName};${pressureColName}\n`;
+
+    // Exporter les données avec format européen (virgule décimale)
     for (let i = startIdx; i < endIdx; i++) {
-        content += `${appState.fullDataTime[i].toFixed(2)};${appState.fullDataPressure[i].toFixed(4)}\n`;
+        // Convertir ms en s (diviser par 1000) et utiliser virgule comme séparateur décimal
+        const timeInSeconds = (appState.fullDataTime[i] / 1000).toFixed(3).replace('.', ',');
+        const pressure = appState.fullDataPressure[i].toFixed(2).replace('.', ',');
+        content += `${timeInSeconds};${pressure}\n`;
     }
 
     await downloadBlob(new Blob([content], { type: "text/csv;charset=utf-8" }), `${filename}.csv`);
-    setStatus("Fichier CSV exporté.");
+    setStatus("Fichier CSV exporté (toutes les données, format européen).");
 }
 
 function performCapture(filename) {

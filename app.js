@@ -1691,3 +1691,38 @@ function toggleMouseHalo(enable) {
 // Exposer les fonctions globalement
 window.toggleMouseHalo = toggleMouseHalo;
 window.initMouseHalo = initMouseHalo;
+
+// ========================================
+// SIDEBAR REPLIABLE
+// ========================================
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    const icon = toggleBtn.querySelector('i');
+
+    if (sidebar.classList.contains('collapsed')) {
+        // Déplier
+        sidebar.classList.remove('collapsed');
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-left');
+        console.log("✅ Sidebar dépliée");
+    } else {
+        // Replier
+        sidebar.classList.add('collapsed');
+        icon.classList.remove('fa-chevron-left');
+        icon.classList.add('fa-chevron-right');
+        console.log("✅ Sidebar repliée");
+    }
+
+    // Déclencher un redimensionnement des graphiques pour s'adapter au nouvel espace
+    setTimeout(() => {
+        if (window.globalCharts) {
+            if (window.globalCharts.time) window.globalCharts.time.resize();
+            if (window.globalCharts.freq) window.globalCharts.freq.resize();
+            if (window.globalCharts.spectro) window.globalCharts.spectro.resize();
+        }
+    }, 300); // Attendre la fin de l'animation CSS
+}
+
+window.toggleSidebar = toggleSidebar;

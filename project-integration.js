@@ -752,6 +752,16 @@ function updateAllInterface() {
         if (typeof updateColumnSelector === 'function') {
             updateColumnSelector();
         }
+
+        // CRITIQUE : Initialiser le système de lissage après chargement des canaux
+        if (typeof initSmoothingSystem === 'function') {
+            initSmoothingSystem();
+        }
+
+        // CRITIQUE : Peupler le sélecteur de canal pour les annotations
+        if (typeof populateChannelSelector === 'function') {
+            populateChannelSelector(-1); // -1 = annotation libre par défaut
+        }
     }
 
     // CRITIQUE : Synchroniser les curseurs d'analyse

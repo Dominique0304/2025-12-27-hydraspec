@@ -856,6 +856,45 @@ function loadIntervals() {
     }
 }
 
+// Charger les intervalles depuis les données d'un projet .hsp
+function loadIntervalsFromProject(savedIntervals) {
+    if (!savedIntervals || !Array.isArray(savedIntervals)) {
+        console.log("⚠️ No intervals to load from project");
+        return;
+    }
+
+    console.log("📥 Loading", savedIntervals.length, "intervals from project");
+
+    intervals = savedIntervals.map(item => {
+        const interval = new Interval(
+            item.id,
+            item.startTime,
+            item.endTime,
+            item.comment || '',
+            item.yPosition || 0.5
+        );
+        interval.color = item.color || '#4ECDC4';
+        interval.visible = item.visible !== false;
+
+        // Restaurer les propriétés de formatage
+        interval.fontSize = item.fontSize || 11;
+        interval.fontWeight = item.fontWeight || 'normal';
+        interval.fontStyle = item.fontStyle || 'normal';
+        interval.textDecoration = item.textDecoration || 'none';
+
+        // Mettre à jour nextIntervalId
+        const idNum = parseInt(item.id.replace('interval-', ''));
+        if (idNum >= nextIntervalId) {
+            nextIntervalId = idNum + 1;
+        }
+
+        return interval;
+    });
+
+    console.log("✅ Loaded", intervals.length, "intervals successfully");
+    updateIntervalsDisplay();
+}
+
 // Trouver l'intervalle à une position donnée
 function findIntervalAtPosition(x, y, chart) {
     if (!chart || intervals.length === 0) return null;

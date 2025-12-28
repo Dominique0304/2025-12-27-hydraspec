@@ -230,6 +230,14 @@ function handleProjectUpload(input) {
             console.log("⚠️ No annotations found in project file");
         }
 
+        // Charger les intervalles si présents
+        if (d.appState.intervals && typeof loadIntervalsFromProject === 'function') {
+            console.log("📐 Loading intervals from project:", d.appState.intervals.length, "intervals");
+            loadIntervalsFromProject(d.appState.intervals);
+        } else {
+            console.log("⚠️ No intervals found in project file");
+        }
+
         updateTimeChart();
         updateStats();
         performAnalysis();
@@ -339,7 +347,8 @@ function handleExportConfirm() {
 
 async function performSaveProject(filename) {
     const annotationsToSave = appState.annotations || [];
-    console.log("💾 Saving project with", annotationsToSave.length, "annotations");
+    const intervalsToSave = (typeof intervals !== 'undefined') ? intervals : [];
+    console.log("💾 Saving project with", annotationsToSave.length, "annotations and", intervalsToSave.length, "intervals");
 
     const projectData = {
         version: "1.4.0",
@@ -349,7 +358,8 @@ async function performSaveProject(filename) {
             cursorStart: appState.cursorStart,
             cursorEnd: appState.cursorEnd,
             timeIncrement: appState.timeIncrement,
-            annotations: annotationsToSave // Sauvegarder les annotations
+            annotations: annotationsToSave, // Sauvegarder les annotations
+            intervals: intervalsToSave // Sauvegarder les intervalles
         },
         data: {
             time: Array.from(appState.fullDataTime),
@@ -361,6 +371,7 @@ async function performSaveProject(filename) {
     console.log("💾 Project data prepared:", {
         version: projectData.version,
         annotationCount: projectData.appState.annotations.length,
+        intervalCount: projectData.appState.intervals.length,
         dataPoints: projectData.data.time.length
     });
 

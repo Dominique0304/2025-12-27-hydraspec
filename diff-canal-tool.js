@@ -602,7 +602,7 @@ function drawDiffCanalIntervals(chart) {
         const dxText = `Δt = ${dx.toFixed(3)} s`;
 
         // Mesurer la largeur du texte pour ajuster le rectangle
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         const dxTextWidth = ctx.measureText(dxText).width;
         const dxRectWidth = dxTextWidth + 10; // Ajouter 10px de padding
         const dxRectHeight = 20;
@@ -632,7 +632,7 @@ function drawDiffCanalIntervals(chart) {
         ctx.rotate(-Math.PI / 2);
 
         // Mesurer la largeur du texte pour ajuster le rectangle
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         const dyTextWidth = ctx.measureText(dyText).width;
         const rectWidth = dyTextWidth + 10; // Ajouter 10px de padding
         const rectHeight = 20;
@@ -672,7 +672,7 @@ function drawDiffCanalIntervals(chart) {
         ctx.strokeRect(-textWidth / 2 - 5, -10, textWidth + 10, 20);
 
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(slopeText, 0, 0);
@@ -746,7 +746,7 @@ function handleDiffCanalMouseDown(event, chart) {
 
         // Mesurer la taille de l'annotation horizontale
         const ctx = chart.ctx;
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         const dx = interval.getDeltaX();
         const dxText = `Δt = ${dx.toFixed(3)} s`;
         const dxTextWidth = ctx.measureText(dxText).width;
@@ -857,7 +857,7 @@ function handleDiffCanalMouseMove(event, chart) {
                 const dxAnnotationY = baseTopY;
 
                 const ctx = chart.ctx;
-                ctx.font = 'bold 11px sans-serif';
+                ctx.font = `bold ${window.chartFontSize}px sans-serif`;
                 const dx = interval.getDeltaX();
                 const dxText = `Δt = ${dx.toFixed(3)} s`;
                 const dxTextWidth = ctx.measureText(dxText).width;

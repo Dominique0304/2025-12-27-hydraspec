@@ -237,36 +237,7 @@ function closeProjectTab(projectId, event) {
     setStatus(`Projet fermé : ${projectName}`);
 }
 
-/**
- * Crée un nouveau projet vide
- */
-function createNewProject() {
-    const projectName = prompt("Nom du nouveau projet :", `Nouveau Projet ${new Date().toLocaleTimeString()}`);
-
-    if (!projectName || projectName.trim() === '') {
-        console.log("⚠️ Création de projet annulée");
-        return;
-    }
-
-    const project = projectManager.createProject(projectName.trim());
-
-    // Générer un signal par défaut pour avoir des données
-    project.generateSignal({
-        fs: 1000,
-        duration: 10,
-        noise: 0.1,
-        dc: 5,
-        frequencies: [
-            { freq: 50, amp: 5, phase: 0 }
-        ]
-    });
-
-    console.log(`✅ Nouveau projet créé : ${project.name}`);
-
-    // Mettre à jour l'interface
-    updateAllInterface();
-    setStatus(`Nouveau projet créé : ${project.name}`);
-}
+// Fonction createNewProject() supprimée - non nécessaire sans générateur de signal
 
 // ========================================
 // SAUVEGARDE/RESTAURATION DES ÉTATS D'OUTILS

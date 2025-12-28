@@ -246,7 +246,7 @@ function drawRulerPoint(chart) {
 
         // Texte
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const yText = 'y=' + yValue.toFixed(2);

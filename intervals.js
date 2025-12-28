@@ -300,7 +300,7 @@ function drawIntervals(chart) {
         const centerX = (startX + endX) / 2;
         const text = `Δt = ${duration.toFixed(3)}s`;
 
-        ctx.font = '12px Arial';
+        ctx.font = `${window.chartFontSize}px Arial`;
         ctx.fillStyle = interval.color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
@@ -308,7 +308,7 @@ function drawIntervals(chart) {
         // Fond blanc pour meilleure lisibilité
         const textMetrics = ctx.measureText(text);
         const textWidth = textMetrics.width;
-        const textHeight = 12; // Réduit de 14 à 12 pour éviter chevauchement
+        const textHeight = window.chartFontSize; // Utiliser la taille de police globale
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.fillRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
@@ -322,7 +322,7 @@ function drawIntervals(chart) {
             const commentText = interval.comment;
 
             // Appliquer le formatage
-            const fontSize = interval.fontSize || 11;
+            const fontSize = interval.fontSize || window.chartFontSize;
             const fontWeight = interval.fontWeight || 'normal';
             const fontStyle = interval.fontStyle || 'normal';
 

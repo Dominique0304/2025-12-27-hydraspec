@@ -8,6 +8,9 @@ window.globalCharts = {
     spectro: null
 };
 
+// Variable globale pour la taille de police des textes dans les graphiques
+window.chartFontSize = 12;
+
 // --- CHARTS INITIALIZATION ---
 function initCharts() {
     const commonOptions = {
@@ -46,7 +49,7 @@ const timeChart = new Chart(ctxTime, {
                 ticks: {
                     color: '#aaa',
                     font: {
-                        size: 12,
+                        size: window.chartFontSize,
                         weight: 'normal'
                     },
                     callback: function(v) {
@@ -59,7 +62,7 @@ const timeChart = new Chart(ctxTime, {
                 ticks: {
                     color: '#aaa',
                     font: {
-                        size: 12,
+                        size: window.chartFontSize,
                         weight: 'normal'
                     },
                     callback: function(value) {
@@ -73,7 +76,7 @@ const timeChart = new Chart(ctxTime, {
                     text: 'Pression (Bar)', // Valeur par défaut
                     color: '#aaa',
                     font: {
-                        size: 12,
+                        size: window.chartFontSize,
                         weight: 'normal'
                     }
                 }
@@ -189,15 +192,31 @@ appState.charts.time = timeChart;
             scales: {
                 x: {
                     type: 'linear',
-                    title: { display: true, text: 'Temps (s)', color: '#aaa' },
+                    title: {
+                        display: true,
+                        text: 'Temps (s)',
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    },
                     grid: { color: '#333' },
-                    ticks: { color: '#aaa' }
+                    ticks: {
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    }
                 },
                 y: {
                     type: 'linear',
-                    title: { display: true, text: '(Hz)', color: '#aaa' },
+                    title: {
+                        display: true,
+                        text: '(Hz)',
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    },
                     grid: { color: '#333' },
-                    ticks: { color: '#aaa' }
+                    ticks: {
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    }
                 }
             },
             plugins: {
@@ -316,7 +335,7 @@ function drawPeaks(chart) {
     ctx.textAlign = 'center';
     const theme = document.body.getAttribute('data-theme');
     ctx.fillStyle = theme === 'light' ? '#000000' : (theme === 'steampunk' ? '#d4af37' : '#e0e0e0');
-    ctx.font = 'bold 12px sans-serif';
+    ctx.font = `bold ${window.chartFontSize}px sans-serif`;
 
     const threshold = parseInt(document.getElementById('peak-threshold').value);
 
@@ -1263,4 +1282,76 @@ function centerCursors() {
     }
     
     console.log("DEBUG - Curseurs mis à jour:", appState.cursorStart, "s à", appState.cursorEnd, "s");
+}
+
+// Fonction pour mettre à jour la taille de police de tous les textes dans les graphiques
+function updateChartFontSize(value) {
+    const fontSize = parseInt(value);
+    if (isNaN(fontSize) || fontSize < 8 || fontSize > 24) {
+        console.warn("⚠️ Taille de police invalide:", value);
+        return;
+    }
+
+    // Mettre à jour la variable globale
+    window.chartFontSize = fontSize;
+    console.log(`✏️ Taille de police mise à jour: ${fontSize}px`);
+
+    // Mettre à jour Chart.js - Time Chart
+    if (window.globalCharts && window.globalCharts.time) {
+        const timeChart = window.globalCharts.time;
+        timeChart.options.scales.x.ticks.font.size = fontSize;
+        timeChart.options.scales.y.ticks.font.size = fontSize;
+        timeChart.options.scales.y.title.font.size = fontSize;
+        timeChart.update('none');
+    }
+
+    // Mettre à jour Chart.js - Frequency Chart
+    if (window.globalCharts && window.globalCharts.freq) {
+        const freqChart = window.globalCharts.freq;
+
+        // Mettre à jour tous les axes Y (y, y1, y2, y3...)
+        Object.keys(freqChart.options.scales).forEach(scaleId => {
+            if (scaleId.startsWith('y')) {
+                if (freqChart.options.scales[scaleId].ticks) {
+                    freqChart.options.scales[scaleId].ticks.font = freqChart.options.scales[scaleId].ticks.font || {};
+                    freqChart.options.scales[scaleId].ticks.font.size = fontSize;
+                }
+                if (freqChart.options.scales[scaleId].title && freqChart.options.scales[scaleId].title.display) {
+                    freqChart.options.scales[scaleId].title.font = freqChart.options.scales[scaleId].title.font || {};
+                    freqChart.options.scales[scaleId].title.font.size = fontSize;
+                }
+            }
+        });
+
+        // Mettre à jour l'axe X
+        if (freqChart.options.scales.x && freqChart.options.scales.x.ticks) {
+            freqChart.options.scales.x.ticks.font = freqChart.options.scales.x.ticks.font || {};
+            freqChart.options.scales.x.ticks.font.size = fontSize;
+        }
+
+        freqChart.update('none');
+    }
+
+    // Mettre à jour Chart.js - Spectrogram Chart
+    if (window.globalCharts && window.globalCharts.spectro) {
+        const spectroChart = window.globalCharts.spectro;
+        spectroChart.options.scales.x.ticks.font = spectroChart.options.scales.x.ticks.font || {};
+        spectroChart.options.scales.x.ticks.font.size = fontSize;
+        spectroChart.options.scales.x.title.font = spectroChart.options.scales.x.title.font || {};
+        spectroChart.options.scales.x.title.font.size = fontSize;
+
+        spectroChart.options.scales.y.ticks.font = spectroChart.options.scales.y.ticks.font || {};
+        spectroChart.options.scales.y.ticks.font.size = fontSize;
+        spectroChart.options.scales.y.title.font = spectroChart.options.scales.y.title.font || {};
+        spectroChart.options.scales.y.title.font.size = fontSize;
+
+        spectroChart.update('none');
+    }
+
+    // Sauvegarder dans le projet actif
+    if (typeof appState !== 'undefined' && appState.chartFontSize !== undefined) {
+        appState.chartFontSize = fontSize;
+    }
+
+    console.log("✅ Toutes les polices des graphiques mises à jour");
 }

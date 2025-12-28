@@ -114,9 +114,6 @@
         <div id="project-tabs-container" class="project-tabs-container">
             <!-- Tabs will be dynamically added here -->
         </div>
-        <button id="new-project-btn" class="new-project-btn" onclick="createNewProject()" title="Créer un nouveau projet">
-            <i class="fas fa-plus"></i> Nouveau Projet
-        </button>
     </div>
 
     <div class="main-container" id="capture-area">
@@ -839,6 +836,13 @@
                         <option value="steampunk">⚙️ Steampunk</option>
                         <option value="steampunk2" selected>⚙️ Steampunk2 (Industriel)</option>
                     </select>
+                </div>
+                <div>
+                    <label for="font-size-input">Taille Police (px)</label>
+                    <input type="number" id="font-size-input" value="12" min="8" max="24" step="1"
+                           onchange="updateChartFontSize(this.value)"
+                           style="width:100%; margin-top:5px; padding:6px;">
+                    <small style="color: var(--text-muted); font-size: 0.8em;">Taille des textes dans les graphiques (8-24px)</small>
                 </div>
             </div>
             <div style="margin-top:20px; text-align:right;">

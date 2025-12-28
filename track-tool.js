@@ -424,7 +424,7 @@ function drawTrackCursor(chart) {
 
         // Texte dans la couleur du dataset
         ctx.fillStyle = data.color;
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const valueText = data.value.toFixed(2);

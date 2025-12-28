@@ -38,21 +38,27 @@ function detectChannelFromYPosition(yPixel, chart, timeInSeconds) {
         return 0; // Par défaut, canal 0
     }
 
-    let closestChannel = 0;
+    let closestChannelIndex = 0;
     let minDistance = Infinity;
 
     // Parcourir tous les canaux visibles
-    appState.channelConfig.forEach((config, index) => {
+    appState.channelConfig.forEach((config, configIndex) => {
         if (!config.visible) return;
 
+        // L'index réel dans allColumnData est config.index
+        const dataColumnIndex = config.index - 1; // config.index pointe vers allColumnData, -1 car allColumnData[0] est le temps
+
         // Récupérer la valeur du canal à ce temps
-        const yValue = getValueOnCurve(index, timeInSeconds);
+        const yValue = getValueOnCurve(dataColumnIndex, timeInSeconds);
         if (yValue === null || yValue === undefined) return;
 
         // Récupérer l'échelle Y de ce canal
-        const yAxisID = config.yAxisID || `y-time${index}`;
+        const yAxisID = config.yAxisID;
         const yScale = chart.scales[yAxisID];
-        if (!yScale) return;
+        if (!yScale) {
+            console.warn(`⚠️ Échelle ${yAxisID} introuvable pour canal ${configIndex}`);
+            return;
+        }
 
         // Convertir la valeur en pixels
         const yValuePixel = yScale.getPixelForValue(yValue);
@@ -63,11 +69,12 @@ function detectChannelFromYPosition(yPixel, chart, timeInSeconds) {
         // Garder le canal le plus proche
         if (distance < minDistance) {
             minDistance = distance;
-            closestChannel = index;
+            closestChannelIndex = dataColumnIndex;
         }
     });
 
-    return closestChannel;
+    console.log(`🎯 Canal détecté: ${closestChannelIndex}, distance: ${minDistance.toFixed(1)}px`);
+    return closestChannelIndex;
 }
 
 // Fonction pour obtenir la valeur Y réelle sur une courbe à un temps donné

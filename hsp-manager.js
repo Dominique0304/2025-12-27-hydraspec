@@ -269,7 +269,7 @@ async function loadHSP(file) {
                 await restoreProjectFromHSP(project, hspData);
 
                 // Activer le projet
-                projectManager.switchProject(project.id);
+                projectManager.switchTo(project.id);
 
                 // Mettre à jour l'interface
                 updateAllInterface();

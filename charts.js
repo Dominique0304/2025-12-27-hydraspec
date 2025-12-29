@@ -1191,7 +1191,11 @@ function updateFFTChartWithResults(fftResults) {
                     size: window.chartFontSize,
                     weight: 'normal'
                 },
-                rotation: position === 'right' ? 270 : -270  // 270° pour lire de bas en haut
+                rotation: (() => {
+                    const rot = position === 'right' ? 270 : -270;
+                    console.log(`[FFT Chart] Axe Y "${fftData.config.label}" - Position: ${position} - Rotation: ${rot}°`);
+                    return rot;
+                })()
             }
         };
     });

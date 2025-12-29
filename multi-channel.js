@@ -664,7 +664,11 @@ function updateTimeChartMultiChannel() {
                     size: window.chartFontSize,
                     weight: 'normal'
                 },
-                rotation: config.yAxisPosition === 'right' ? 270 : -270  // 270° pour lire de bas en haut
+                rotation: (() => {
+                    const rot = config.yAxisPosition === 'right' ? 270 : -270;
+                    console.log(`[Multi-Channel] Axe Y "${config.label}" - Position: ${config.yAxisPosition} - Rotation: ${rot}°`);
+                    return rot;
+                })()
             }
         };
     });

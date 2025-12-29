@@ -1139,7 +1139,7 @@ function updateFFTChartWithResults(fftResults) {
                     size: window.chartFontSize,
                     weight: 'normal'
                 },
-                rotation: position === 'right' ? 90 : -90
+                rotation: position === 'right' ? -90 : -90  // -90 pour lire de bas en haut
             }
         };
     });

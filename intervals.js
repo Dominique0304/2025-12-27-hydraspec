@@ -241,6 +241,12 @@ function drawIntervals(chart) {
 
     ctx.save();
 
+    // Clip to chart area to prevent overlap with axes
+    const chartArea = chart.chartArea;
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+    ctx.clip();
+
     intervals.forEach(interval => {
         if (!interval.visible) return;
 
@@ -313,6 +319,11 @@ function drawIntervals(chart) {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.fillRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
 
+        // Encadrement noir
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
+
         // Texte de la durée
         ctx.fillStyle = interval.color;
         ctx.fillText(text, centerX, y - 6);
@@ -335,6 +346,11 @@ function drawIntervals(chart) {
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.fillRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
+
+            // Encadrement noir
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
 
             ctx.fillStyle = interval.color;
             ctx.fillText(commentText, centerX, y + 8);
@@ -644,20 +660,19 @@ function deleteInterval(intervalId) {
     const interval = intervals.find(int => int.id === intervalId);
     if (!interval) return;
 
-    if (confirm(`Supprimer cet intervalle ?\n\nDurée: ${interval.getDuration().toFixed(3)}s\n${interval.comment || ''}`)) {
-        // Sauvegarder l'état pour l'historique
-        if (typeof saveState === 'function') {
-            saveState('Suppression interval');
-        }
-
-        const index = intervals.indexOf(interval);
-        if (index > -1) {
-            intervals.splice(index, 1);
-        }
-
-        updateIntervalsDisplay();
-        saveIntervals();
+    // Suppression directe sans confirmation
+    // Sauvegarder l'état pour l'historique
+    if (typeof saveState === 'function') {
+        saveState('Suppression interval');
     }
+
+    const index = intervals.indexOf(interval);
+    if (index > -1) {
+        intervals.splice(index, 1);
+    }
+
+    updateIntervalsDisplay();
+    saveIntervals();
 }
 
 // Mettre à jour le temps d'un intervalle (start ou end)

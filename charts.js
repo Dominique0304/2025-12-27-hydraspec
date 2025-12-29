@@ -138,6 +138,13 @@ const timeChart = new Chart(ctxTime, {
                 drawTrackCursor(chart);
             }
         }
+    }, {
+        id: 'snapPointTool',
+        afterDraw: (chart) => {
+            if (typeof drawSnapPoints === 'function') {
+                drawSnapPoints(chart);
+            }
+        }
     }]
 });
 // Stocker dans globalCharts et appState.charts
@@ -452,6 +459,13 @@ canvas.addEventListener('mousedown', (e) => {
     if (typeof handleDiffCanalClick === 'function') {
         if (handleDiffCanalClick(e, chart)) {
             return; // L'outil Diff/Canal a géré le clic
+        }
+    }
+
+    // Priorité 2c: Outil Marqueur (création snappoint)
+    if (typeof handleSnapPointClick === 'function') {
+        if (handleSnapPointClick(e, chart)) {
+            return; // L'outil Marqueur a géré le clic
         }
     }
 

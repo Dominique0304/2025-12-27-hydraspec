@@ -555,6 +555,21 @@ canvas.addEventListener('mousedown', (e) => {
     }
 });
 
+// Gestion du clic droit (menu contextuel)
+canvas.addEventListener('contextmenu', (e) => {
+    const chart = appState.charts.time;
+
+    // Priorité 1: Menu contextuel des marqueurs (SnapPoint)
+    if (typeof handleSnapPointContextMenu === 'function') {
+        if (handleSnapPointContextMenu(e, chart)) {
+            e.preventDefault(); // Empêcher le menu contextuel du navigateur
+            return;
+        }
+    }
+
+    // Autres outils pourraient avoir leur menu contextuel ici
+});
+
     // Gestion du déplacement souris
     canvas.addEventListener('mousemove', (e) => {
         const chart = appState.charts.time;

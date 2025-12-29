@@ -43,6 +43,11 @@ class SnapPoint {
         this.backgroundColor = '#FFD93D'; // Couleur de fond (jaune par défaut)
         this.backgroundOpacity = 0.9; // Opacité du fond (0-1)
         this.boxPaddingScale = 1.0; // Facteur d'agrandissement de la boîte (1.0 = normal)
+        this.boxWidth = null; // Largeur personnalisée de la boîte (null = auto)
+        this.boxHeight = null; // Hauteur personnalisée de la boîte (null = auto)
+
+        // Canal d'accrochage
+        this.anchorChannelIndex = channelIndex; // Canal auquel le point est accroché (null = pas d'accrochage)
     }
 
     // Obtenir le label du canal
@@ -328,24 +333,27 @@ function drawSnapPoints(chart) {
         const config = appState.channelConfig[snapPoint.channelIndex];
         const color = config.color || snapPoint.color;
 
-        // Dessiner le point d'accroche
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(pointPos.x, pointPos.y, 6, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.strokeStyle = '#FFF';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        // Dessiner le point d'accroche et la ligne SEULEMENT si un canal d'accrochage est défini
+        if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+            // Dessiner le point d'accroche
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pointPos.x, pointPos.y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = '#FFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
-        // Dessiner la ligne pointillée de connexion
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 3]);
-        ctx.beginPath();
-        ctx.moveTo(pointPos.x, pointPos.y);
-        ctx.lineTo(boxPos.x, boxPos.y);
-        ctx.stroke();
-        ctx.setLineDash([]);
+            // Dessiner la ligne pointillée de connexion
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(pointPos.x, pointPos.y);
+            ctx.lineTo(boxPos.x, boxPos.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
 
         // Préparer le texte
         const channelLabel = snapPoint.getChannelLabel();
@@ -517,6 +525,9 @@ function toggleSnapPointVisibility(id) {
 // État de la modale d'édition
 let editingSnapPointId = null;
 
+// État du menu contextuel
+let contextMenuSnapPointId = null;
+
 // Ouvrir la modale d'édition complète d'un marqueur
 function openSnapPointEditModal(id) {
     const snapPoint = snapPoints.find(sp => sp.id === id);
@@ -568,6 +579,27 @@ function openSnapPointEditModal(id) {
     const padding = (snapPoint.boxPaddingScale || 1.0) * 100;
     if (paddingSlider) paddingSlider.value = padding;
     if (paddingValue) paddingValue.textContent = `${Math.round(padding)}%`;
+
+    // Peupler et régler le canal d'accrochage
+    const anchorChannelSelect = document.getElementById('snap-anchor-channel');
+    if (anchorChannelSelect && appState.channelConfig) {
+        // Vider et repeupler le sélecteur
+        anchorChannelSelect.innerHTML = '<option value="-1">Aucun (boîte flottante)</option>';
+
+        // Ajouter tous les canaux disponibles
+        appState.channelConfig.forEach((config, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = config.label || `Canal ${index + 1}`;
+            anchorChannelSelect.appendChild(option);
+        });
+
+        // Sélectionner le canal actuel
+        const currentAnchor = snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined
+                              ? snapPoint.anchorChannelIndex
+                              : -1;
+        anchorChannelSelect.value = currentAnchor;
+    }
 
     // Mettre à jour les boutons de formatage
     updateSnapPointFormatButtons();
@@ -708,6 +740,22 @@ function setSnapPointPadding(value) {
     if (paddingValue) {
         paddingValue.textContent = `${value}%`;
     }
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
+}
+
+// Définir le canal d'accrochage
+function setSnapPointAnchorChannel(channelIndex) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    const index = parseInt(channelIndex);
+    snapPoint.anchorChannelIndex = index === -1 ? null : index;
 
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
@@ -1164,6 +1212,206 @@ function handleSnapPointMouseUp(event, chart) {
     }
 }
 
+// ========================================
+// MENU CONTEXTUEL (CLIC DROIT)
+// ========================================
+
+/**
+ * Gestion du clic droit sur un snapPoint
+ * @param {MouseEvent} event - Événement souris
+ * @param {Chart} chart - Instance Chart.js
+ * @returns {boolean} - true si un menu a été affiché
+ */
+function handleSnapPointContextMenu(event, chart) {
+    if (!snapPointState.active || snapPoints.length === 0) {
+        return false;
+    }
+
+    const rect = chart.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Chercher si on a cliqué sur un snapPoint
+    for (let i = snapPoints.length - 1; i >= 0; i--) {
+        const snapPoint = snapPoints[i];
+        if (!snapPoint.visible) continue;
+
+        const pointPos = snapPoint.getPointPixelPosition(chart);
+        const boxPos = snapPoint.getBoxPixelPosition(chart);
+        if (!pointPos || !boxPos) continue;
+
+        // Calculer les dimensions de la boîte
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
+
+        const channelLabel = snapPoint.getChannelLabel();
+        const unit = snapPoint.getChannelUnit();
+        const lines = [
+            channelLabel,
+            `t = ${snapPoint.time.toFixed(3)}s`,
+            `${snapPoint.value.toFixed(1)} ${unit}`
+        ];
+        if (snapPoint.comment && snapPoint.comment.trim() !== '') {
+            lines.push(snapPoint.comment);
+        }
+
+        const basePadding = 10;
+        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
+        const lineHeight = snapPoint.fontSize + 4;
+        let maxWidth = 0;
+        lines.forEach(line => {
+            const width = ctx.measureText(line).width;
+            if (width > maxWidth) maxWidth = width;
+        });
+
+        const boxWidth = maxWidth + padding * 2;
+        const boxHeight = lines.length * lineHeight + padding * 2;
+        ctx.restore();
+
+        // Vérifier si on a cliqué sur la boîte
+        const boxX = boxPos.x - boxWidth / 2;
+        const boxY = boxPos.y;
+
+        if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
+            mouseY >= boxY && mouseY <= boxY + boxHeight) {
+            // Afficher le menu contextuel
+            showContextMenu(event.clientX, event.clientY, snapPoint.id);
+            return true;
+        }
+
+        // Vérifier si on a cliqué sur le point d'accroche
+        if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+            const pointRadius = 8;
+            const distToPoint = Math.sqrt(
+                Math.pow(mouseX - pointPos.x, 2) +
+                Math.pow(mouseY - pointPos.y, 2)
+            );
+
+            if (distToPoint <= pointRadius) {
+                showContextMenu(event.clientX, event.clientY, snapPoint.id);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Afficher le menu contextuel à une position donnée
+ */
+function showContextMenu(x, y, snapPointId) {
+    const menu = document.getElementById('snappoint-context-menu');
+    if (!menu) return;
+
+    contextMenuSnapPointId = snapPointId;
+
+    // Mettre à jour le texte de visibilité
+    const snapPoint = snapPoints.find(sp => sp.id === snapPointId);
+    if (snapPoint) {
+        const eyeIcon = document.getElementById('context-menu-eye-icon');
+        const visibilityText = document.getElementById('context-menu-visibility-text');
+
+        if (snapPoint.visible) {
+            if (eyeIcon) eyeIcon.className = 'fas fa-eye-slash';
+            if (visibilityText) visibilityText.textContent = 'Masquer';
+        } else {
+            if (eyeIcon) eyeIcon.className = 'fas fa-eye';
+            if (visibilityText) visibilityText.textContent = 'Afficher';
+        }
+    }
+
+    // Positionner et afficher le menu
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    menu.style.display = 'block';
+}
+
+/**
+ * Masquer le menu contextuel
+ */
+function hideContextMenu() {
+    const menu = document.getElementById('snappoint-context-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+    contextMenuSnapPointId = null;
+}
+
+/**
+ * Actions du menu contextuel
+ */
+function contextMenuEdit() {
+    if (contextMenuSnapPointId !== null) {
+        editSnapPoint(contextMenuSnapPointId);
+    }
+    hideContextMenu();
+}
+
+function contextMenuToggleVisibility() {
+    if (contextMenuSnapPointId !== null) {
+        toggleSnapPointVisibility(contextMenuSnapPointId);
+    }
+    hideContextMenu();
+}
+
+function contextMenuDuplicate() {
+    if (contextMenuSnapPointId !== null) {
+        const snapPoint = snapPoints.find(sp => sp.id === contextMenuSnapPointId);
+        if (snapPoint) {
+            // Créer une copie
+            const duplicate = new SnapPoint(
+                nextSnapPointId++,
+                snapPoint.channelIndex,
+                snapPoint.time,
+                snapPoint.value
+            );
+            duplicate.comment = snapPoint.comment + ' (copie)';
+            duplicate.offsetX = snapPoint.offsetX + 30; // Décaler légèrement
+            duplicate.offsetY = snapPoint.offsetY + 30;
+            duplicate.visible = snapPoint.visible;
+            duplicate.color = snapPoint.color;
+            duplicate.fontSize = snapPoint.fontSize;
+            duplicate.fontWeight = snapPoint.fontWeight;
+            duplicate.fontStyle = snapPoint.fontStyle;
+            duplicate.textDecoration = snapPoint.textDecoration;
+            duplicate.backgroundColor = snapPoint.backgroundColor;
+            duplicate.backgroundOpacity = snapPoint.backgroundOpacity;
+            duplicate.boxPaddingScale = snapPoint.boxPaddingScale;
+            duplicate.boxWidth = snapPoint.boxWidth;
+            duplicate.boxHeight = snapPoint.boxHeight;
+            duplicate.anchorChannelIndex = snapPoint.anchorChannelIndex;
+
+            snapPoints.push(duplicate);
+            updateSnapPointsList();
+            appState.charts.time.update('none');
+            saveSnapPoints();
+
+            setStatus(`Marqueur dupliqué`);
+        }
+    }
+    hideContextMenu();
+}
+
+function contextMenuDelete() {
+    if (contextMenuSnapPointId !== null) {
+        deleteSnapPoint(contextMenuSnapPointId);
+    }
+    hideContextMenu();
+}
+
+// Fermer le menu si on clique ailleurs
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('snappoint-context-menu');
+    if (menu && menu.style.display === 'block') {
+        // Vérifier si le clic est en dehors du menu
+        if (!menu.contains(e.target)) {
+            hideContextMenu();
+        }
+    }
+});
+
 // Exporter pour utilisation globale
 if (typeof window !== 'undefined') {
     window.toggleSnapPointTool = toggleSnapPointTool;
@@ -1188,6 +1436,12 @@ if (typeof window !== 'undefined') {
     window.setSnapPointBackgroundColor = setSnapPointBackgroundColor;
     window.setSnapPointOpacity = setSnapPointOpacity;
     window.setSnapPointPadding = setSnapPointPadding;
+    window.setSnapPointAnchorChannel = setSnapPointAnchorChannel;
+    window.handleSnapPointContextMenu = handleSnapPointContextMenu;
+    window.contextMenuEdit = contextMenuEdit;
+    window.contextMenuToggleVisibility = contextMenuToggleVisibility;
+    window.contextMenuDuplicate = contextMenuDuplicate;
+    window.contextMenuDelete = contextMenuDelete;
 }
 
 console.log('✅ Outil Marqueur (SnapPoint) initialisé');

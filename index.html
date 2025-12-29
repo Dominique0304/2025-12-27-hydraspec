@@ -1550,6 +1550,17 @@
                     Apparence de la boîte:
                 </div>
 
+                <!-- Canal d'accrochage -->
+                <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <label style="flex: 0 0 120px; font-size: 0.85em;">
+                        Canal accrochage:
+                    </label>
+                    <select id="snap-anchor-channel" onchange="setSnapPointAnchorChannel(this.value)"
+                            style="flex: 1; padding: 5px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                        <option value="-1">Aucun (boîte flottante)</option>
+                    </select>
+                </div>
+
                 <!-- Couleur de fond -->
                 <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
                     <label style="flex: 0 0 120px; font-size: 0.85em;">
@@ -1600,6 +1611,35 @@
                     <i class="fas fa-check"></i> Valider
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Menu contextuel pour SnapPoint -->
+    <div id="snappoint-context-menu" style="display:none; position:absolute; z-index:10000; background:var(--bg-main); border:1px solid var(--border-color); border-radius:4px; box-shadow:0 2px 10px rgba(0,0,0,0.3); min-width:180px; padding:4px 0;">
+        <div onclick="contextMenuEdit()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
+             onmouseover="this.style.background='var(--bg-secondary)'"
+             onmouseout="this.style.background='transparent'">
+            <i class="fas fa-edit" style="width:16px; color:var(--accent-blue);"></i>
+            <span>Éditer</span>
+        </div>
+        <div onclick="contextMenuToggleVisibility()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
+             onmouseover="this.style.background='var(--bg-secondary)'"
+             onmouseout="this.style.background='transparent'">
+            <i id="context-menu-eye-icon" class="fas fa-eye" style="width:16px; color:var(--accent-green);"></i>
+            <span id="context-menu-visibility-text">Masquer</span>
+        </div>
+        <div onclick="contextMenuDuplicate()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
+             onmouseover="this.style.background='var(--bg-secondary)'"
+             onmouseout="this.style.background='transparent'">
+            <i class="fas fa-copy" style="width:16px; color:var(--accent-blue);"></i>
+            <span>Dupliquer</span>
+        </div>
+        <hr style="margin:4px 0; border:none; border-top:1px solid var(--border-color);">
+        <div onclick="contextMenuDelete()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
+             onmouseover="this.style.background='var(--bg-secondary)'"
+             onmouseout="this.style.background='transparent'">
+            <i class="fas fa-trash" style="width:16px; color:var(--accent-red);"></i>
+            <span style="color:var(--accent-red);">Supprimer</span>
         </div>
     </div>
 

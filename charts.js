@@ -21,20 +21,8 @@ function initCharts() {
         plugins: {
             legend: { display: false },
             tooltip: {
-                // Empêcher le tooltip de déborder sur les axes
-                enabled: true,
-                mode: 'nearest',
-                intersect: false,
-                // Positionner le tooltip pour éviter les débordements
-                yAlign: 'center',
-                caretSize: 6,
-                callbacks: {
-                    // Limiter les informations affichées
-                    title: function(context) {
-                        // Vérifier si on est près du bord pour ajuster
-                        return context[0].label || '';
-                    }
-                }
+                // Désactiver les tooltips HTML (remplacés par annotations canvas)
+                enabled: false
             }
         },
         scales: {

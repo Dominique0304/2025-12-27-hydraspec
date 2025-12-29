@@ -12,12 +12,17 @@ let nextSnapPointId = 1;
 // État de l'outil
 let snapPointState = {
     active: false,
-    dragging: null, // 'point', 'box', ou null
+    dragging: null, // 'point', 'box', 'resize', ou null
     draggedSnapPoint: null,
     dragStartX: 0,
     dragStartY: 0,
     dragOffsetX: 0,
-    dragOffsetY: 0
+    dragOffsetY: 0,
+    resizeDirection: null, // 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'
+    resizeStartWidth: 0,
+    resizeStartHeight: 0,
+    resizeStartBoxX: 0,
+    resizeStartBoxY: 0
 };
 
 // Classe SnapPoint
@@ -379,8 +384,11 @@ function drawSnapPoints(chart) {
             if (width > maxWidth) maxWidth = width;
         });
 
-        const boxWidth = maxWidth + padding * 2;
-        const boxHeight = lines.length * lineHeight + padding * 2;
+        // Utiliser les dimensions personnalisées si définies, sinon calculer automatiquement
+        const autoBoxWidth = maxWidth + padding * 2;
+        const autoBoxHeight = lines.length * lineHeight + padding * 2;
+        const boxWidth = snapPoint.boxWidth || autoBoxWidth;
+        const boxHeight = snapPoint.boxHeight || autoBoxHeight;
 
         // Dessiner la boîte avec coins arrondis
         const radius = 6;
@@ -877,7 +885,10 @@ function saveSnapPoints() {
             textDecoration: sp.textDecoration,
             backgroundColor: sp.backgroundColor,
             backgroundOpacity: sp.backgroundOpacity,
-            boxPaddingScale: sp.boxPaddingScale
+            boxPaddingScale: sp.boxPaddingScale,
+            boxWidth: sp.boxWidth,
+            boxHeight: sp.boxHeight,
+            anchorChannelIndex: sp.anchorChannelIndex
         }));
 
         localStorage.setItem('hydraspec_snappoints', JSON.stringify(data));
@@ -912,6 +923,9 @@ function loadSnapPoints() {
             snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
             snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
             snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
+            snapPoint.boxWidth = item.boxWidth || null;
+            snapPoint.boxHeight = item.boxHeight || null;
+            snapPoint.anchorChannelIndex = item.anchorChannelIndex !== undefined ? item.anchorChannelIndex : item.channelIndex;
 
             // Mettre à jour nextSnapPointId
             if (item.id >= nextSnapPointId) {
@@ -955,6 +969,9 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
         snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
         snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
+        snapPoint.boxWidth = item.boxWidth || null;
+        snapPoint.boxHeight = item.boxHeight || null;
+        snapPoint.anchorChannelIndex = item.anchorChannelIndex !== undefined ? item.anchorChannelIndex : item.channelIndex;
 
         // Mettre à jour nextSnapPointId
         if (item.id >= nextSnapPointId) {
@@ -969,11 +986,64 @@ function loadSnapPointsFromProject(savedSnapPoints) {
 }
 
 // ========================================
-// INTERACTIONS (DRAG & DELETE)
+// INTERACTIONS (DRAG & DELETE & RESIZE)
 // ========================================
 
 /**
- * Gestion du clic sur le canvas pour drag et delete
+ * Détecter la zone de redimensionnement (edge ou corner)
+ * @param {number} mouseX - Position X de la souris
+ * @param {number} mouseY - Position Y de la souris
+ * @param {number} boxX - Position X de la boîte (coin haut-gauche)
+ * @param {number} boxY - Position Y de la boîte (coin haut-gauche)
+ * @param {number} boxWidth - Largeur de la boîte
+ * @param {number} boxHeight - Hauteur de la boîte
+ * @returns {string|null} - Direction de resize ('n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw') ou null
+ */
+function detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight) {
+    const edgeThreshold = 8; // Largeur de la zone sensible (pixels)
+
+    const nearLeft = Math.abs(mouseX - boxX) <= edgeThreshold;
+    const nearRight = Math.abs(mouseX - (boxX + boxWidth)) <= edgeThreshold;
+    const nearTop = Math.abs(mouseY - boxY) <= edgeThreshold;
+    const nearBottom = Math.abs(mouseY - (boxY + boxHeight)) <= edgeThreshold;
+
+    const insideX = mouseX >= boxX && mouseX <= boxX + boxWidth;
+    const insideY = mouseY >= boxY && mouseY <= boxY + boxHeight;
+
+    // Coins (prioritaires)
+    if (nearTop && nearLeft && insideY && insideX) return 'nw';
+    if (nearTop && nearRight && insideY && insideX) return 'ne';
+    if (nearBottom && nearLeft && insideY && insideX) return 'sw';
+    if (nearBottom && nearRight && insideY && insideX) return 'se';
+
+    // Bords
+    if (nearTop && insideX) return 'n';
+    if (nearBottom && insideX) return 's';
+    if (nearLeft && insideY) return 'w';
+    if (nearRight && insideY) return 'e';
+
+    return null;
+}
+
+/**
+ * Obtenir le curseur CSS approprié pour une zone de resize
+ */
+function getCursorForResizeZone(zone) {
+    const cursors = {
+        'n': 'ns-resize',
+        's': 'ns-resize',
+        'e': 'ew-resize',
+        'w': 'ew-resize',
+        'ne': 'nesw-resize',
+        'sw': 'nesw-resize',
+        'nw': 'nwse-resize',
+        'se': 'nwse-resize'
+    };
+    return cursors[zone] || 'default';
+}
+
+/**
+ * Gestion du clic sur le canvas pour drag, delete et resize
  * @param {MouseEvent} event - Événement souris
  * @param {Chart} chart - Instance Chart.js
  * @returns {boolean} - true si l'événement a été géré
@@ -1012,7 +1082,8 @@ function handleSnapPointMouseDown(event, chart) {
             lines.push(snapPoint.comment);
         }
 
-        const padding = 10;
+        const basePadding = 10;
+        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
         let maxWidth = 0;
         lines.forEach(line => {
@@ -1020,8 +1091,10 @@ function handleSnapPointMouseDown(event, chart) {
             if (width > maxWidth) maxWidth = width;
         });
 
-        const boxWidth = maxWidth + padding * 2;
-        const boxHeight = lines.length * lineHeight + padding * 2;
+        const autoBoxWidth = maxWidth + padding * 2;
+        const autoBoxHeight = lines.length * lineHeight + padding * 2;
+        const boxWidth = snapPoint.boxWidth || autoBoxWidth;
+        const boxHeight = snapPoint.boxHeight || autoBoxHeight;
         ctx.restore();
 
         // 1. Vérifier clic sur bouton supprimer
@@ -1034,10 +1107,31 @@ function handleSnapPointMouseDown(event, chart) {
             return true; // Événement géré
         }
 
-        // 2. Vérifier clic sur la boîte (pour drag)
+        // 2. Calculer la position de la boîte
         const boxX = boxPos.x - boxWidth / 2;
         const boxY = boxPos.y;
 
+        // 3. Vérifier clic sur zone de resize (prioritaire sur le drag)
+        const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+        if (resizeZone) {
+            // Commencer le resize
+            snapPointState.dragging = 'resize';
+            snapPointState.draggedSnapPoint = snapPoint;
+            snapPointState.resizeDirection = resizeZone;
+            snapPointState.dragStartX = mouseX;
+            snapPointState.dragStartY = mouseY;
+            snapPointState.resizeStartWidth = boxWidth;
+            snapPointState.resizeStartHeight = boxHeight;
+            snapPointState.resizeStartBoxX = boxX;
+            snapPointState.resizeStartBoxY = boxY;
+            snapPointState.dragOffsetX = snapPoint.offsetX;
+            snapPointState.dragOffsetY = snapPoint.offsetY;
+
+            chart.canvas.style.cursor = getCursorForResizeZone(resizeZone);
+            return true; // Événement géré
+        }
+
+        // 4. Vérifier clic sur la boîte (pour drag)
         if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
             mouseY >= boxY && mouseY <= boxY + boxHeight) {
             // Commencer le drag de la boîte
@@ -1052,7 +1146,7 @@ function handleSnapPointMouseDown(event, chart) {
             return true; // Événement géré
         }
 
-        // 3. Vérifier clic sur le point d'accroche (pour drag)
+        // 5. Vérifier clic sur le point d'accroche (pour drag)
         const pointRadius = 8; // Zone cliquable
         const distToPoint = Math.sqrt(
             Math.pow(mouseX - pointPos.x, 2) +
@@ -1088,7 +1182,7 @@ function handleSnapPointMouseMove(event, chart) {
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    // Si on est en train de drag
+    // Si on est en train de drag ou resize
     if (snapPointState.dragging && snapPointState.draggedSnapPoint) {
         const deltaX = mouseX - snapPointState.dragStartX;
         const deltaY = mouseY - snapPointState.dragStartY;
@@ -1110,6 +1204,53 @@ function handleSnapPointMouseMove(event, chart) {
                 snapPointState.draggedSnapPoint.time = timeMs / 1000;
                 snapPointState.draggedSnapPoint.value = value;
             }
+        } else if (snapPointState.dragging === 'resize') {
+            // Resize de la boîte
+            const direction = snapPointState.resizeDirection;
+            let newWidth = snapPointState.resizeStartWidth;
+            let newHeight = snapPointState.resizeStartHeight;
+            let offsetXDelta = 0;
+            let offsetYDelta = 0;
+
+            // Calculer les nouvelles dimensions selon la direction
+            if (direction.includes('w')) {
+                // Resize vers la gauche (le bord gauche bouge)
+                newWidth = snapPointState.resizeStartWidth - deltaX;
+                offsetXDelta = deltaX / 2; // Ajuster l'offset pour garder le centre
+            }
+            if (direction.includes('e')) {
+                // Resize vers la droite (le bord droit bouge)
+                newWidth = snapPointState.resizeStartWidth + deltaX;
+                offsetXDelta = deltaX / 2;
+            }
+            if (direction.includes('n')) {
+                // Resize vers le haut (le bord haut bouge)
+                newHeight = snapPointState.resizeStartHeight - deltaY;
+                offsetYDelta = deltaY / 2;
+            }
+            if (direction.includes('s')) {
+                // Resize vers le bas (le bord bas bouge)
+                newHeight = snapPointState.resizeStartHeight + deltaY;
+                offsetYDelta = deltaY / 2;
+            }
+
+            // Appliquer des limites minimales
+            const minWidth = 80;
+            const minHeight = 40;
+            newWidth = Math.max(newWidth, minWidth);
+            newHeight = Math.max(newHeight, minHeight);
+
+            // Mettre à jour les dimensions et ajuster les offsets
+            snapPointState.draggedSnapPoint.boxWidth = newWidth;
+            snapPointState.draggedSnapPoint.boxHeight = newHeight;
+
+            // Ajuster les offsets pour que la boîte reste centrée pendant le resize
+            if (direction.includes('e') || direction.includes('w')) {
+                snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + offsetXDelta;
+            }
+            if (direction.includes('n') || direction.includes('s')) {
+                snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + offsetYDelta;
+            }
         }
 
         // Mettre à jour l'affichage
@@ -1119,7 +1260,7 @@ function handleSnapPointMouseMove(event, chart) {
     }
 
     // Si on n'est pas en drag, vérifier le survol pour changer le curseur
-    let isOverInteractive = false;
+    let cursorToSet = 'default';
 
     for (let i = snapPoints.length - 1; i >= 0; i--) {
         const snapPoint = snapPoints[i];
@@ -1145,7 +1286,8 @@ function handleSnapPointMouseMove(event, chart) {
             lines.push(snapPoint.comment);
         }
 
-        const padding = 10;
+        const basePadding = 10;
+        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
         let maxWidth = 0;
         lines.forEach(line => {
@@ -1153,8 +1295,10 @@ function handleSnapPointMouseMove(event, chart) {
             if (width > maxWidth) maxWidth = width;
         });
 
-        const boxWidth = maxWidth + padding * 2;
-        const boxHeight = lines.length * lineHeight + padding * 2;
+        const autoBoxWidth = maxWidth + padding * 2;
+        const autoBoxHeight = lines.length * lineHeight + padding * 2;
+        const boxWidth = snapPoint.boxWidth || autoBoxWidth;
+        const boxHeight = snapPoint.boxHeight || autoBoxHeight;
         ctx.restore();
 
         // Vérifier survol bouton supprimer
@@ -1163,35 +1307,45 @@ function handleSnapPointMouseMove(event, chart) {
         const btnSize = 16;
 
         if (Math.abs(mouseX - btnX) <= btnSize / 2 && Math.abs(mouseY - btnY) <= btnSize / 2) {
-            isOverInteractive = true;
+            cursorToSet = 'pointer';
+            break;
+        }
+
+        // Calculer position de la boîte
+        const boxX = boxPos.x - boxWidth / 2;
+        const boxY = boxPos.y;
+
+        // Vérifier survol zone de resize (prioritaire)
+        const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+        if (resizeZone) {
+            cursorToSet = getCursorForResizeZone(resizeZone);
             break;
         }
 
         // Vérifier survol boîte
-        const boxX = boxPos.x - boxWidth / 2;
-        const boxY = boxPos.y;
-
         if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
             mouseY >= boxY && mouseY <= boxY + boxHeight) {
-            isOverInteractive = true;
+            cursorToSet = 'move';
             break;
         }
 
         // Vérifier survol point
-        const pointRadius = 8;
-        const distToPoint = Math.sqrt(
-            Math.pow(mouseX - pointPos.x, 2) +
-            Math.pow(mouseY - pointPos.y, 2)
-        );
+        if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+            const pointRadius = 8;
+            const distToPoint = Math.sqrt(
+                Math.pow(mouseX - pointPos.x, 2) +
+                Math.pow(mouseY - pointPos.y, 2)
+            );
 
-        if (distToPoint <= pointRadius) {
-            isOverInteractive = true;
-            break;
+            if (distToPoint <= pointRadius) {
+                cursorToSet = 'move';
+                break;
+            }
         }
     }
 
     // Mettre à jour le curseur
-    chart.canvas.style.cursor = isOverInteractive ? 'pointer' : 'default';
+    chart.canvas.style.cursor = cursorToSet;
 }
 
 /**

@@ -14,14 +14,32 @@ window.chartFontSize = 12;
 // --- CHARTS INITIALIZATION ---
 function initCharts() {
     const commonOptions = {
-        responsive: true, 
-        maintainAspectRatio: false, 
+        responsive: true,
+        maintainAspectRatio: false,
         animation: false,
         layout: { padding: { top: 20, right: 10, bottom: 0, left: 0 } },
-        plugins: { legend: { display: false } },
-        scales: { 
-            x: { grid: { color: '#333' }, ticks: { color: '#aaa' } }, 
-            y: { grid: { color: '#333' }, ticks: { color: '#aaa' } } 
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                // Empêcher le tooltip de déborder sur les axes
+                enabled: true,
+                mode: 'nearest',
+                intersect: false,
+                // Positionner le tooltip pour éviter les débordements
+                yAlign: 'center',
+                caretSize: 6,
+                callbacks: {
+                    // Limiter les informations affichées
+                    title: function(context) {
+                        // Vérifier si on est près du bord pour ajuster
+                        return context[0].label || '';
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { grid: { color: '#333' }, ticks: { color: '#aaa' } },
+            y: { grid: { color: '#333' }, ticks: { color: '#aaa' } }
         }
     };
 

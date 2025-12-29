@@ -1496,6 +1496,75 @@
         </div>
     </div>
 
+    <!-- Modal Modification SnapPoint (Marqueur) -->
+    <div id="snappoint-edit-modal" class="modal" style="display:none;">
+        <div id="snappoint-modal-content" class="modal-content" style="width: 500px; max-width: 90vw; padding: 15px; position: relative;">
+            <!-- Bouton de fermeture -->
+            <button onclick="closeSnapPointEditModal()" class="btn-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
+                    onmouseover="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-main)';"
+                    onmouseout="this.style.background='none'; this.style.color='var(--text-muted)';"
+                    title="Fermer sans valider">&times;</button>
+
+            <!-- Titre draggable -->
+            <h2 id="snappoint-modal-header" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); font-size: 1.3em; cursor: move; user-select: none; padding-right: 35px;"
+                title="Glissez pour déplacer la fenêtre">
+                <i class="fas fa-map-marker-alt"></i> <span id="snappoint-modal-title">Modifier le marqueur</span>
+            </h2>
+
+            <!-- Commentaire avec formatage -->
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="font-weight: bold; font-size: 0.9em;">
+                        Commentaire:
+                    </label>
+                    <div style="display: flex; gap: 4px;" id="snappoint-format-toolbar">
+                        <button onclick="toggleSnapPointFormat('bold')" id="snap-fmt-bold" title="Gras"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-weight: bold;">
+                            B
+                        </button>
+                        <button onclick="toggleSnapPointFormat('italic')" id="snap-fmt-italic" title="Italique"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-style: italic;">
+                            I
+                        </button>
+                        <button onclick="toggleSnapPointFormat('underline')" id="snap-fmt-underline" title="Souligné"
+                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
+                            U
+                        </button>
+                        <select onchange="setSnapPointFontSize(this.value)" id="snap-fmt-size" title="Taille du texte"
+                                style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <option value="10">Petit</option>
+                            <option value="11" selected>Normal</option>
+                            <option value="13">Grand</option>
+                            <option value="15">Très grand</option>
+                        </select>
+                    </div>
+                </div>
+                <textarea id="snappoint-comment-input" rows="3"
+                       style="width: 100%; padding: 8px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit;"
+                       placeholder="Entrez un commentaire..."></textarea>
+            </div>
+
+            <!-- Info marqueur -->
+            <div style="margin-bottom: 10px; padding: 6px 8px; background: var(--input-bg); border-radius: 4px; border-left: 3px solid var(--accent-blue); font-size: 0.85em;">
+                <span style="color: var(--text-muted);">
+                    <i class="fas fa-info-circle"></i> <span id="snappoint-info-channel">--</span> | Temps: <span id="snappoint-info-time">--</span> | Valeur: <span id="snappoint-info-value">--</span>
+                </span>
+            </div>
+
+            <!-- Boutons -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button onclick="closeSnapPointEditModal()"
+                        style="padding: 8px 16px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    Annuler
+                </button>
+                <button onclick="confirmSnapPointEdit()"
+                        style="padding: 8px 16px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-check"></i> Valider
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script pour toggle Presets -->
     <script>
     function togglePresets() {

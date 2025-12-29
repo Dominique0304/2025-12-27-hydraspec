@@ -486,18 +486,182 @@ function toggleSnapPointVisibility(id) {
     }
 }
 
-// Éditer un marqueur
-function editSnapPoint(id) {
+// État de la modale d'édition
+let editingSnapPointId = null;
+
+// Ouvrir la modale d'édition complète d'un marqueur
+function openSnapPointEditModal(id) {
     const snapPoint = snapPoints.find(sp => sp.id === id);
+    if (!snapPoint) {
+        console.error(`Marqueur avec id ${id} introuvable`);
+        return;
+    }
+
+    // Récupérer les éléments de la modale
+    const modal = document.getElementById('snappoint-edit-modal');
+    const commentInput = document.getElementById('snappoint-comment-input');
+    const infoChannel = document.getElementById('snappoint-info-channel');
+    const infoTime = document.getElementById('snappoint-info-time');
+    const infoValue = document.getElementById('snappoint-info-value');
+    const sizeSelect = document.getElementById('snap-fmt-size');
+
+    if (!modal) return;
+
+    // Stocker l'ID en édition
+    editingSnapPointId = id;
+
+    // Remplir les champs
+    if (commentInput) commentInput.value = snapPoint.comment || '';
+    if (infoChannel) infoChannel.textContent = snapPoint.getChannelLabel();
+    if (infoTime) infoTime.textContent = `${snapPoint.time.toFixed(3)}s`;
+    if (infoValue) infoValue.textContent = `${snapPoint.value.toFixed(2)} ${snapPoint.getChannelUnit()}`;
+
+    // Régler la taille de police
+    if (sizeSelect) {
+        sizeSelect.value = snapPoint.fontSize.toString();
+    }
+
+    // Mettre à jour les boutons de formatage
+    updateSnapPointFormatButtons();
+
+    // Afficher la modale
+    modal.style.display = 'flex';
+
+    // Initialiser le drag de la modale
+    makeSnapPointModalDraggable();
+}
+
+// Fermer la modale d'édition
+function closeSnapPointEditModal() {
+    const modal = document.getElementById('snappoint-edit-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    editingSnapPointId = null;
+}
+
+// Confirmer l'édition du marqueur
+function confirmSnapPointEdit() {
+    if (editingSnapPointId === null) {
+        console.error('Aucun marqueur en édition');
+        return;
+    }
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) {
+        console.error(`Marqueur avec id ${editingSnapPointId} introuvable`);
+        return;
+    }
+
+    // Récupérer les valeurs
+    const commentInput = document.getElementById('snappoint-comment-input');
+    if (commentInput) {
+        snapPoint.comment = commentInput.value;
+    }
+
+    // Fermer la modale
+    closeSnapPointEditModal();
+
+    // Mettre à jour l'affichage
+    updateSnapPointsList();
+    appState.charts.time.update('none');
+
+    // Sauvegarder
+    saveSnapPoints();
+
+    setStatus(`Marqueur modifié`);
+}
+
+// Basculer un format (bold, italic, underline)
+function toggleSnapPointFormat(format) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
     if (!snapPoint) return;
 
-    // TODO: Ouvrir une boîte de dialogue pour éditer
-    const comment = prompt(`Commentaire pour ce marqueur:`, snapPoint.comment || '');
-    if (comment !== null) {
-        snapPoint.comment = comment;
-        updateSnapPointsList();
-        appState.charts.time.update('none');
+    if (format === 'bold') {
+        snapPoint.fontWeight = snapPoint.fontWeight === 'bold' ? 'normal' : 'bold';
+    } else if (format === 'italic') {
+        snapPoint.fontStyle = snapPoint.fontStyle === 'italic' ? 'normal' : 'italic';
+    } else if (format === 'underline') {
+        snapPoint.textDecoration = snapPoint.textDecoration === 'underline' ? 'none' : 'underline';
     }
+
+    updateSnapPointFormatButtons();
+}
+
+// Définir la taille de police
+function setSnapPointFontSize(size) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    snapPoint.fontSize = parseInt(size);
+}
+
+// Mettre à jour l'apparence des boutons de formatage
+function updateSnapPointFormatButtons() {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    const btnBold = document.getElementById('snap-fmt-bold');
+    const btnItalic = document.getElementById('snap-fmt-italic');
+    const btnUnderline = document.getElementById('snap-fmt-underline');
+
+    if (btnBold) {
+        btnBold.style.background = snapPoint.fontWeight === 'bold' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnBold.style.color = snapPoint.fontWeight === 'bold' ? 'white' : 'var(--text-main)';
+    }
+
+    if (btnItalic) {
+        btnItalic.style.background = snapPoint.fontStyle === 'italic' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnItalic.style.color = snapPoint.fontStyle === 'italic' ? 'white' : 'var(--text-main)';
+    }
+
+    if (btnUnderline) {
+        btnUnderline.style.background = snapPoint.textDecoration === 'underline' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnUnderline.style.color = snapPoint.textDecoration === 'underline' ? 'white' : 'var(--text-main)';
+    }
+}
+
+// Rendre la modale draggable par son header
+function makeSnapPointModalDraggable() {
+    const modal = document.getElementById('snappoint-modal-content');
+    const header = document.getElementById('snappoint-modal-header');
+
+    if (!modal || !header) return;
+
+    let isDragging = false;
+    let initialX = 0;
+    let initialY = 0;
+
+    header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        initialX = e.clientX - (parseInt(modal.style.left) || 0);
+        initialY = e.clientY - (parseInt(modal.style.top) || 0);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const currentX = e.clientX - initialX;
+        const currentY = e.clientY - initialY;
+
+        modal.style.left = currentX + 'px';
+        modal.style.top = currentY + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+}
+
+// Éditer un marqueur (fonction appelée depuis la liste)
+function editSnapPoint(id) {
+    openSnapPointEditModal(id);
 }
 
 // Supprimer un marqueur
@@ -892,6 +1056,11 @@ if (typeof window !== 'undefined') {
     window.saveSnapPoints = saveSnapPoints;
     window.loadSnapPoints = loadSnapPoints;
     window.loadSnapPointsFromProject = loadSnapPointsFromProject;
+    window.openSnapPointEditModal = openSnapPointEditModal;
+    window.closeSnapPointEditModal = closeSnapPointEditModal;
+    window.confirmSnapPointEdit = confirmSnapPointEdit;
+    window.toggleSnapPointFormat = toggleSnapPointFormat;
+    window.setSnapPointFontSize = setSnapPointFontSize;
 }
 
 console.log('✅ Outil Marqueur (SnapPoint) initialisé');

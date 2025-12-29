@@ -358,6 +358,46 @@ function hexToRgba(hex, opacity) {
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+// Fonction pour remplacer les balises dans le commentaire
+function replaceSnapPointTags(comment, snapPoint) {
+    if (!comment || comment.trim() === '') {
+        return comment;
+    }
+
+    let result = comment;
+
+    // Si un canal d'accrochage est défini, utiliser ses informations
+    const hasAnchor = snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined;
+
+    if (hasAnchor) {
+        const channelLabel = snapPoint.getChannelLabel();
+        const unit = snapPoint.getChannelUnit();
+        const timeText = `${snapPoint.time.toFixed(3)} sec`;
+        const valueText = `${snapPoint.value.toFixed(1)} ${unit}`;
+
+        // Remplacer les balises
+        result = result.replace(/C\$/g, channelLabel);        // C$ → "S1; IA (mA)"
+        result = result.replace(/X\$/g, timeText);            // X$ → "7,444 sec"
+        result = result.replace(/Y\$/g, valueText);           // Y$ → "664,0 mA"
+        result = result.replace(/U\$/g, unit);                // U$ → "mA"
+    } else {
+        // Si pas de canal d'accrochage, remplacer par des chaînes vides
+        result = result.replace(/C\$/g, '');
+        result = result.replace(/X\$/g, '');
+        result = result.replace(/Y\$/g, '');
+        result = result.replace(/U\$/g, '');
+
+        // Nettoyer les doubles espaces et points-virgules orphelins
+        result = result.replace(/;\s*;/g, ';');       // ;; → ;
+        result = result.replace(/^\s*;\s*/g, '');     // ; au début → vide
+        result = result.replace(/\s*;\s*$/g, '');     // ; à la fin → vide
+        result = result.replace(/\s+/g, ' ');         // Multiples espaces → un seul
+        result = result.trim();
+    }
+
+    return result;
+}
+
 // Dessiner tous les marqueurs sur le graphique
 function drawSnapPoints(chart) {
     if (!chart || !chart.ctx) {
@@ -419,9 +459,12 @@ function drawSnapPoints(chart) {
         const valueText = `${snapPoint.value.toFixed(1)} ${unit}`;
         const lines = [channelLabel, timeText, valueText];
 
-        // Ajouter le commentaire si présent
+        // Ajouter le commentaire si présent (avec remplacement des balises)
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-            lines.push(snapPoint.comment);
+            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+            if (processedComment && processedComment.trim() !== '') {
+                lines.push(processedComment);
+            }
         }
 
         // Calculer les dimensions de la boîte
@@ -570,7 +613,8 @@ function updateSnapPointsList() {
         const unit = snapPoint.getChannelUnit();
         const timeInfo = `${snapPoint.time.toFixed(3)}s`;
         const valueInfo = `${snapPoint.value.toFixed(1)} ${unit}`;
-        const commentInfo = snapPoint.comment ? snapPoint.comment : '';
+        // Traiter le commentaire avec les balises
+        const commentInfo = snapPoint.comment ? replaceSnapPointTags(snapPoint.comment, snapPoint) : '';
 
         const isVisible = snapPoint.visible !== false;
         const eyeIcon = isVisible ? 'fa-eye' : 'fa-eye-slash';

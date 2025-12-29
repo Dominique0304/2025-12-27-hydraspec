@@ -783,6 +783,9 @@ function restoreAllToolsState(project) {
             snapPoint.fontWeight = data.fontWeight || 'normal';
             snapPoint.fontStyle = data.fontStyle || 'normal';
             snapPoint.textDecoration = data.textDecoration || 'none';
+            snapPoint.backgroundColor = data.backgroundColor || '#FFD93D';
+            snapPoint.backgroundOpacity = data.backgroundOpacity !== undefined ? data.backgroundOpacity : 0.9;
+            snapPoint.boxPaddingScale = data.boxPaddingScale || 1.0;
             snapPoints.push(snapPoint);
         });
 

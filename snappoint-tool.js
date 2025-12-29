@@ -38,6 +38,11 @@ class SnapPoint {
         this.fontWeight = 'normal';
         this.fontStyle = 'normal';
         this.textDecoration = 'none';
+
+        // Apparence de la boîte
+        this.backgroundColor = '#FFD93D'; // Couleur de fond (jaune par défaut)
+        this.backgroundOpacity = 0.9; // Opacité du fond (0-1)
+        this.boxPaddingScale = 1.0; // Facteur d'agrandissement de la boîte (1.0 = normal)
     }
 
     // Obtenir le label du canal
@@ -274,6 +279,23 @@ function interpolateChannelValue(channelIndex, timeSec) {
     return result;
 }
 
+// Fonction helper pour convertir hex en rgba
+function hexToRgba(hex, opacity) {
+    // Retirer le # si présent
+    hex = hex.replace('#', '');
+
+    // Gérer les formats court (3 caractères) et long (6 caractères)
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 // Dessiner tous les marqueurs sur le graphique
 function drawSnapPoints(chart) {
     if (!chart || !chart.ctx) {
@@ -329,7 +351,7 @@ function drawSnapPoints(chart) {
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
         const timeText = `t = ${snapPoint.time.toFixed(3)}s`;
-        const valueText = `${snapPoint.value.toFixed(2)} ${unit}`;
+        const valueText = `${snapPoint.value.toFixed(1)} ${unit}`;
         const lines = [channelLabel, timeText, valueText];
 
         // Ajouter le commentaire si présent
@@ -339,7 +361,8 @@ function drawSnapPoints(chart) {
 
         // Calculer les dimensions de la boîte
         ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
-        const padding = 10;
+        const basePadding = 10;
+        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
 
         let maxWidth = 0;
@@ -353,7 +376,12 @@ function drawSnapPoints(chart) {
 
         // Dessiner la boîte avec coins arrondis
         const radius = 6;
-        drawRoundedRect(ctx, boxPos.x - boxWidth / 2, boxPos.y, boxWidth, boxHeight, radius, '#FFD93D', '#000');
+        const backgroundColor = snapPoint.backgroundColor || '#FFD93D';
+        const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9;
+
+        // Convertir la couleur en rgba avec l'opacité
+        const bgColor = hexToRgba(backgroundColor, backgroundOpacity);
+        drawRoundedRect(ctx, boxPos.x - boxWidth / 2, boxPos.y, boxWidth, boxHeight, radius, bgColor, '#000');
 
         // Dessiner le texte
         ctx.fillStyle = '#000';
@@ -435,7 +463,7 @@ function updateSnapPointsList() {
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
         const timeInfo = `${snapPoint.time.toFixed(3)}s`;
-        const valueInfo = `${snapPoint.value.toFixed(2)} ${unit}`;
+        const valueInfo = `${snapPoint.value.toFixed(1)} ${unit}`;
         const commentInfo = snapPoint.comment ? snapPoint.comment : '';
 
         const isVisible = snapPoint.visible !== false;
@@ -514,12 +542,32 @@ function openSnapPointEditModal(id) {
     if (commentInput) commentInput.value = snapPoint.comment || '';
     if (infoChannel) infoChannel.textContent = snapPoint.getChannelLabel();
     if (infoTime) infoTime.textContent = `${snapPoint.time.toFixed(3)}s`;
-    if (infoValue) infoValue.textContent = `${snapPoint.value.toFixed(2)} ${snapPoint.getChannelUnit()}`;
+    if (infoValue) infoValue.textContent = `${snapPoint.value.toFixed(1)} ${snapPoint.getChannelUnit()}`;
 
     // Régler la taille de police
     if (sizeSelect) {
         sizeSelect.value = snapPoint.fontSize.toString();
     }
+
+    // Régler la couleur de fond
+    const bgColorPicker = document.getElementById('snap-bg-color');
+    if (bgColorPicker && snapPoint.backgroundColor) {
+        bgColorPicker.value = snapPoint.backgroundColor;
+    }
+
+    // Régler l'opacité
+    const opacitySlider = document.getElementById('snap-opacity');
+    const opacityValue = document.getElementById('snap-opacity-value');
+    const opacity = (snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9) * 100;
+    if (opacitySlider) opacitySlider.value = opacity;
+    if (opacityValue) opacityValue.textContent = `${Math.round(opacity)}%`;
+
+    // Régler la taille de la boîte
+    const paddingSlider = document.getElementById('snap-padding');
+    const paddingValue = document.getElementById('snap-padding-value');
+    const padding = (snapPoint.boxPaddingScale || 1.0) * 100;
+    if (paddingSlider) paddingSlider.value = padding;
+    if (paddingValue) paddingValue.textContent = `${Math.round(padding)}%`;
 
     // Mettre à jour les boutons de formatage
     updateSnapPointFormatButtons();
@@ -598,6 +646,73 @@ function setSnapPointFontSize(size) {
     if (!snapPoint) return;
 
     snapPoint.fontSize = parseInt(size);
+}
+
+// Définir la couleur de fond
+function setSnapPointBackgroundColor(color) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    if (color === 'transparent') {
+        snapPoint.backgroundOpacity = 0;
+        const opacitySlider = document.getElementById('snap-opacity');
+        const opacityValue = document.getElementById('snap-opacity-value');
+        if (opacitySlider) opacitySlider.value = 0;
+        if (opacityValue) opacityValue.textContent = '0%';
+    } else {
+        snapPoint.backgroundColor = color;
+    }
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
+}
+
+// Définir l'opacité du fond
+function setSnapPointOpacity(value) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    const opacity = parseInt(value) / 100;
+    snapPoint.backgroundOpacity = opacity;
+
+    // Mettre à jour l'affichage de la valeur
+    const opacityValue = document.getElementById('snap-opacity-value');
+    if (opacityValue) {
+        opacityValue.textContent = `${value}%`;
+    }
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
+}
+
+// Définir la taille de la boîte (padding scale)
+function setSnapPointPadding(value) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    const scale = parseInt(value) / 100;
+    snapPoint.boxPaddingScale = scale;
+
+    // Mettre à jour l'affichage de la valeur
+    const paddingValue = document.getElementById('snap-padding-value');
+    if (paddingValue) {
+        paddingValue.textContent = `${value}%`;
+    }
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
 }
 
 // Mettre à jour l'apparence des boutons de formatage
@@ -711,7 +826,10 @@ function saveSnapPoints() {
             fontSize: sp.fontSize,
             fontWeight: sp.fontWeight,
             fontStyle: sp.fontStyle,
-            textDecoration: sp.textDecoration
+            textDecoration: sp.textDecoration,
+            backgroundColor: sp.backgroundColor,
+            backgroundOpacity: sp.backgroundOpacity,
+            boxPaddingScale: sp.boxPaddingScale
         }));
 
         localStorage.setItem('hydraspec_snappoints', JSON.stringify(data));
@@ -743,6 +861,9 @@ function loadSnapPoints() {
             snapPoint.fontWeight = item.fontWeight || 'normal';
             snapPoint.fontStyle = item.fontStyle || 'normal';
             snapPoint.textDecoration = item.textDecoration || 'none';
+            snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
+            snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
+            snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
 
             // Mettre à jour nextSnapPointId
             if (item.id >= nextSnapPointId) {
@@ -783,6 +904,9 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         snapPoint.fontWeight = item.fontWeight || 'normal';
         snapPoint.fontStyle = item.fontStyle || 'normal';
         snapPoint.textDecoration = item.textDecoration || 'none';
+        snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
+        snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
+        snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
 
         // Mettre à jour nextSnapPointId
         if (item.id >= nextSnapPointId) {
@@ -834,7 +958,7 @@ function handleSnapPointMouseDown(event, chart) {
         const lines = [
             channelLabel,
             `t = ${snapPoint.time.toFixed(3)}s`,
-            `${snapPoint.value.toFixed(2)} ${unit}`
+            `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             lines.push(snapPoint.comment);
@@ -967,7 +1091,7 @@ function handleSnapPointMouseMove(event, chart) {
         const lines = [
             channelLabel,
             `t = ${snapPoint.time.toFixed(3)}s`,
-            `${snapPoint.value.toFixed(2)} ${unit}`
+            `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             lines.push(snapPoint.comment);
@@ -1061,6 +1185,9 @@ if (typeof window !== 'undefined') {
     window.confirmSnapPointEdit = confirmSnapPointEdit;
     window.toggleSnapPointFormat = toggleSnapPointFormat;
     window.setSnapPointFontSize = setSnapPointFontSize;
+    window.setSnapPointBackgroundColor = setSnapPointBackgroundColor;
+    window.setSnapPointOpacity = setSnapPointOpacity;
+    window.setSnapPointPadding = setSnapPointPadding;
 }
 
 console.log('✅ Outil Marqueur (SnapPoint) initialisé');

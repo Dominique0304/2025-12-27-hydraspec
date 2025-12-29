@@ -1544,6 +1544,44 @@
                        placeholder="Entrez un commentaire..."></textarea>
             </div>
 
+            <!-- Apparence de la boîte -->
+            <div style="margin-bottom: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 4px;">
+                <div style="font-weight: bold; font-size: 0.9em; margin-bottom: 8px;">
+                    Apparence de la boîte:
+                </div>
+
+                <!-- Couleur de fond -->
+                <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <label style="flex: 0 0 120px; font-size: 0.85em;">
+                        Couleur fond:
+                    </label>
+                    <input type="color" id="snap-bg-color" value="#FFD93D" onchange="setSnapPointBackgroundColor(this.value)"
+                           style="flex: 0 0 60px; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    <button onclick="setSnapPointBackgroundColor('transparent')" title="Fond transparent"
+                            style="flex: 0 0 auto; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                        Transparent
+                    </button>
+                </div>
+
+                <!-- Opacité -->
+                <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <label style="flex: 0 0 120px; font-size: 0.85em;">
+                        Opacité: <span id="snap-opacity-value">90%</span>
+                    </label>
+                    <input type="range" id="snap-opacity" min="0" max="100" value="90" oninput="setSnapPointOpacity(this.value)"
+                           style="flex: 1; cursor: pointer;">
+                </div>
+
+                <!-- Taille de la boîte -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="flex: 0 0 120px; font-size: 0.85em;">
+                        Taille boîte: <span id="snap-padding-value">100%</span>
+                    </label>
+                    <input type="range" id="snap-padding" min="80" max="200" value="100" oninput="setSnapPointPadding(this.value)"
+                           style="flex: 1; cursor: pointer;">
+                </div>
+            </div>
+
             <!-- Info marqueur -->
             <div style="margin-bottom: 10px; padding: 6px 8px; background: var(--input-bg); border-radius: 4px; border-left: 3px solid var(--accent-blue); font-size: 0.85em;">
                 <span style="color: var(--text-muted);">

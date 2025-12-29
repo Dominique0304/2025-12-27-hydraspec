@@ -20,6 +20,7 @@ class Project {
         this.fileName = null;        // Nom du fichier avec extension
         this.filePath = null;        // Chemin complet (optionnel)
         this.isModified = false;     // Fichier modifié depuis dernière sauvegarde
+        this.fileHandle = null;      // File System Access API handle (Chrome/Edge seulement)
 
         // État isolé pour CE projet uniquement
         this.state = {

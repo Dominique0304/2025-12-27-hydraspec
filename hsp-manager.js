@@ -118,6 +118,48 @@ function saveHSPAs() {
 }
 
 // ========================================
+// SAUVEGARDE DIRECTE (File System Access API)
+// ========================================
+
+/**
+ * Sauvegarde directement dans un fileHandle existant (sans boîte de dialogue)
+ * Compatible Chrome/Edge uniquement
+ * @param {Blob} blob - Données à écrire
+ * @param {FileSystemFileHandle} fileHandle - Handle du fichier
+ * @param {string} fileName - Nom du fichier (pour les logs)
+ * @returns {Promise<boolean>} true si succès, false si échec
+ */
+async function saveDirectToHandle(blob, fileHandle, fileName) {
+    try {
+        console.log(`💾 Sauvegarde directe (sans dialogue): ${fileName}`);
+
+        // Vérifier les permissions
+        const permission = await fileHandle.queryPermission({ mode: 'readwrite' });
+        if (permission !== 'granted') {
+            // Demander la permission si nécessaire
+            const newPermission = await fileHandle.requestPermission({ mode: 'readwrite' });
+            if (newPermission !== 'granted') {
+                console.warn('⚠️ Permission refusée pour écrire dans le fichier');
+                return false;
+            }
+        }
+
+        // Écrire le fichier
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+
+        console.log(`✅ Fichier sauvegardé directement: ${fileName}`);
+        setStatus(`✅ Sauvegarde directe: ${fileName}`);
+        return true;
+
+    } catch (error) {
+        console.error(`❌ Erreur sauvegarde directe:`, error);
+        return false;
+    }
+}
+
+// ========================================
 // SAUVEGARDE EFFECTIVE
 // ========================================
 
@@ -203,9 +245,33 @@ async function performHSPSave(project, fileName, isNewFile) {
         dataPoints: hspData.state.fullDataTime.length
     });
 
-    // Créer le blob et télécharger
+    // Créer le blob
     const blob = new Blob([JSON.stringify(hspData, null, 2)], { type: "application/json" });
-    await downloadBlob(blob, `${fileName}.hsp`);
+
+    // STRATÉGIE DE SAUVEGARDE :
+    // 1. Si on a un fileHandle ET qu'on ne demande pas un nouveau fichier → Sauvegarde directe (pas de dialogue)
+    // 2. Sinon → Utiliser downloadBlob (avec dialogue)
+    let savedSuccessfully = false;
+
+    if (!isNewFile && project.fileHandle && 'createWritable' in FileSystemFileHandle.prototype) {
+        // Tentative de sauvegarde directe (sans dialogue)
+        console.log("🎯 Tentative de sauvegarde directe avec fileHandle existant");
+        savedSuccessfully = await saveDirectToHandle(blob, project.fileHandle, `${fileName}.hsp`);
+    }
+
+    // Fallback : Si sauvegarde directe a échoué OU si nouveau fichier, utiliser downloadBlob
+    if (!savedSuccessfully) {
+        if (!isNewFile && project.fileHandle) {
+            console.warn("⚠️ Sauvegarde directe échouée, utilisation du fallback downloadBlob");
+        }
+        const handle = await downloadBlob(blob, `${fileName}.hsp`);
+
+        // Si downloadBlob retourne un handle (File System Access API), le stocker
+        if (handle && !isNewFile) {
+            project.fileHandle = handle;
+            console.log("✅ FileHandle stocké pour prochaine sauvegarde directe");
+        }
+    }
 
     // Mettre à jour les informations du projet
     if (isNewFile) {
@@ -242,13 +308,70 @@ function getChartZoomState(project) {
 }
 
 // ========================================
+// OUVERTURE FICHIER (File System Access API)
+// ========================================
+
+/**
+ * Ouvre un fichier .HSP avec File System Access API (Chrome/Edge)
+ * Stocke le fileHandle pour permettre la sauvegarde directe
+ */
+async function openHSPWithPicker() {
+    // Vérifier le support de l'API
+    if (!('showOpenFilePicker' in window)) {
+        console.warn('⚠️ showOpenFilePicker non supporté, fallback vers input file');
+        // Fallback : cliquer sur l'input file classique
+        document.getElementById('projectInput').click();
+        return;
+    }
+
+    try {
+        // Ouvrir la boîte de dialogue
+        const [fileHandle] = await window.showOpenFilePicker({
+            types: [{
+                description: 'Fichiers HydraSpec Pro',
+                accept: { 'application/json': ['.hsp'] }
+            }],
+            multiple: false
+        });
+
+        // Lire le fichier
+        const file = await fileHandle.getFile();
+
+        // Charger le projet
+        const project = await loadHSPFromFile(file);
+
+        // IMPORTANT : Stocker le fileHandle pour la sauvegarde directe
+        if (project) {
+            project.fileHandle = fileHandle;
+            console.log(`✅ FileHandle stocké pour ${file.name} - Sauvegarde directe activée`);
+        }
+
+    } catch (err) {
+        if (err.name !== 'AbortError') {
+            console.error('❌ Erreur lors de l\'ouverture:', err);
+            alert('Erreur lors de l\'ouverture du fichier');
+        }
+    }
+}
+
+// ========================================
 // CHARGEMENT .HSP
 // ========================================
 
 /**
- * Charge un fichier .HSP
+ * Charge un fichier .HSP depuis un <input type="file"> (fallback)
+ * @param {File} file - Fichier sélectionné via input
  */
 async function loadHSP(file) {
+    return loadHSPFromFile(file);
+}
+
+/**
+ * Fonction interne pour charger un fichier HSP
+ * @param {File} file - Fichier à charger
+ * @returns {Promise<Project>} Projet créé
+ */
+async function loadHSPFromFile(file) {
     console.log("📂 Chargement HSP:", file.name);
 
     const projectManager = window.projectManager;
@@ -516,6 +639,7 @@ window.exportToHSP = exportToHSP;
 window.saveHSP = saveHSP;
 window.saveHSPAs = saveHSPAs;
 window.loadHSP = loadHSP;
+window.openHSPWithPicker = openHSPWithPicker;
 window.hasUnsavedChanges = hasUnsavedChanges;
 window.promptSaveBeforeClose = promptSaveBeforeClose;
 window.updateFileMenuButtons = updateFileMenuButtons;

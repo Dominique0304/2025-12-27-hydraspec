@@ -473,13 +473,13 @@ async function downloadBlob(blob, name) {
 
             console.log(`✅ Fichier sauvegardé avec succès: ${name}`);
             setStatus(`Fichier sauvegardé: ${name}`);
-            return;
+            return handle; // Retourner le fileHandle pour stockage
         } catch (err) {
             // Si l'utilisateur annule, ne rien faire
             if (err.name === 'AbortError') {
                 console.log('❌ Sauvegarde annulée par l\'utilisateur');
                 setStatus('Sauvegarde annulée');
-                return;
+                return null;
             }
             // Sinon, utiliser le fallback
             console.warn('⚠️ showSaveFilePicker a échoué, utilisation du fallback:', err);
@@ -496,6 +496,7 @@ async function downloadBlob(blob, name) {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     console.log(`📥 Fichier téléchargé (fallback): ${name}`);
+    return null; // Pas de fileHandle en mode fallback
 }
 
 // Initialiser au chargement

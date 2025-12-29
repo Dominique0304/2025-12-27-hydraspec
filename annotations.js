@@ -1461,6 +1461,12 @@ function drawAnnotationConnectors(chart) {
     // Sauvegarder le contexte
     ctx.save();
 
+    // Clip to chart area to prevent overlap with axes
+    const chartArea = chart.chartArea;
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+    ctx.clip();
+
     // IMPORTANT: Recalculer les positions en pixels à chaque rendu
     // car elles changent lors du zoom/pan
     annotations.forEach(annotation => {

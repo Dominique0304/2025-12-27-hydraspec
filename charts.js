@@ -21,8 +21,8 @@ function initCharts() {
         plugins: {
             legend: { display: false },
             tooltip: {
-                // Désactiver les tooltips HTML (remplacés par annotations canvas)
-                enabled: false
+                // Réactiver les tooltips (l'utilisateur confirme qu'ils ne dérangent pas)
+                enabled: true
             }
         },
         scales: {

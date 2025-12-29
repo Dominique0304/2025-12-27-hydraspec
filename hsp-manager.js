@@ -227,6 +227,9 @@ async function performHSPSave(project, fileName, isNewFile) {
         // Intervalles
         intervals: project.toolsState.intervals || [],
 
+        // Diff/Canal (intervalles de différence entre canaux)
+        diffCanal: project.toolsState.diffCanal || { intervals: [], nextId: 1 },
+
         // Canaux calculés/lissés (paramètres seulement, pas les données)
         calculatedChannels: project.toolsState.calculatedChannels || [],
         smoothedChannels: project.toolsState.smoothedChannels || [],
@@ -239,8 +242,10 @@ async function performHSPSave(project, fileName, isNewFile) {
         channels: hspData.state.allColumnData.length,
         annotations: hspData.annotations.length,
         intervals: hspData.intervals.length,
+        diffCanal: hspData.diffCanal.intervals.length,
         toolsState_annotations: project.toolsState.annotations?.length || 0,
         toolsState_intervals: project.toolsState.intervals?.length || 0,
+        toolsState_diffCanal: project.toolsState.diffCanal?.intervals?.length || 0,
         dataPoints: hspData.state.fullDataTime.length
     });
 
@@ -475,6 +480,12 @@ async function restoreProjectFromHSP(project, hspData) {
     if (hspData.notes) {
         project.toolsState.notes = hspData.notes;
         console.log(`✅ Notes restaurées (${hspData.notes.length} caractères)`);
+    }
+
+    // Restaurer Diff/Canal
+    if (hspData.diffCanal) {
+        project.toolsState.diffCanal = hspData.diffCanal;
+        console.log(`✅ Diff/Canal restaurés (${hspData.diffCanal.intervals?.length || 0} intervalles)`);
     }
 
     // Restaurer zoom (sera appliqué après création des graphiques)

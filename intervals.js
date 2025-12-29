@@ -306,25 +306,27 @@ function drawIntervals(chart) {
         const centerX = (startX + endX) / 2;
         const text = `Δt = ${duration.toFixed(3)}s`;
 
-        ctx.font = `${window.chartFontSize}px Arial`;
+        // Police bold sans-serif comme diff/canal
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
+        ctx.textBaseline = 'middle';
 
         // Mesurer le texte
         const textMetrics = ctx.measureText(text);
         const textWidth = textMetrics.width;
-        const textHeight = window.chartFontSize;
+        const rectWidth = textWidth + 10; // 5px padding de chaque côté
+        const rectHeight = 20; // Hauteur fixe comme diff/canal
 
         // Fond jaune
         ctx.fillStyle = '#FFD93D';
-        ctx.fillRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
+        ctx.fillRect(centerX - rectWidth / 2, y - 6 - rectHeight / 2, rectWidth, rectHeight);
 
         // Encadrement noir
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;
-        ctx.strokeRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
+        ctx.strokeRect(centerX - rectWidth / 2, y - 6 - rectHeight / 2, rectWidth, rectHeight);
 
-        // Texte noir
+        // Texte noir centré
         ctx.fillStyle = '#000';
         ctx.fillText(text, centerX, y - 6);
 
@@ -332,38 +334,40 @@ function drawIntervals(chart) {
         if (interval.comment && interval.comment.trim() !== '') {
             const commentText = interval.comment;
 
-            // Utiliser la taille de police globale (ignorer interval.fontSize)
+            // Utiliser la taille de police globale avec bold et sans-serif
             const fontSize = window.chartFontSize;
-            const fontWeight = interval.fontWeight || 'normal';
+            const fontWeight = interval.fontWeight || 'bold'; // Par défaut bold
             const fontStyle = interval.fontStyle || 'normal';
 
-            ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px Arial`;
+            ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px sans-serif`;
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
+            ctx.textBaseline = 'middle';
 
             const commentMetrics = ctx.measureText(commentText);
             const commentWidth = commentMetrics.width;
+            const commentRectWidth = commentWidth + 10; // 5px padding de chaque côté
+            const commentRectHeight = 20; // Hauteur fixe
 
             // Fond jaune
             ctx.fillStyle = '#FFD93D';
-            ctx.fillRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
+            ctx.fillRect(centerX - commentRectWidth / 2, y + 8, commentRectWidth, commentRectHeight);
 
             // Encadrement noir
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1;
-            ctx.strokeRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
+            ctx.strokeRect(centerX - commentRectWidth / 2, y + 8, commentRectWidth, commentRectHeight);
 
-            // Texte noir
+            // Texte noir centré
             ctx.fillStyle = '#000';
-            ctx.fillText(commentText, centerX, y + 8);
+            ctx.fillText(commentText, centerX, y + 8 + commentRectHeight / 2);
 
             // Appliquer le soulignement si nécessaire
             if (interval.textDecoration === 'underline') {
                 ctx.strokeStyle = '#000';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(centerX - commentWidth / 2, y + 8 + fontSize + 1);
-                ctx.lineTo(centerX + commentWidth / 2, y + 8 + fontSize + 1);
+                ctx.moveTo(centerX - commentWidth / 2, y + 8 + commentRectHeight / 2 + fontSize / 2 + 1);
+                ctx.lineTo(centerX + commentWidth / 2, y + 8 + commentRectHeight / 2 + fontSize / 2 + 1);
                 ctx.stroke();
             }
         }

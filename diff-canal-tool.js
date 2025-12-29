@@ -613,7 +613,7 @@ function drawDiffCanalIntervals(chart) {
         const dxRectWidth = dxTextWidth + 10; // Ajouter 10px de padding
         const dxRectHeight = 20;
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillStyle = '#FFD93D';
         ctx.fillRect(dxAnnotationX - dxRectWidth / 2, dxAnnotationY - dxRectHeight / 2, dxRectWidth, dxRectHeight);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;
@@ -643,7 +643,7 @@ function drawDiffCanalIntervals(chart) {
         const rectWidth = dyTextWidth + 10; // Ajouter 10px de padding
         const rectHeight = 20;
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillStyle = '#FFD93D';
         ctx.fillRect(-rectWidth / 2, -rectHeight / 2, rectWidth, rectHeight);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;
@@ -671,7 +671,7 @@ function drawDiffCanalIntervals(chart) {
         const slopeText = interval.getSlopeText();
         const textWidth = ctx.measureText(slopeText).width;
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillStyle = '#FFD93D';
         ctx.fillRect(-textWidth / 2 - 5, -10, textWidth + 10, 20);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;

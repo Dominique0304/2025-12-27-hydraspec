@@ -307,16 +307,16 @@ function drawIntervals(chart) {
         const text = `Δt = ${duration.toFixed(3)}s`;
 
         ctx.font = `${window.chartFontSize}px Arial`;
-        ctx.fillStyle = interval.color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
 
-        // Fond blanc pour meilleure lisibilité
+        // Mesurer le texte
         const textMetrics = ctx.measureText(text);
         const textWidth = textMetrics.width;
-        const textHeight = window.chartFontSize; // Utiliser la taille de police globale
+        const textHeight = window.chartFontSize;
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        // Fond jaune
+        ctx.fillStyle = '#FFD93D';
         ctx.fillRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
 
         // Encadrement noir
@@ -324,16 +324,16 @@ function drawIntervals(chart) {
         ctx.lineWidth = 1;
         ctx.strokeRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
 
-        // Texte de la durée
-        ctx.fillStyle = interval.color;
+        // Texte noir
+        ctx.fillStyle = '#000';
         ctx.fillText(text, centerX, y - 6);
 
         // Afficher le commentaire si présent
         if (interval.comment && interval.comment.trim() !== '') {
             const commentText = interval.comment;
 
-            // Appliquer le formatage
-            const fontSize = interval.fontSize || window.chartFontSize;
+            // Utiliser la taille de police globale (ignorer interval.fontSize)
+            const fontSize = window.chartFontSize;
             const fontWeight = interval.fontWeight || 'normal';
             const fontStyle = interval.fontStyle || 'normal';
 
@@ -344,7 +344,8 @@ function drawIntervals(chart) {
             const commentMetrics = ctx.measureText(commentText);
             const commentWidth = commentMetrics.width;
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            // Fond jaune
+            ctx.fillStyle = '#FFD93D';
             ctx.fillRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
 
             // Encadrement noir
@@ -352,12 +353,13 @@ function drawIntervals(chart) {
             ctx.lineWidth = 1;
             ctx.strokeRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
 
-            ctx.fillStyle = interval.color;
+            // Texte noir
+            ctx.fillStyle = '#000';
             ctx.fillText(commentText, centerX, y + 8);
 
             // Appliquer le soulignement si nécessaire
             if (interval.textDecoration === 'underline') {
-                ctx.strokeStyle = interval.color;
+                ctx.strokeStyle = '#000';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(centerX - commentWidth / 2, y + 8 + fontSize + 1);

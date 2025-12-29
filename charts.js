@@ -462,6 +462,13 @@ canvas.addEventListener('mousedown', (e) => {
         }
     }
 
+    // Priorité 2b2: Drag des marqueurs (SnapPoint)
+    if (typeof handleSnapPointMouseDown === 'function') {
+        if (handleSnapPointMouseDown(e, chart)) {
+            return; // Le drag d'un marqueur a commencé
+        }
+    }
+
     // Priorité 2c: Outil Marqueur (création snappoint)
     if (typeof handleSnapPointClick === 'function') {
         if (handleSnapPointClick(e, chart)) {
@@ -578,6 +585,11 @@ canvas.addEventListener('mousedown', (e) => {
             if (handleDiffCanalMouseMove(e, chart)) {
                 return; // Le drag d'un point Diff/Canal a géré le mouvement
             }
+        }
+
+        // Priorité 2.4: Gérer le drag des marqueurs (SnapPoint)
+        if (typeof handleSnapPointMouseMove === 'function') {
+            handleSnapPointMouseMove(e, chart);
         }
 
         // Priorité 2.5: Gérer le drag des intervals
@@ -701,6 +713,11 @@ canvas.addEventListener('mousedown', (e) => {
         // Priorité 2.3: Gérer le relâchement du drag des points Diff/Canal
         if (typeof handleDiffCanalMouseUp === 'function') {
             handleDiffCanalMouseUp(e, appState.charts.time);
+        }
+
+        // Priorité 2.4: Gérer le relâchement du drag des marqueurs (SnapPoint)
+        if (typeof handleSnapPointMouseUp === 'function') {
+            handleSnapPointMouseUp(e, appState.charts.time);
         }
 
         // Priorité 2.5: Gérer le relâchement du drag d'interval

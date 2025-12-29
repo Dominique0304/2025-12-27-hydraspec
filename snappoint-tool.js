@@ -632,10 +632,257 @@ function loadSnapPointsFromProject(savedSnapPoints) {
     updateSnapPointsList();
 }
 
+// ========================================
+// INTERACTIONS (DRAG & DELETE)
+// ========================================
+
+/**
+ * Gestion du clic sur le canvas pour drag et delete
+ * @param {MouseEvent} event - Événement souris
+ * @param {Chart} chart - Instance Chart.js
+ * @returns {boolean} - true si l'événement a été géré
+ */
+function handleSnapPointMouseDown(event, chart) {
+    if (!snapPointState.active || snapPoints.length === 0) {
+        return false;
+    }
+
+    const rect = chart.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Vérifier les clics sur les éléments (en ordre inverse pour gérer z-index)
+    for (let i = snapPoints.length - 1; i >= 0; i--) {
+        const snapPoint = snapPoints[i];
+        if (!snapPoint.visible) continue;
+
+        const pointPos = snapPoint.getPointPixelPosition(chart);
+        const boxPos = snapPoint.getBoxPixelPosition(chart);
+        if (!pointPos || !boxPos) continue;
+
+        // Calculer les dimensions de la boîte
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
+
+        const channelLabel = snapPoint.getChannelLabel();
+        const unit = snapPoint.getChannelUnit();
+        const lines = [
+            channelLabel,
+            `t = ${snapPoint.time.toFixed(3)}s`,
+            `${snapPoint.value.toFixed(2)} ${unit}`
+        ];
+        if (snapPoint.comment && snapPoint.comment.trim() !== '') {
+            lines.push(snapPoint.comment);
+        }
+
+        const padding = 10;
+        const lineHeight = snapPoint.fontSize + 4;
+        let maxWidth = 0;
+        lines.forEach(line => {
+            const width = ctx.measureText(line).width;
+            if (width > maxWidth) maxWidth = width;
+        });
+
+        const boxWidth = maxWidth + padding * 2;
+        const boxHeight = lines.length * lineHeight + padding * 2;
+        ctx.restore();
+
+        // 1. Vérifier clic sur bouton supprimer
+        const btnX = boxPos.x + boxWidth / 2 - 15;
+        const btnY = boxPos.y + 10;
+        const btnSize = 16; // Zone cliquable plus grande que le dessin
+
+        if (Math.abs(mouseX - btnX) <= btnSize / 2 && Math.abs(mouseY - btnY) <= btnSize / 2) {
+            deleteSnapPoint(snapPoint.id);
+            return true; // Événement géré
+        }
+
+        // 2. Vérifier clic sur la boîte (pour drag)
+        const boxX = boxPos.x - boxWidth / 2;
+        const boxY = boxPos.y;
+
+        if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
+            mouseY >= boxY && mouseY <= boxY + boxHeight) {
+            // Commencer le drag de la boîte
+            snapPointState.dragging = 'box';
+            snapPointState.draggedSnapPoint = snapPoint;
+            snapPointState.dragStartX = mouseX;
+            snapPointState.dragStartY = mouseY;
+            snapPointState.dragOffsetX = snapPoint.offsetX;
+            snapPointState.dragOffsetY = snapPoint.offsetY;
+
+            chart.canvas.style.cursor = 'move';
+            return true; // Événement géré
+        }
+
+        // 3. Vérifier clic sur le point d'accroche (pour drag)
+        const pointRadius = 8; // Zone cliquable
+        const distToPoint = Math.sqrt(
+            Math.pow(mouseX - pointPos.x, 2) +
+            Math.pow(mouseY - pointPos.y, 2)
+        );
+
+        if (distToPoint <= pointRadius) {
+            // Commencer le drag du point
+            snapPointState.dragging = 'point';
+            snapPointState.draggedSnapPoint = snapPoint;
+            snapPointState.dragStartX = mouseX;
+            snapPointState.dragStartY = mouseY;
+
+            chart.canvas.style.cursor = 'move';
+            return true; // Événement géré
+        }
+    }
+
+    return false; // Événement non géré
+}
+
+/**
+ * Gestion du déplacement de la souris (drag en cours)
+ * @param {MouseEvent} event - Événement souris
+ * @param {Chart} chart - Instance Chart.js
+ */
+function handleSnapPointMouseMove(event, chart) {
+    if (!snapPointState.active) {
+        return;
+    }
+
+    const rect = chart.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Si on est en train de drag
+    if (snapPointState.dragging && snapPointState.draggedSnapPoint) {
+        const deltaX = mouseX - snapPointState.dragStartX;
+        const deltaY = mouseY - snapPointState.dragStartY;
+
+        if (snapPointState.dragging === 'box') {
+            // Drag de la boîte : mettre à jour les offsets
+            snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + deltaX;
+            snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + deltaY;
+        } else if (snapPointState.dragging === 'point') {
+            // Drag du point : recalculer time et value
+            const xScale = chart.scales.x;
+            const yAxisID = appState.channelConfig[snapPointState.draggedSnapPoint.channelIndex]?.yAxisID || 'y';
+            const yScale = chart.scales[yAxisID];
+
+            if (yScale) {
+                const timeMs = xScale.getValueForPixel(mouseX);
+                const value = yScale.getValueForPixel(mouseY);
+
+                snapPointState.draggedSnapPoint.time = timeMs / 1000;
+                snapPointState.draggedSnapPoint.value = value;
+            }
+        }
+
+        // Mettre à jour l'affichage
+        chart.update('none');
+        updateSnapPointsList();
+        return;
+    }
+
+    // Si on n'est pas en drag, vérifier le survol pour changer le curseur
+    let isOverInteractive = false;
+
+    for (let i = snapPoints.length - 1; i >= 0; i--) {
+        const snapPoint = snapPoints[i];
+        if (!snapPoint.visible) continue;
+
+        const pointPos = snapPoint.getPointPixelPosition(chart);
+        const boxPos = snapPoint.getBoxPixelPosition(chart);
+        if (!pointPos || !boxPos) continue;
+
+        // Calculer dimensions de la boîte
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
+
+        const channelLabel = snapPoint.getChannelLabel();
+        const unit = snapPoint.getChannelUnit();
+        const lines = [
+            channelLabel,
+            `t = ${snapPoint.time.toFixed(3)}s`,
+            `${snapPoint.value.toFixed(2)} ${unit}`
+        ];
+        if (snapPoint.comment && snapPoint.comment.trim() !== '') {
+            lines.push(snapPoint.comment);
+        }
+
+        const padding = 10;
+        const lineHeight = snapPoint.fontSize + 4;
+        let maxWidth = 0;
+        lines.forEach(line => {
+            const width = ctx.measureText(line).width;
+            if (width > maxWidth) maxWidth = width;
+        });
+
+        const boxWidth = maxWidth + padding * 2;
+        const boxHeight = lines.length * lineHeight + padding * 2;
+        ctx.restore();
+
+        // Vérifier survol bouton supprimer
+        const btnX = boxPos.x + boxWidth / 2 - 15;
+        const btnY = boxPos.y + 10;
+        const btnSize = 16;
+
+        if (Math.abs(mouseX - btnX) <= btnSize / 2 && Math.abs(mouseY - btnY) <= btnSize / 2) {
+            isOverInteractive = true;
+            break;
+        }
+
+        // Vérifier survol boîte
+        const boxX = boxPos.x - boxWidth / 2;
+        const boxY = boxPos.y;
+
+        if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
+            mouseY >= boxY && mouseY <= boxY + boxHeight) {
+            isOverInteractive = true;
+            break;
+        }
+
+        // Vérifier survol point
+        const pointRadius = 8;
+        const distToPoint = Math.sqrt(
+            Math.pow(mouseX - pointPos.x, 2) +
+            Math.pow(mouseY - pointPos.y, 2)
+        );
+
+        if (distToPoint <= pointRadius) {
+            isOverInteractive = true;
+            break;
+        }
+    }
+
+    // Mettre à jour le curseur
+    chart.canvas.style.cursor = isOverInteractive ? 'pointer' : 'default';
+}
+
+/**
+ * Gestion du relâchement de la souris (fin du drag)
+ * @param {MouseEvent} event - Événement souris
+ * @param {Chart} chart - Instance Chart.js
+ */
+function handleSnapPointMouseUp(event, chart) {
+    if (snapPointState.dragging) {
+        // Fin du drag
+        snapPointState.dragging = null;
+        snapPointState.draggedSnapPoint = null;
+
+        chart.canvas.style.cursor = 'default';
+
+        // Sauvegarder l'état
+        saveSnapPoints();
+    }
+}
+
 // Exporter pour utilisation globale
 if (typeof window !== 'undefined') {
     window.toggleSnapPointTool = toggleSnapPointTool;
     window.handleSnapPointClick = handleSnapPointClick;
+    window.handleSnapPointMouseDown = handleSnapPointMouseDown;
+    window.handleSnapPointMouseMove = handleSnapPointMouseMove;
+    window.handleSnapPointMouseUp = handleSnapPointMouseUp;
     window.drawSnapPoints = drawSnapPoints;
     window.updateSnapPointsList = updateSnapPointsList;
     window.toggleSnapPointVisibility = toggleSnapPointVisibility;

@@ -1191,7 +1191,7 @@ function updateFFTChartWithResults(fftResults) {
                     size: window.chartFontSize,
                     weight: 'normal'
                 },
-                rotation: position === 'right' ? 90 : -90  // 90 pour droite (bas→haut), -90 pour gauche
+                rotation: position === 'right' ? -90 : 90  // -90 pour droite (bas→haut), 90 pour gauche (bas→haut)
             }
         };
     });

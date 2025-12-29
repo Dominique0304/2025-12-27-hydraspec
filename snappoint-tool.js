@@ -32,7 +32,7 @@ class SnapPoint {
         this.channelIndex = channelIndex; // Index du canal dans channelConfig
         this.time = time; // Temps en secondes
         this.value = value; // Valeur Y
-        this.comment = 'C$; X$; Y$'; // Commentaire avec balises par défaut
+        this.comment = 'C$ X$ Y$'; // Commentaire avec balises par défaut (sans point-virgule)
         this.offsetX = 80; // Offset de la boîte par rapport au point (en pixels)
         this.offsetY = -40;
         this.visible = true;
@@ -432,8 +432,12 @@ function drawSnapPoints(chart) {
 
         // Dessiner le point d'accroche et la ligne SEULEMENT si un canal d'accrochage est défini
         if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+            // Obtenir la couleur du canal d'accrochage
+            const anchorConfig = appState.channelConfig[snapPoint.anchorChannelIndex];
+            const anchorColor = anchorConfig?.color || color;
+
             // Dessiner le point d'accroche
-            ctx.fillStyle = color;
+            ctx.fillStyle = anchorColor;
             ctx.beginPath();
             ctx.arc(pointPos.x, pointPos.y, 6, 0, 2 * Math.PI);
             ctx.fill();
@@ -441,15 +445,98 @@ function drawSnapPoints(chart) {
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Dessiner la ligne pointillée de connexion
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 1;
-            ctx.setLineDash([5, 3]);
-            ctx.beginPath();
-            ctx.moveTo(pointPos.x, pointPos.y);
-            ctx.lineTo(boxPos.x, boxPos.y);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            // Calculer les dimensions de la boîte (on en aura besoin plus tard)
+            ctx.save();
+            ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
+            const lines = [];
+            if (snapPoint.comment && snapPoint.comment.trim() !== '') {
+                const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+                if (processedComment && processedComment.trim() !== '') {
+                    const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
+                    lines.push(...commentLines);
+                }
+            }
+
+            if (lines.length > 0) {
+                const basePadding = 10;
+                const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
+                const lineHeight = snapPoint.fontSize + 4;
+                let maxWidth = 0;
+                lines.forEach(line => {
+                    const width = ctx.measureText(line).width;
+                    if (width > maxWidth) maxWidth = width;
+                });
+                const autoBoxWidth = maxWidth + padding * 2;
+                const autoBoxHeight = lines.length * lineHeight + padding * 2;
+                const boxWidth = snapPoint.boxWidth || autoBoxWidth;
+                const boxHeight = snapPoint.boxHeight || autoBoxHeight;
+
+                // Calculer le point de départ du pointillé au bord de la boîte
+                const boxLeft = boxPos.x - boxWidth / 2;
+                const boxRight = boxPos.x + boxWidth / 2;
+                const boxTop = boxPos.y;
+                const boxBottom = boxPos.y + boxHeight;
+                const boxCenterX = boxPos.x;
+                const boxCenterY = boxPos.y + boxHeight / 2;
+
+                // Calculer l'intersection entre la ligne (point -> centre boîte) et le bord de la boîte
+                const dx = pointPos.x - boxCenterX;
+                const dy = pointPos.y - boxCenterY;
+
+                let lineStartX = boxCenterX;
+                let lineStartY = boxCenterY;
+
+                // Déterminer quel bord intersecte
+                if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+                    const angle = Math.atan2(dy, dx);
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+
+                    // Tester l'intersection avec chaque bord
+                    if (cos > 0) { // Vers la droite
+                        const t = (boxRight - boxCenterX) / dx;
+                        const y = boxCenterY + t * dy;
+                        if (y >= boxTop && y <= boxBottom) {
+                            lineStartX = boxRight;
+                            lineStartY = y;
+                        }
+                    } else if (cos < 0) { // Vers la gauche
+                        const t = (boxLeft - boxCenterX) / dx;
+                        const y = boxCenterY + t * dy;
+                        if (y >= boxTop && y <= boxBottom) {
+                            lineStartX = boxLeft;
+                            lineStartY = y;
+                        }
+                    }
+
+                    if (sin < 0) { // Vers le haut
+                        const t = (boxTop - boxCenterY) / dy;
+                        const x = boxCenterX + t * dx;
+                        if (x >= boxLeft && x <= boxRight) {
+                            lineStartX = x;
+                            lineStartY = boxTop;
+                        }
+                    } else if (sin > 0) { // Vers le bas
+                        const t = (boxBottom - boxCenterY) / dy;
+                        const x = boxCenterX + t * dx;
+                        if (x >= boxLeft && x <= boxRight) {
+                            lineStartX = x;
+                            lineStartY = boxBottom;
+                        }
+                    }
+                }
+
+                // Dessiner la ligne pointillée de connexion avec la couleur du canal d'accrochage
+                ctx.strokeStyle = anchorColor;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(pointPos.x, pointPos.y);
+                ctx.lineTo(lineStartX, lineStartY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            ctx.restore();
         }
 
         // Préparer le texte - uniquement le commentaire avec balises remplacées

@@ -32,7 +32,7 @@ class SnapPoint {
         this.channelIndex = channelIndex; // Index du canal dans channelConfig
         this.time = time; // Temps en secondes
         this.value = value; // Valeur Y
-        this.comment = ''; // Commentaire optionnel
+        this.comment = 'C$; X$; Y$'; // Commentaire avec balises par défaut
         this.offsetX = 80; // Offset de la boîte par rapport au point (en pixels)
         this.offsetY = -40;
         this.visible = true;
@@ -452,19 +452,21 @@ function drawSnapPoints(chart) {
             ctx.setLineDash([]);
         }
 
-        // Préparer le texte
-        const channelLabel = snapPoint.getChannelLabel();
-        const unit = snapPoint.getChannelUnit();
-        const timeText = `t = ${snapPoint.time.toFixed(3)}s`;
-        const valueText = `${snapPoint.value.toFixed(1)} ${unit}`;
-        const lines = [channelLabel, timeText, valueText];
+        // Préparer le texte - uniquement le commentaire avec balises remplacées
+        const lines = [];
 
-        // Ajouter le commentaire si présent (avec remplacement des balises)
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
             if (processedComment && processedComment.trim() !== '') {
-                lines.push(processedComment);
+                // Séparer le commentaire en lignes (par retour à la ligne ou par ';')
+                const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
+                lines.push(...commentLines);
             }
+        }
+
+        // Si pas de lignes à afficher, ne rien dessiner
+        if (lines.length === 0) {
+            return;
         }
 
         // Calculer les dimensions de la boîte
@@ -528,19 +530,14 @@ function drawSnapPoints(chart) {
 
         let currentY = startY;
         lines.forEach((line, index) => {
-            // Première ligne en gras
-            if (index === 0) {
-                ctx.font = `bold ${snapPoint.fontSize}px sans-serif`;
-            } else {
-                // Appliquer le formatage
-                const weight = snapPoint.fontWeight || 'normal';
-                const style = snapPoint.fontStyle || 'normal';
-                ctx.font = `${style} ${weight} ${snapPoint.fontSize}px sans-serif`;
-            }
+            // Première ligne en gras, autres lignes selon formatage utilisateur
+            const weight = index === 0 ? 'bold' : (snapPoint.fontWeight || 'normal');
+            const style = snapPoint.fontStyle || 'normal';
+            ctx.font = `${style} ${weight} ${snapPoint.fontSize}px sans-serif`;
 
             ctx.fillText(line, textX, currentY);
 
-            // Appliquer le soulignement si nécessaire
+            // Appliquer le soulignement si nécessaire (sauf première ligne)
             if (snapPoint.textDecoration === 'underline' && index > 0) {
                 const metrics = ctx.measureText(line);
                 const underlineY = currentY + snapPoint.fontSize + 1;

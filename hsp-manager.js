@@ -230,6 +230,9 @@ async function performHSPSave(project, fileName, isNewFile) {
         // Diff/Canal (intervalles de différence entre canaux)
         diffCanal: project.toolsState.diffCanal || { intervals: [], nextId: 1 },
 
+        // Marqueurs (SnapPoints)
+        snapPoints: project.toolsState.snapPoints || [],
+
         // Canaux calculés/lissés (paramètres seulement, pas les données)
         calculatedChannels: project.toolsState.calculatedChannels || [],
         smoothedChannels: project.toolsState.smoothedChannels || [],
@@ -486,6 +489,12 @@ async function restoreProjectFromHSP(project, hspData) {
     if (hspData.diffCanal) {
         project.toolsState.diffCanal = hspData.diffCanal;
         console.log(`✅ Diff/Canal restaurés (${hspData.diffCanal.intervals?.length || 0} intervalles)`);
+    }
+
+    // Restaurer Marqueurs (SnapPoints)
+    if (hspData.snapPoints) {
+        project.toolsState.snapPoints = hspData.snapPoints;
+        console.log(`✅ Marqueurs restaurés (${hspData.snapPoints.length} marqueurs)`);
     }
 
     // Restaurer zoom (sera appliqué après création des graphiques)

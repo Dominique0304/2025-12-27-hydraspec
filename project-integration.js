@@ -570,6 +570,13 @@ function saveAllToolsState(project) {
         project.toolsState.diffCanal.nextId = nextDiffCanalId;
     }
 
+    // Sauvegarder Marqueurs (SnapPoints)
+    if (typeof snapPoints !== 'undefined') {
+        project.toolsState.snapPoints = JSON.parse(JSON.stringify(snapPoints));
+        project.toolsState.nextSnapPointId = nextSnapPointId;
+        project.toolsState.isCreatingSnapPoint = isCreatingSnapPoint;
+    }
+
     // CRITIQUE : Sauvegarder les curseurs d'analyse depuis appState vers project.state
     if (typeof appState !== 'undefined' && appState.cursorStart !== undefined && appState.cursorEnd !== undefined) {
         project.state.cursorStart = appState.cursorStart;
@@ -757,6 +764,38 @@ function restoreAllToolsState(project) {
         // Mettre à jour l'affichage
         if (typeof updateDiffCanalList === 'function') {
             updateDiffCanalList();
+        }
+    }
+
+    // Restaurer Marqueurs (SnapPoints)
+    if (typeof snapPoints !== 'undefined' && typeof SnapPoint !== 'undefined' && project.toolsState.snapPoints) {
+        snapPoints.length = 0; // Vider le tableau
+
+        // Recréer les instances de la classe SnapPoint
+        project.toolsState.snapPoints.forEach(data => {
+            const snapPoint = new SnapPoint(data.id, data.channelIndex, data.time, data.value);
+            snapPoint.comment = data.comment || '';
+            snapPoint.offsetX = data.offsetX || 80;
+            snapPoint.offsetY = data.offsetY || -40;
+            snapPoint.visible = data.visible !== false;
+            snapPoint.color = data.color || '#4ECDC4';
+            snapPoint.fontSize = data.fontSize || window.chartFontSize;
+            snapPoint.fontWeight = data.fontWeight || 'normal';
+            snapPoint.fontStyle = data.fontStyle || 'normal';
+            snapPoint.textDecoration = data.textDecoration || 'none';
+            snapPoints.push(snapPoint);
+        });
+
+        if (project.toolsState.nextSnapPointId !== undefined) {
+            nextSnapPointId = project.toolsState.nextSnapPointId;
+        }
+        if (project.toolsState.isCreatingSnapPoint !== undefined) {
+            isCreatingSnapPoint = project.toolsState.isCreatingSnapPoint;
+        }
+
+        // Mettre à jour l'affichage
+        if (typeof updateSnapPointsList === 'function') {
+            updateSnapPointsList();
         }
     }
 

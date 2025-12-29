@@ -665,7 +665,7 @@ function updateTimeChartMultiChannel() {
                     weight: 'normal'
                 },
                 rotation: (() => {
-                    const rot = config.yAxisPosition === 'right' ? 270 : -270;
+                    const rot = -270;  // -270° pour lire de bas en haut (tous les axes)
                     console.log(`[Multi-Channel] Axe Y "${config.label}" - Position: ${config.yAxisPosition} - Rotation: ${rot}°`);
                     return rot;
                 })()

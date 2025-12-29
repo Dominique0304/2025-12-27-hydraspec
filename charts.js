@@ -1192,7 +1192,7 @@ function updateFFTChartWithResults(fftResults) {
                     weight: 'normal'
                 },
                 rotation: (() => {
-                    const rot = position === 'right' ? 270 : -270;
+                    const rot = -270;  // -270° pour lire de bas en haut (tous les axes)
                     console.log(`[FFT Chart] Axe Y "${fftData.config.label}" - Position: ${position} - Rotation: ${rot}°`);
                     return rot;
                 })()

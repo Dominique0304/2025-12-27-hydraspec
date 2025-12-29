@@ -584,6 +584,13 @@ function saveAllToolsState(project) {
         console.log(`📊 Spectrogramme sauvegardé : ${count} points`);
     }
 
+    // CRITIQUE : Sauvegarder les notes utilisateur
+    const notesTextarea = document.getElementById('user-notes');
+    if (notesTextarea) {
+        project.toolsState.notes = notesTextarea.value;
+        console.log(`📝 Notes utilisateur sauvegardées (${notesTextarea.value.length} caractères)`);
+    }
+
     // Marquer le projet comme modifié
     project.markModified();
 
@@ -751,6 +758,13 @@ function restoreAllToolsState(project) {
         if (typeof updateDiffCanalList === 'function') {
             updateDiffCanalList();
         }
+    }
+
+    // Restaurer les notes utilisateur
+    const notesTextarea = document.getElementById('user-notes');
+    if (notesTextarea && project.toolsState.notes !== undefined) {
+        notesTextarea.value = project.toolsState.notes;
+        console.log(`📝 Notes utilisateur restaurées (${project.toolsState.notes.length} caractères)`);
     }
 
     // Forcer le rafraîchissement des graphiques

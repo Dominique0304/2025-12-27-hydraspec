@@ -231,9 +231,8 @@ async function performHSPSave(project, fileName, isNewFile) {
         calculatedChannels: project.toolsState.calculatedChannels || [],
         smoothedChannels: project.toolsState.smoothedChannels || [],
 
-        // Notes utilisateur
-        notes: document.getElementById('user-notes') ?
-            document.getElementById('user-notes').value : ""
+        // Notes utilisateur (depuis project.toolsState pour cohérence multi-projets)
+        notes: project.toolsState.notes || ""
     };
 
     console.log("💾 Données HSP préparées:", {
@@ -472,9 +471,10 @@ async function restoreProjectFromHSP(project, hspData) {
         console.log("✅ Intervalles restaurés:", hspData.intervals.length);
     }
 
-    // Restaurer notes
-    if (hspData.notes && document.getElementById('user-notes')) {
-        document.getElementById('user-notes').value = hspData.notes;
+    // Restaurer notes dans toolsState (seront synchronisées au DOM par restoreAllToolsState)
+    if (hspData.notes) {
+        project.toolsState.notes = hspData.notes;
+        console.log(`✅ Notes restaurées (${hspData.notes.length} caractères)`);
     }
 
     // Restaurer zoom (sera appliqué après création des graphiques)

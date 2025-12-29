@@ -1544,6 +1544,55 @@
                        placeholder="Entrez un commentaire..."></textarea>
             </div>
 
+            <!-- Alignement du texte -->
+            <div style="margin-bottom: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 4px;">
+                <div style="font-weight: bold; font-size: 0.9em; margin-bottom: 8px;">
+                    Alignement du texte:
+                </div>
+
+                <!-- Alignement horizontal -->
+                <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                    <label style="flex: 0 0 120px; font-size: 0.85em;">
+                        Horizontal:
+                    </label>
+                    <div style="display: flex; gap: 4px; flex: 1;">
+                        <button onclick="setSnapPointTextAlign('left')" id="snap-align-left" title="Aligner à gauche"
+                                style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-align-left"></i> Gauche
+                        </button>
+                        <button onclick="setSnapPointTextAlign('center')" id="snap-align-center" title="Centrer"
+                                style="flex: 1; padding: 5px 10px; background: var(--accent-green); color: white; border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-align-center"></i> Centre
+                        </button>
+                        <button onclick="setSnapPointTextAlign('right')" id="snap-align-right" title="Aligner à droite"
+                                style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-align-right"></i> Droite
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Alignement vertical -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="flex: 0 0 120px; font-size: 0.85em;">
+                        Vertical:
+                    </label>
+                    <div style="display: flex; gap: 4px; flex: 1;">
+                        <button onclick="setSnapPointVerticalAlign('top')" id="snap-valign-top" title="Aligner en haut"
+                                style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-arrow-up"></i> Haut
+                        </button>
+                        <button onclick="setSnapPointVerticalAlign('middle')" id="snap-valign-middle" title="Centrer verticalement"
+                                style="flex: 1; padding: 5px 10px; background: var(--accent-green); color: white; border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-arrows-alt-v"></i> Milieu
+                        </button>
+                        <button onclick="setSnapPointVerticalAlign('bottom')" id="snap-valign-bottom" title="Aligner en bas"
+                                style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+                            <i class="fas fa-arrow-down"></i> Bas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Apparence de la boîte -->
             <div style="margin-bottom: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 4px;">
                 <div style="font-weight: bold; font-size: 0.9em; margin-bottom: 8px;">
@@ -1575,20 +1624,11 @@
                 </div>
 
                 <!-- Opacité -->
-                <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center;">
                     <label style="flex: 0 0 120px; font-size: 0.85em;">
                         Opacité: <span id="snap-opacity-value">90%</span>
                     </label>
                     <input type="range" id="snap-opacity" min="0" max="100" value="90" oninput="setSnapPointOpacity(this.value)"
-                           style="flex: 1; cursor: pointer;">
-                </div>
-
-                <!-- Taille de la boîte -->
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <label style="flex: 0 0 120px; font-size: 0.85em;">
-                        Taille boîte: <span id="snap-padding-value">100%</span>
-                    </label>
-                    <input type="range" id="snap-padding" min="80" max="200" value="100" oninput="setSnapPointPadding(this.value)"
                            style="flex: 1; cursor: pointer;">
                 </div>
             </div>

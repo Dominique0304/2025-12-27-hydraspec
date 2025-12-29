@@ -43,6 +43,8 @@ class SnapPoint {
         this.fontWeight = 'normal';
         this.fontStyle = 'normal';
         this.textDecoration = 'none';
+        this.textAlign = 'center'; // 'left', 'center', 'right'
+        this.textVerticalAlign = 'middle'; // 'top', 'middle', 'bottom'
 
         // Apparence de la boîte
         this.backgroundColor = '#FFD93D'; // Couleur de fond (jaune par défaut)
@@ -80,14 +82,29 @@ class SnapPoint {
     // Obtenir la position du point en pixels
     getPointPixelPosition(chart) {
         const xScale = chart.scales.x;
-        const yAxisID = appState.channelConfig[this.channelIndex]?.yAxisID || 'y';
+
+        // Déterminer quel canal utiliser pour le Y
+        const targetChannelIndex = this.anchorChannelIndex !== null && this.anchorChannelIndex !== undefined
+                                    ? this.anchorChannelIndex
+                                    : this.channelIndex;
+
+        const yAxisID = appState.channelConfig[targetChannelIndex]?.yAxisID || 'y';
         const yScale = chart.scales[yAxisID];
 
         if (!yScale) return null;
 
+        // Si un canal d'accrochage est défini, recalculer la valeur Y en temps réel
+        let yValue = this.value;
+        if (this.anchorChannelIndex !== null && this.anchorChannelIndex !== undefined) {
+            const liveValue = getSnapPointValueOnCurve(this.anchorChannelIndex, this.time);
+            if (liveValue !== null) {
+                yValue = liveValue;
+            }
+        }
+
         return {
             x: xScale.getPixelForValue(this.time * 1000),
-            y: yScale.getPixelForValue(this.value)
+            y: yScale.getPixelForValue(yValue)
         };
     }
 
@@ -289,6 +306,41 @@ function interpolateChannelValue(channelIndex, timeSec) {
     return result;
 }
 
+// Obtenir la valeur réelle sur une courbe à un temps donné (pour le suivi de courbe)
+function getSnapPointValueOnCurve(channelIndex, timeInSeconds) {
+    const timeMs = timeInSeconds * 1000; // Convertir en ms
+    const dataTime = appState.fullDataTime;
+
+    // Obtenir les données du bon canal
+    let dataValues;
+    if (appState.allColumnData && appState.allColumnData[channelIndex + 1]) {
+        // +1 car allColumnData[0] est le temps
+        dataValues = appState.allColumnData[channelIndex + 1];
+    } else {
+        // Fallback - essayer de trouver dans les datasets
+        return null;
+    }
+
+    if (!dataTime || !dataValues || dataTime.length === 0) {
+        return null;
+    }
+
+    // Trouver l'index du point le plus proche
+    let closestIndex = 0;
+    let minDiff = Math.abs(dataTime[0] - timeMs);
+
+    for (let i = 1; i < dataTime.length; i++) {
+        const diff = Math.abs(dataTime[i] - timeMs);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = i;
+        }
+        if (dataTime[i] > timeMs) break; // Optimisation
+    }
+
+    return dataValues[closestIndex];
+}
+
 // Fonction helper pour convertir hex en rgba
 function hexToRgba(hex, opacity) {
     // Retirer le # si présent
@@ -401,34 +453,72 @@ function drawSnapPoints(chart) {
 
         // Dessiner le texte
         ctx.fillStyle = '#000';
-        ctx.textAlign = 'center';
+
+        // Configurer l'alignement horizontal
+        const textAlign = snapPoint.textAlign || 'center';
+        ctx.textAlign = textAlign;
+
+        // Calculer la position X selon l'alignement
+        const boxX = boxPos.x - boxWidth / 2;
+        let textX;
+        if (textAlign === 'left') {
+            textX = boxX + padding;
+        } else if (textAlign === 'right') {
+            textX = boxX + boxWidth - padding;
+        } else { // center
+            textX = boxPos.x;
+        }
+
+        // Calculer la position Y de départ selon l'alignement vertical
+        const verticalAlign = snapPoint.textVerticalAlign || 'middle';
+        const totalTextHeight = lines.length * lineHeight;
+        let startY;
+        if (verticalAlign === 'top') {
+            startY = boxPos.y + padding;
+        } else if (verticalAlign === 'bottom') {
+            startY = boxPos.y + boxHeight - totalTextHeight - padding;
+        } else { // middle
+            startY = boxPos.y + (boxHeight - totalTextHeight) / 2;
+        }
+
         ctx.textBaseline = 'top';
 
-        let currentY = boxPos.y + padding;
+        let currentY = startY;
         lines.forEach((line, index) => {
             // Première ligne en gras
             if (index === 0) {
                 ctx.font = `bold ${snapPoint.fontSize}px sans-serif`;
             } else {
-                ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
+                // Appliquer le formatage
+                const weight = snapPoint.fontWeight || 'normal';
+                const style = snapPoint.fontStyle || 'normal';
+                ctx.font = `${style} ${weight} ${snapPoint.fontSize}px sans-serif`;
             }
-            ctx.fillText(line, boxPos.x, currentY);
+
+            ctx.fillText(line, textX, currentY);
+
+            // Appliquer le soulignement si nécessaire
+            if (snapPoint.textDecoration === 'underline' && index > 0) {
+                const metrics = ctx.measureText(line);
+                const underlineY = currentY + snapPoint.fontSize + 1;
+                ctx.beginPath();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                if (textAlign === 'left') {
+                    ctx.moveTo(textX, underlineY);
+                    ctx.lineTo(textX + metrics.width, underlineY);
+                } else if (textAlign === 'right') {
+                    ctx.moveTo(textX - metrics.width, underlineY);
+                    ctx.lineTo(textX, underlineY);
+                } else { // center
+                    ctx.moveTo(textX - metrics.width / 2, underlineY);
+                    ctx.lineTo(textX + metrics.width / 2, underlineY);
+                }
+                ctx.stroke();
+            }
+
             currentY += lineHeight;
         });
-
-        // Dessiner le bouton supprimer (petite croix en haut à droite)
-        const btnX = boxPos.x + boxWidth / 2 - 15;
-        const btnY = boxPos.y + 10;
-        const btnSize = 8;
-
-        ctx.strokeStyle = '#f44336';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(btnX - btnSize / 2, btnY - btnSize / 2);
-        ctx.lineTo(btnX + btnSize / 2, btnY + btnSize / 2);
-        ctx.moveTo(btnX + btnSize / 2, btnY - btnSize / 2);
-        ctx.lineTo(btnX - btnSize / 2, btnY + btnSize / 2);
-        ctx.stroke();
     });
 
     ctx.restore();
@@ -581,13 +671,6 @@ function openSnapPointEditModal(id) {
     if (opacitySlider) opacitySlider.value = opacity;
     if (opacityValue) opacityValue.textContent = `${Math.round(opacity)}%`;
 
-    // Régler la taille de la boîte
-    const paddingSlider = document.getElementById('snap-padding');
-    const paddingValue = document.getElementById('snap-padding-value');
-    const padding = (snapPoint.boxPaddingScale || 1.0) * 100;
-    if (paddingSlider) paddingSlider.value = padding;
-    if (paddingValue) paddingValue.textContent = `${Math.round(padding)}%`;
-
     // Peupler et régler le canal d'accrochage
     const anchorChannelSelect = document.getElementById('snap-anchor-channel');
     if (anchorChannelSelect && appState.channelConfig) {
@@ -611,6 +694,9 @@ function openSnapPointEditModal(id) {
 
     // Mettre à jour les boutons de formatage
     updateSnapPointFormatButtons();
+
+    // Mettre à jour les boutons d'alignement
+    updateSnapPointAlignmentButtons();
 
     // Afficher la modale
     modal.style.display = 'flex';
@@ -676,6 +762,11 @@ function toggleSnapPointFormat(format) {
     }
 
     updateSnapPointFormatButtons();
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
 }
 
 // Définir la taille de police
@@ -765,6 +856,50 @@ function setSnapPointAnchorChannel(channelIndex) {
     const index = parseInt(channelIndex);
     snapPoint.anchorChannelIndex = index === -1 ? null : index;
 
+    // Si un canal d'accrochage est défini, recalculer la valeur Y à ce temps
+    if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+        const newValue = getSnapPointValueOnCurve(snapPoint.anchorChannelIndex, snapPoint.time);
+        if (newValue !== null) {
+            snapPoint.value = newValue;
+        }
+    }
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
+}
+
+// Définir l'alignement horizontal du texte
+function setSnapPointTextAlign(align) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    snapPoint.textAlign = align;
+
+    // Mettre à jour les boutons d'alignement
+    updateSnapPointAlignmentButtons();
+
+    // Mettre à jour l'aperçu en temps réel
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
+}
+
+// Définir l'alignement vertical du texte
+function setSnapPointVerticalAlign(align) {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    snapPoint.textVerticalAlign = align;
+
+    // Mettre à jour les boutons d'alignement
+    updateSnapPointAlignmentButtons();
+
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
         appState.charts.time.update('none');
@@ -795,6 +930,56 @@ function updateSnapPointFormatButtons() {
     if (btnUnderline) {
         btnUnderline.style.background = snapPoint.textDecoration === 'underline' ? 'var(--accent-green)' : 'var(--bg-secondary)';
         btnUnderline.style.color = snapPoint.textDecoration === 'underline' ? 'white' : 'var(--text-main)';
+    }
+}
+
+// Mettre à jour l'apparence des boutons d'alignement
+function updateSnapPointAlignmentButtons() {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    // Alignement horizontal
+    const textAlign = snapPoint.textAlign || 'center';
+    const btnLeft = document.getElementById('snap-align-left');
+    const btnCenter = document.getElementById('snap-align-center');
+    const btnRight = document.getElementById('snap-align-right');
+
+    if (btnLeft) {
+        btnLeft.style.background = textAlign === 'left' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnLeft.style.color = textAlign === 'left' ? 'white' : 'var(--text-main)';
+    }
+
+    if (btnCenter) {
+        btnCenter.style.background = textAlign === 'center' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnCenter.style.color = textAlign === 'center' ? 'white' : 'var(--text-main)';
+    }
+
+    if (btnRight) {
+        btnRight.style.background = textAlign === 'right' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnRight.style.color = textAlign === 'right' ? 'white' : 'var(--text-main)';
+    }
+
+    // Alignement vertical
+    const verticalAlign = snapPoint.textVerticalAlign || 'middle';
+    const btnTop = document.getElementById('snap-valign-top');
+    const btnMiddle = document.getElementById('snap-valign-middle');
+    const btnBottom = document.getElementById('snap-valign-bottom');
+
+    if (btnTop) {
+        btnTop.style.background = verticalAlign === 'top' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnTop.style.color = verticalAlign === 'top' ? 'white' : 'var(--text-main)';
+    }
+
+    if (btnMiddle) {
+        btnMiddle.style.background = verticalAlign === 'middle' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnMiddle.style.color = verticalAlign === 'middle' ? 'white' : 'var(--text-main)';
+    }
+
+    if (btnBottom) {
+        btnBottom.style.background = verticalAlign === 'bottom' ? 'var(--accent-green)' : 'var(--bg-secondary)';
+        btnBottom.style.color = verticalAlign === 'bottom' ? 'white' : 'var(--text-main)';
     }
 }
 
@@ -883,6 +1068,8 @@ function saveSnapPoints() {
             fontWeight: sp.fontWeight,
             fontStyle: sp.fontStyle,
             textDecoration: sp.textDecoration,
+            textAlign: sp.textAlign,
+            textVerticalAlign: sp.textVerticalAlign,
             backgroundColor: sp.backgroundColor,
             backgroundOpacity: sp.backgroundOpacity,
             boxPaddingScale: sp.boxPaddingScale,
@@ -920,6 +1107,8 @@ function loadSnapPoints() {
             snapPoint.fontWeight = item.fontWeight || 'normal';
             snapPoint.fontStyle = item.fontStyle || 'normal';
             snapPoint.textDecoration = item.textDecoration || 'none';
+            snapPoint.textAlign = item.textAlign || 'center';
+            snapPoint.textVerticalAlign = item.textVerticalAlign || 'middle';
             snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
             snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
             snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
@@ -966,6 +1155,8 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         snapPoint.fontWeight = item.fontWeight || 'normal';
         snapPoint.fontStyle = item.fontStyle || 'normal';
         snapPoint.textDecoration = item.textDecoration || 'none';
+        snapPoint.textAlign = item.textAlign || 'center';
+        snapPoint.textVerticalAlign = item.textVerticalAlign || 'middle';
         snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
         snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
         snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
@@ -1097,21 +1288,11 @@ function handleSnapPointMouseDown(event, chart) {
         const boxHeight = snapPoint.boxHeight || autoBoxHeight;
         ctx.restore();
 
-        // 1. Vérifier clic sur bouton supprimer
-        const btnX = boxPos.x + boxWidth / 2 - 15;
-        const btnY = boxPos.y + 10;
-        const btnSize = 16; // Zone cliquable plus grande que le dessin
-
-        if (Math.abs(mouseX - btnX) <= btnSize / 2 && Math.abs(mouseY - btnY) <= btnSize / 2) {
-            deleteSnapPoint(snapPoint.id);
-            return true; // Événement géré
-        }
-
-        // 2. Calculer la position de la boîte
+        // 1. Calculer la position de la boîte
         const boxX = boxPos.x - boxWidth / 2;
         const boxY = boxPos.y;
 
-        // 3. Vérifier clic sur zone de resize (prioritaire sur le drag)
+        // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
         const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
             // Commencer le resize
@@ -1131,7 +1312,7 @@ function handleSnapPointMouseDown(event, chart) {
             return true; // Événement géré
         }
 
-        // 4. Vérifier clic sur la boîte (pour drag)
+        // 3. Vérifier clic sur la boîte (pour drag)
         if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
             mouseY >= boxY && mouseY <= boxY + boxHeight) {
             // Commencer le drag de la boîte
@@ -1146,7 +1327,7 @@ function handleSnapPointMouseDown(event, chart) {
             return true; // Événement géré
         }
 
-        // 5. Vérifier clic sur le point d'accroche (pour drag)
+        // 4. Vérifier clic sur le point d'accroche (pour drag)
         const pointRadius = 8; // Zone cliquable
         const distToPoint = Math.sqrt(
             Math.pow(mouseX - pointPos.x, 2) +
@@ -1194,15 +1375,25 @@ function handleSnapPointMouseMove(event, chart) {
         } else if (snapPointState.dragging === 'point') {
             // Drag du point : recalculer time et value
             const xScale = chart.scales.x;
-            const yAxisID = appState.channelConfig[snapPointState.draggedSnapPoint.channelIndex]?.yAxisID || 'y';
-            const yScale = chart.scales[yAxisID];
+            const timeMs = xScale.getValueForPixel(mouseX);
+            const timeSec = timeMs / 1000;
 
-            if (yScale) {
-                const timeMs = xScale.getValueForPixel(mouseX);
-                const value = yScale.getValueForPixel(mouseY);
+            snapPointState.draggedSnapPoint.time = timeSec;
 
-                snapPointState.draggedSnapPoint.time = timeMs / 1000;
-                snapPointState.draggedSnapPoint.value = value;
+            // Si un canal d'accrochage est défini, suivre la courbe
+            if (snapPointState.draggedSnapPoint.anchorChannelIndex !== null &&
+                snapPointState.draggedSnapPoint.anchorChannelIndex !== undefined) {
+                const liveValue = getSnapPointValueOnCurve(snapPointState.draggedSnapPoint.anchorChannelIndex, timeSec);
+                if (liveValue !== null) {
+                    snapPointState.draggedSnapPoint.value = liveValue;
+                }
+            } else {
+                // Sinon, utiliser la position Y de la souris
+                const yAxisID = appState.channelConfig[snapPointState.draggedSnapPoint.channelIndex]?.yAxisID || 'y';
+                const yScale = chart.scales[yAxisID];
+                if (yScale) {
+                    snapPointState.draggedSnapPoint.value = yScale.getValueForPixel(mouseY);
+                }
             }
         } else if (snapPointState.dragging === 'resize') {
             // Resize de la boîte
@@ -1300,16 +1491,6 @@ function handleSnapPointMouseMove(event, chart) {
         const boxWidth = snapPoint.boxWidth || autoBoxWidth;
         const boxHeight = snapPoint.boxHeight || autoBoxHeight;
         ctx.restore();
-
-        // Vérifier survol bouton supprimer
-        const btnX = boxPos.x + boxWidth / 2 - 15;
-        const btnY = boxPos.y + 10;
-        const btnSize = 16;
-
-        if (Math.abs(mouseX - btnX) <= btnSize / 2 && Math.abs(mouseY - btnY) <= btnSize / 2) {
-            cursorToSet = 'pointer';
-            break;
-        }
 
         // Calculer position de la boîte
         const boxX = boxPos.x - boxWidth / 2;
@@ -1587,9 +1768,10 @@ if (typeof window !== 'undefined') {
     window.confirmSnapPointEdit = confirmSnapPointEdit;
     window.toggleSnapPointFormat = toggleSnapPointFormat;
     window.setSnapPointFontSize = setSnapPointFontSize;
+    window.setSnapPointTextAlign = setSnapPointTextAlign;
+    window.setSnapPointVerticalAlign = setSnapPointVerticalAlign;
     window.setSnapPointBackgroundColor = setSnapPointBackgroundColor;
     window.setSnapPointOpacity = setSnapPointOpacity;
-    window.setSnapPointPadding = setSnapPointPadding;
     window.setSnapPointAnchorChannel = setSnapPointAnchorChannel;
     window.handleSnapPointContextMenu = handleSnapPointContextMenu;
     window.contextMenuEdit = contextMenuEdit;

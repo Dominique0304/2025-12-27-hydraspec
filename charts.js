@@ -490,7 +490,14 @@ canvas.addEventListener('mousedown', (e) => {
         }
     }
 
-    // Priorité 5: Drag d'interval (AVANT les curseurs FFT!)
+    // Priorité 5a: Outil Interval (création)
+    if (typeof handleIntervalClick === 'function') {
+        if (handleIntervalClick(e, chart)) {
+            return; // L'outil Interval a géré le clic (création)
+        }
+    }
+
+    // Priorité 5b: Drag d'interval (AVANT les curseurs FFT!)
     if (typeof handleIntervalMouseDown === 'function') {
         if (handleIntervalMouseDown(e, chart)) {
             return; // Le drag d'interval a géré le clic

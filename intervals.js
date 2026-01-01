@@ -151,7 +151,7 @@ function toggleIntervalMode() {
 
 // Gérer le clic sur le canvas pour créer un intervalle
 function handleIntervalClick(event, chart) {
-    if (!isCreatingInterval) return;
+    if (!isCreatingInterval) return false;
 
     const rect = chart.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -197,6 +197,8 @@ function handleIntervalClick(event, chart) {
             openIntervalCommentModal(intervals[intervals.length - 1]);
         }, 100);
     }
+
+    return true; // Le clic a été géré
 }
 
 // Créer un nouvel intervalle

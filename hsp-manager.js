@@ -212,6 +212,13 @@ async function performHSPSave(project, fileName, isNewFile) {
             timeIncrement: project.state.timeIncrement,
             chartFontSize: project.state.chartFontSize,
 
+            // Visibilité des graphiques
+            graphVisibility: {
+                timeVisible: typeof uiState !== 'undefined' ? uiState.timeVisible : true,
+                freqVisible: typeof uiState !== 'undefined' ? uiState.freqVisible : true,
+                spectroVisible: typeof uiState !== 'undefined' ? uiState.spectroVisible : true
+            },
+
             // Zoom X/Y (à récupérer depuis les graphiques)
             zoomState: getChartZoomState(project),
 
@@ -466,6 +473,36 @@ async function restoreProjectFromHSP(project, hspData) {
     // Restaurer paramètres
     project.state.timeIncrement = hspData.state.timeIncrement || 1.0;
     project.state.chartFontSize = hspData.state.chartFontSize || 12;
+
+    // Restaurer visibilité des graphiques
+    if (hspData.state.graphVisibility && typeof uiState !== 'undefined') {
+        uiState.timeVisible = hspData.state.graphVisibility.timeVisible !== undefined ?
+            hspData.state.graphVisibility.timeVisible : true;
+        uiState.freqVisible = hspData.state.graphVisibility.freqVisible !== undefined ?
+            hspData.state.graphVisibility.freqVisible : true;
+        uiState.spectroVisible = hspData.state.graphVisibility.spectroVisible !== undefined ?
+            hspData.state.graphVisibility.spectroVisible : true;
+
+        // Appliquer la visibilité immédiatement
+        const timeContainer = document.getElementById('time-container');
+        const freqContainer = document.getElementById('freq-container');
+        const spectroContainer = document.getElementById('spectro-container');
+        const resizer1 = document.getElementById('resizer1');
+        const resizer2 = document.getElementById('resizer2');
+
+        if (timeContainer) timeContainer.classList.toggle('hidden', !uiState.timeVisible);
+        if (freqContainer) freqContainer.classList.toggle('hidden', !uiState.freqVisible);
+        if (spectroContainer) spectroContainer.classList.toggle('hidden', !uiState.spectroVisible);
+        if (resizer1) resizer1.classList.toggle('hidden', !uiState.timeVisible || !uiState.freqVisible);
+        if (resizer2) resizer2.classList.toggle('hidden', !uiState.freqVisible || !uiState.spectroVisible);
+
+        // Mettre à jour les boutons de toggle
+        if (typeof updateToggleButtons === 'function') {
+            updateToggleButtons();
+        }
+
+        console.log("✅ Visibilité graphiques restaurée:", uiState.timeVisible, uiState.freqVisible, uiState.spectroVisible);
+    }
 
     // Restaurer annotations
     if (hspData.annotations) {

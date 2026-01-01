@@ -1800,6 +1800,15 @@ function handleSnapPointMouseDown(event, chart) {
             snapPointState.dragOffsetX = snapPoint.offsetX;
             snapPointState.dragOffsetY = snapPoint.offsetY;
 
+            // Sauvegarder la position initiale de la flèche si elle existe
+            if (snapPoint.hasArrow) {
+                snapPointState.initialArrowEndX = snapPoint.arrowEndX;
+                snapPointState.initialArrowEndY = snapPoint.arrowEndY;
+                // Calculer la position absolue initiale de l'extrémité de la flèche
+                snapPointState.initialArrowAbsX = boxPos.x + snapPoint.arrowEndX;
+                snapPointState.initialArrowAbsY = boxPos.y + snapPoint.arrowEndY;
+            }
+
             chart.canvas.style.cursor = getCursorForResizeZone(resizeZone);
             return true; // Événement géré
         }
@@ -1945,6 +1954,17 @@ function handleSnapPointMouseMove(event, chart) {
             }
             if (direction.includes('n') || direction.includes('s')) {
                 snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + offsetYDelta;
+            }
+
+            // Si une flèche est active, ajuster arrowEndX/Y pour que l'extrémité reste à la même position absolue
+            if (snapPointState.draggedSnapPoint.hasArrow && snapPointState.initialArrowAbsX !== undefined) {
+                // Recalculer la nouvelle position de la boîte après le resize
+                const newBoxPos = snapPointState.draggedSnapPoint.getBoxPixelPosition(chart);
+                if (newBoxPos) {
+                    // Ajuster arrowEndX/Y pour maintenir la position absolue
+                    snapPointState.draggedSnapPoint.arrowEndX = snapPointState.initialArrowAbsX - newBoxPos.x;
+                    snapPointState.draggedSnapPoint.arrowEndY = snapPointState.initialArrowAbsY - newBoxPos.y;
+                }
             }
         } else if (snapPointState.dragging === 'arrow') {
             // Drag de l'extrémité de la flèche

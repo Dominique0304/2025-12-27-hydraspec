@@ -1476,6 +1476,13 @@ function handleSnapPointMouseDown(event, chart) {
         // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
         const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
+            // IMPORTANT : Si c'est le premier redimensionnement, figer les dimensions actuelles
+            // pour éviter un saut dimensionnel
+            if (snapPoint.boxWidth === null || snapPoint.boxHeight === null) {
+                snapPoint.boxWidth = boxWidth;
+                snapPoint.boxHeight = boxHeight;
+            }
+
             // Commencer le resize
             snapPointState.dragging = 'resize';
             snapPointState.draggedSnapPoint = snapPoint;

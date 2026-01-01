@@ -1446,7 +1446,12 @@ function handleSnapPointMouseDown(event, chart) {
             `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-            lines.push(snapPoint.comment);
+            // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
+            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+            if (processedComment.trim() !== '') {
+                const commentLines = processedComment.split(';').map(l => l.trim()).filter(l => l);
+                lines.push(...commentLines);
+            }
         }
 
         const basePadding = 10;
@@ -1650,7 +1655,12 @@ function handleSnapPointMouseMove(event, chart) {
             `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-            lines.push(snapPoint.comment);
+            // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
+            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+            if (processedComment.trim() !== '') {
+                const commentLines = processedComment.split(';').map(l => l.trim()).filter(l => l);
+                lines.push(...commentLines);
+            }
         }
 
         const basePadding = 10;
@@ -1703,6 +1713,15 @@ function handleSnapPointMouseMove(event, chart) {
 
     // Mettre à jour le curseur
     chart.canvas.style.cursor = cursorToSet;
+
+    // Mettre à jour le halo (rétrécir si survol zone interactive)
+    if (typeof mouseHalo !== 'undefined' && mouseHalo) {
+        if (cursorToSet !== 'default') {
+            mouseHalo.classList.add('small');
+        } else {
+            mouseHalo.classList.remove('small');
+        }
+    }
 }
 
 /**

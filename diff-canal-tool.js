@@ -658,7 +658,14 @@ function drawDiffCanalIntervals(chart) {
 
         // Annotation parallèle au segment (pente)
         const segmentLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-        const angle = Math.atan2(y2 - y1, x2 - x1);
+        let angle = Math.atan2(y2 - y1, x2 - x1);
+
+        // Garder l'angle entre -90° et 90° pour éviter le texte à l'envers
+        if (angle > Math.PI / 2) {
+            angle -= Math.PI;
+        } else if (angle < -Math.PI / 2) {
+            angle += Math.PI;
+        }
 
         // Position sur le segment (par défaut au milieu, modifiable par drag)
         const labelX = x1 + (x2 - x1) * interval.labelOffset;

@@ -506,7 +506,7 @@ function drawSnapPoints(chart) {
             }
 
             if (lines.length > 0) {
-                const basePadding = 10;
+                const basePadding = 6; // Réduit de 10 à 6 pour moins de marge verticale
                 const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
                 const lineHeight = snapPoint.fontSize + 4;
                 let maxWidth = 0;
@@ -1447,14 +1447,16 @@ function handleSnapPointMouseDown(event, chart) {
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
+            // ET utiliser le MÊME split que dans drawSnapPoints pour avoir le même nombre de lignes !
             const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
             if (processedComment.trim() !== '') {
-                const commentLines = processedComment.split(';').map(l => l.trim()).filter(l => l);
+                const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);
             }
         }
 
-        const basePadding = 10;
+        const basePadding = 6; // Réduit de 10 à 6 pour moins de marge verticale
+        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
         let maxWidth = 0;
@@ -1663,14 +1665,16 @@ function handleSnapPointMouseMove(event, chart) {
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
+            // ET utiliser le MÊME split que dans drawSnapPoints pour avoir le même nombre de lignes !
             const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
             if (processedComment.trim() !== '') {
-                const commentLines = processedComment.split(';').map(l => l.trim()).filter(l => l);
+                const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);
             }
         }
 
-        const basePadding = 10;
+        const basePadding = 6; // Réduit de 10 à 6 pour moins de marge verticale
+        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
         let maxWidth = 0;

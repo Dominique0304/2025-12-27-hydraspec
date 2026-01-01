@@ -186,20 +186,50 @@
                     </h3>
 
                     <div id="tools-content" style="display:none;">
-                    <!-- Interval -->
+                    <!-- Mesurer (Règle simple) -->
                     <div style="margin-bottom:15px;">
-                        <button id="btn-interval-main" onclick="toggleIntervalTool()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
-                            <i class="fas fa-arrows-alt-h"></i> Interval
-                            <i id="interval-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        <button id="ruler-tool-btn" onclick="toggleRulerTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-ruler"></i> Mesurer
                         </button>
 
-                        <div id="interval-content" style="display:none;">
-                            <!-- Liste des intervalles -->
-                            <div id="intervals-list" style="max-height:200px; overflow-y:auto; background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
-                                <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
-                                    Aucun intervalle
-                                </div>
+                        <div id="ruler-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
+                                <i class="fas fa-info-circle"></i> Cliquez un point sur le graphique
                             </div>
+                            <div class="control-row" style="font-size:0.9rem;">
+                                <span>X:</span>
+                                <span id="ruler-x" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                            <div class="control-row" style="font-size:0.9rem;">
+                                <span>Y:</span>
+                                <span id="ruler-y" style="color:var(--accent-green); font-weight:bold;">--</span>
+                            </div>
+                            <button onclick="clearRuler()"
+                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                <i class="fas fa-eraser"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Traquer (Curseur de suivi) -->
+                    <div style="margin-bottom:15px;">
+                        <button id="track-tool-btn" onclick="toggleTrackTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-crosshairs"></i> Traquer
+                        </button>
+
+                        <div id="track-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
+                                <i class="fas fa-info-circle"></i> Déplacez la souris sur le graphique
+                            </div>
+                            <div id="track-values" style="font-size:0.85rem; max-height:150px; overflow-y:auto;">
+                                <!-- Les valeurs des canaux seront affichées ici -->
+                            </div>
+                            <button onclick="clearTrack()"
+                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
+                                <i class="fas fa-eraser"></i> Effacer
+                            </button>
                         </div>
                     </div>
 
@@ -226,6 +256,67 @@
                                     style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
                                 <i class="fas fa-eraser"></i> Effacer
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Séparateur horizontal -->
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--border-color);">
+
+                    <!-- Marqueur (SnapPoint) -->
+                    <div style="margin-bottom:15px;">
+                        <button id="snappoint-btn" onclick="toggleSnapPointTool()"
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                            <i class="fas fa-map-marker-alt"></i> Marqueur
+                        </button>
+
+                        <div id="snappoint-content" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <!-- Boutons Créer / Déplacer -->
+                            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                                <button id="snappoint-create-btn" onclick="setSnapPointMode('create')"
+                                        title="Mode Création : Cliquez sur le graphique pour créer un marqueur"
+                                        style="flex:1; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                    <i class="fas fa-plus"></i> Créer
+                                </button>
+                                <button id="snappoint-move-btn" onclick="setSnapPointMode('move')"
+                                        title="Mode Déplacement : Cliquez sur un marqueur pour le déplacer"
+                                        style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                    <i class="fas fa-arrows-alt"></i> Déplacer
+                                </button>
+                            </div>
+
+                            <!-- Info -->
+                            <div id="snappoint-info-text" style="margin-bottom:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;">
+                                <i class="fas fa-info-circle"></i> <span id="snappoint-mode-text">Cliquez sur le graphique pour créer un marqueur</span>
+                            </div>
+
+                            <!-- Liste des marqueurs -->
+                            <div style="margin-top:10px;">
+                                <div style="font-size:0.85rem; margin-bottom:5px; font-weight:bold;">
+                                    Marqueurs créés:
+                                </div>
+                                <div id="snappoints-list" style="max-height:300px; overflow-y:auto;">
+                                    <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
+                                        Aucun marqueur
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interval -->
+                    <div style="margin-bottom:15px;">
+                        <button id="btn-interval-main" onclick="toggleIntervalTool()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
+                            <i class="fas fa-arrows-alt-h"></i> Interval
+                            <i id="interval-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        </button>
+
+                        <div id="interval-content" style="display:none;">
+                            <!-- Liste des intervalles -->
+                            <div id="intervals-list" style="max-height:200px; overflow-y:auto; background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
+                                <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
+                                    Aucun intervalle
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -299,93 +390,8 @@
                         </div>
                     </div>
 
-                    <!-- Marqueur (SnapPoint) -->
-                    <div style="margin-bottom:15px;">
-                        <button id="snappoint-btn" onclick="toggleSnapPointTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                            <i class="fas fa-map-marker-alt"></i> Marqueur
-                        </button>
-
-                        <div id="snappoint-content" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
-                            <!-- Boutons Créer / Déplacer -->
-                            <div style="display:flex; gap:8px; margin-bottom:10px;">
-                                <button id="snappoint-create-btn" onclick="setSnapPointMode('create')"
-                                        title="Mode Création : Cliquez sur le graphique pour créer un marqueur"
-                                        style="flex:1; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                                    <i class="fas fa-plus"></i> Créer
-                                </button>
-                                <button id="snappoint-move-btn" onclick="setSnapPointMode('move')"
-                                        title="Mode Déplacement : Cliquez sur un marqueur pour le déplacer"
-                                        style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                                    <i class="fas fa-arrows-alt"></i> Déplacer
-                                </button>
-                            </div>
-
-                            <!-- Info -->
-                            <div id="snappoint-info-text" style="margin-bottom:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;">
-                                <i class="fas fa-info-circle"></i> <span id="snappoint-mode-text">Cliquez sur le graphique pour créer un marqueur</span>
-                            </div>
-
-                            <!-- Liste des marqueurs -->
-                            <div style="margin-top:10px;">
-                                <div style="font-size:0.85rem; margin-bottom:5px; font-weight:bold;">
-                                    Marqueurs créés:
-                                </div>
-                                <div id="snappoints-list" style="max-height:300px; overflow-y:auto;">
-                                    <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
-                                        Aucun marqueur
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mesurer (Règle simple) -->
-                    <div style="margin-bottom:15px;">
-                        <button id="ruler-tool-btn" onclick="toggleRulerTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                            <i class="fas fa-ruler"></i> Mesurer
-                        </button>
-
-                        <div id="ruler-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
-                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
-                                <i class="fas fa-info-circle"></i> Cliquez un point sur le graphique
-                            </div>
-                            <div class="control-row" style="font-size:0.9rem;">
-                                <span>X:</span>
-                                <span id="ruler-x" style="color:var(--accent-green); font-weight:bold;">--</span>
-                            </div>
-                            <div class="control-row" style="font-size:0.9rem;">
-                                <span>Y:</span>
-                                <span id="ruler-y" style="color:var(--accent-green); font-weight:bold;">--</span>
-                            </div>
-                            <button onclick="clearRuler()"
-                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
-                                <i class="fas fa-eraser"></i> Effacer
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Traquer (Curseur de suivi) -->
-                    <div style="margin-bottom:15px;">
-                        <button id="track-tool-btn" onclick="toggleTrackTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                            <i class="fas fa-crosshairs"></i> Traquer
-                        </button>
-
-                        <div id="track-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
-                            <div style="font-size:0.85rem; margin-bottom:5px; color:var(--text-muted);">
-                                <i class="fas fa-info-circle"></i> Déplacez la souris sur le graphique
-                            </div>
-                            <div id="track-values" style="font-size:0.85rem; max-height:150px; overflow-y:auto;">
-                                <!-- Les valeurs des canaux seront affichées ici -->
-                            </div>
-                            <button onclick="clearTrack()"
-                                    style="width:100%; margin-top:8px; padding:4px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem;">
-                                <i class="fas fa-eraser"></i> Effacer
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Séparateur horizontal -->
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--border-color);">
 
                     <!-- Lissage de Canal -->
                     <div style="margin-bottom:15px;">

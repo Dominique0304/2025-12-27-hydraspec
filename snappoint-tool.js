@@ -411,6 +411,29 @@ function hexToRgba(hex, opacity) {
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+// Fonction helper pour calculer la distance d'un point à un segment de ligne
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSquared = dx * dx + dy * dy;
+
+    if (lengthSquared === 0) {
+        // Le segment est en fait un point
+        return Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1));
+    }
+
+    // Calculer t, le paramètre de projection sur le segment [0, 1]
+    let t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
+    t = Math.max(0, Math.min(1, t));
+
+    // Point le plus proche sur le segment
+    const closestX = x1 + t * dx;
+    const closestY = y1 + t * dy;
+
+    // Distance du point au point le plus proche
+    return Math.sqrt((px - closestX) * (px - closestX) + (py - closestY) * (py - closestY));
+}
+
 // Fonction pour remplacer les balises dans le commentaire
 function replaceSnapPointTags(comment, snapPoint) {
     if (!comment || comment.trim() === '') {
@@ -489,12 +512,15 @@ function drawSnapPoints(chart) {
             const anchorConfig = appState.channelConfig[snapPoint.anchorChannelIndex];
             const anchorColor = anchorConfig?.color || color;
 
-            // Dessiner le point d'accroche
-            ctx.fillStyle = anchorColor;
+            // Obtenir l'opacité
+            const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9;
+
+            // Dessiner le point d'accroche avec transparence
+            ctx.fillStyle = hexToRgba(anchorColor, backgroundOpacity);
             ctx.beginPath();
             ctx.arc(pointPos.x, pointPos.y, 6, 0, 2 * Math.PI);
             ctx.fill();
-            ctx.strokeStyle = '#FFF';
+            ctx.strokeStyle = hexToRgba('#FFF', backgroundOpacity);
             ctx.lineWidth = 2;
             ctx.stroke();
 
@@ -579,8 +605,8 @@ function drawSnapPoints(chart) {
                     }
                 }
 
-                // Dessiner la ligne pointillée de connexion avec la couleur du canal d'accrochage
-                ctx.strokeStyle = anchorColor;
+                // Dessiner la ligne pointillée de connexion avec la couleur du canal d'accrochage et transparence
+                ctx.strokeStyle = hexToRgba(anchorColor, backgroundOpacity);
                 ctx.lineWidth = 1;
                 ctx.setLineDash([5, 3]);
                 ctx.beginPath();
@@ -703,6 +729,7 @@ function drawSnapPoints(chart) {
         // Dessiner la flèche libre si activée (seulement si pas de canal d'accrochage)
         if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
             const arrowColor = snapPoint.backgroundColor || '#FFD93D';
+            const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9;
 
             // Point d'arrivée : position définie par arrowEndX/Y (offsets)
             const arrowEndX = boxPos.x + snapPoint.arrowEndX;
@@ -763,8 +790,8 @@ function drawSnapPoints(chart) {
                 }
             }
 
-            // Dessiner la ligne de la flèche depuis le bord de la boîte
-            ctx.strokeStyle = arrowColor;
+            // Dessiner la ligne de la flèche depuis le bord de la boîte avec transparence
+            ctx.strokeStyle = hexToRgba(arrowColor, backgroundOpacity);
             ctx.lineWidth = 2;
             ctx.setLineDash([]);
             ctx.beginPath();
@@ -772,11 +799,11 @@ function drawSnapPoints(chart) {
             ctx.lineTo(arrowEndX, arrowEndY);
             ctx.stroke();
 
-            // Dessiner la pointe de la flèche
+            // Dessiner la pointe de la flèche avec transparence
             const arrowAngle = Math.atan2(arrowEndY - lineStartY, arrowEndX - lineStartX);
             const arrowSize = 12;
 
-            ctx.fillStyle = arrowColor;
+            ctx.fillStyle = hexToRgba(arrowColor, backgroundOpacity);
             ctx.beginPath();
             ctx.moveTo(arrowEndX, arrowEndY);
             ctx.lineTo(
@@ -1676,6 +1703,80 @@ function handleSnapPointMouseDown(event, chart) {
             }
         }
 
+        // 1ter. Vérifier clic sur la ligne de la flèche (si flèche activée) - Drag boîte + flèche ensemble
+        if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
+            const arrowEndX = boxPos.x + snapPoint.arrowEndX;
+            const arrowEndY = boxPos.y + snapPoint.arrowEndY;
+
+            // Calculer le point de départ de la ligne (même logique que le dessin)
+            const boxLeft = boxPos.x - boxWidth / 2;
+            const boxRight = boxPos.x + boxWidth / 2;
+            const boxTop = boxPos.y;
+            const boxBottom = boxPos.y + boxHeight;
+            const boxCenterX = boxPos.x;
+            const boxCenterY = boxPos.y + boxHeight / 2;
+
+            const dx = arrowEndX - boxCenterX;
+            const dy = arrowEndY - boxCenterY;
+
+            let lineStartX = boxCenterX;
+            let lineStartY = boxCenterY;
+
+            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+                const angle = Math.atan2(dy, dx);
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+
+                if (cos > 0) {
+                    const t = (boxRight - boxCenterX) / dx;
+                    const y = boxCenterY + t * dy;
+                    if (y >= boxTop && y <= boxBottom) {
+                        lineStartX = boxRight;
+                        lineStartY = y;
+                    }
+                } else if (cos < 0) {
+                    const t = (boxLeft - boxCenterX) / dx;
+                    const y = boxCenterY + t * dy;
+                    if (y >= boxTop && y <= boxBottom) {
+                        lineStartX = boxLeft;
+                        lineStartY = y;
+                    }
+                }
+
+                if (sin < 0) {
+                    const t = (boxTop - boxCenterY) / dy;
+                    const x = boxCenterX + t * dx;
+                    if (x >= boxLeft && x <= boxRight) {
+                        lineStartX = x;
+                        lineStartY = boxTop;
+                    }
+                } else if (sin > 0) {
+                    const t = (boxBottom - boxCenterY) / dy;
+                    const x = boxCenterX + t * dx;
+                    if (x >= boxLeft && x <= boxRight) {
+                        lineStartX = x;
+                        lineStartY = boxBottom;
+                    }
+                }
+            }
+
+            // Vérifier si le clic est proche de la ligne de la flèche
+            const distToLine = distanceToLineSegment(mouseX, mouseY, lineStartX, lineStartY, arrowEndX, arrowEndY);
+
+            if (distToLine <= 6) {
+                // Commencer le drag de la ligne (boîte + flèche ensemble)
+                snapPointState.dragging = 'arrow-line';
+                snapPointState.draggedSnapPoint = snapPoint;
+                snapPointState.dragStartX = mouseX;
+                snapPointState.dragStartY = mouseY;
+                snapPointState.dragOffsetX = snapPoint.offsetX;
+                snapPointState.dragOffsetY = snapPoint.offsetY;
+
+                chart.canvas.style.cursor = 'move';
+                return true; // Événement géré
+            }
+        }
+
         // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
         const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
@@ -1763,6 +1864,12 @@ function handleSnapPointMouseMove(event, chart) {
             // Drag de la boîte : mettre à jour les offsets
             snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + deltaX;
             snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + deltaY;
+
+            // Si une flèche est active, ajuster arrowEndX/Y pour que l'extrémité reste en position absolue
+            if (snapPointState.draggedSnapPoint.hasArrow) {
+                snapPointState.draggedSnapPoint.arrowEndX -= deltaX;
+                snapPointState.draggedSnapPoint.arrowEndY -= deltaY;
+            }
         } else if (snapPointState.dragging === 'point') {
             // Drag du point : recalculer time et value
             const xScale = chart.scales.x;
@@ -1841,6 +1948,11 @@ function handleSnapPointMouseMove(event, chart) {
             // Mettre à jour les positions de départ pour le prochain delta
             snapPointState.dragStartX = mouseX;
             snapPointState.dragStartY = mouseY;
+        } else if (snapPointState.dragging === 'arrow-line') {
+            // Drag de la ligne de la flèche : déplacer la boîte ET l'extrémité ensemble
+            // (arrowEndX/Y restent constants car ils sont relatifs à la boîte)
+            snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + deltaX;
+            snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + deltaY;
         }
 
         // Mettre à jour l'affichage

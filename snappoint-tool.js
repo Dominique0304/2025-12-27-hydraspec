@@ -56,6 +56,11 @@ class SnapPoint {
 
         // Canal d'accrochage
         this.anchorChannelIndex = channelIndex; // Canal auquel le point est accroché (null = pas d'accrochage)
+
+        // Flèche libre (seulement si pas de canal d'accrochage)
+        this.hasArrow = false; // Si true, affiche une flèche
+        this.arrowEndX = 150; // Position X de la fin de la flèche (offset depuis boxPos en pixels)
+        this.arrowEndY = -80; // Position Y de la fin de la flèche (offset depuis boxPos en pixels)
     }
 
     // Obtenir le label du canal
@@ -694,6 +699,56 @@ function drawSnapPoints(chart) {
 
             currentY += lineHeight;
         });
+
+        // Dessiner la flèche libre si activée (seulement si pas de canal d'accrochage)
+        if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
+            const arrowColor = snapPoint.backgroundColor || '#FFD93D';
+
+            // Point de départ : bord droit de la boîte
+            const boxCenterX = boxPos.x;
+            const boxCenterY = boxPos.y + boxHeight / 2;
+            const boxRight = boxPos.x + boxWidth / 2;
+
+            // Point d'arrivée : position définie par arrowEndX/Y (offsets)
+            const arrowEndX = boxPos.x + snapPoint.arrowEndX;
+            const arrowEndY = boxPos.y + snapPoint.arrowEndY;
+
+            // Dessiner la ligne de la flèche
+            ctx.strokeStyle = arrowColor;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(boxRight, boxCenterY);
+            ctx.lineTo(arrowEndX, arrowEndY);
+            ctx.stroke();
+
+            // Dessiner la pointe de la flèche
+            const angle = Math.atan2(arrowEndY - boxCenterY, arrowEndX - boxRight);
+            const arrowSize = 12;
+
+            ctx.fillStyle = arrowColor;
+            ctx.beginPath();
+            ctx.moveTo(arrowEndX, arrowEndY);
+            ctx.lineTo(
+                arrowEndX - arrowSize * Math.cos(angle - Math.PI / 6),
+                arrowEndY - arrowSize * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                arrowEndX - arrowSize * Math.cos(angle + Math.PI / 6),
+                arrowEndY - arrowSize * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fill();
+
+            // Dessiner un petit cercle draggable à la fin de la flèche
+            ctx.fillStyle = arrowColor;
+            ctx.strokeStyle = '#FFF';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(arrowEndX, arrowEndY, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
     });
 
     ctx.restore();
@@ -1038,11 +1093,94 @@ function setSnapPointAnchorChannel(channelIndex) {
         if (newValue !== null) {
             snapPoint.value = newValue;
         }
+        // Désactiver la flèche si un canal est sélectionné
+        snapPoint.hasArrow = false;
     }
+
+    // Activer/désactiver le bouton flèche selon le canal d'accrochage
+    updateArrowButtonState();
 
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
         appState.charts.time.update('none');
+    }
+}
+
+/**
+ * Activer/Désactiver la flèche pour le snapPoint en cours d'édition
+ */
+function toggleSnapPointArrow() {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    // La flèche n'est disponible que si aucun canal d'accrochage n'est sélectionné
+    if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+        return; // Bloqué si un canal est sélectionné
+    }
+
+    snapPoint.hasArrow = !snapPoint.hasArrow;
+
+    // Mettre à jour l'apparence du bouton
+    const btn = document.getElementById('snap-arrow-toggle');
+    if (btn) {
+        if (snapPoint.hasArrow) {
+            btn.style.background = 'var(--accent-green)';
+            btn.style.color = 'white';
+            btn.innerHTML = '<i class="fas fa-arrow-right"></i> Activée';
+        } else {
+            btn.style.background = 'var(--bg-secondary)';
+            btn.style.color = 'var(--text-main)';
+            btn.innerHTML = '<i class="fas fa-arrow-right"></i> Activer';
+        }
+    }
+
+    // Mettre à jour l'affichage
+    if (appState.charts.time) {
+        appState.charts.time.update('none');
+    }
+}
+
+/**
+ * Mettre à jour l'état du bouton flèche (activé/désactivé) selon le canal d'accrochage
+ */
+function updateArrowButtonState() {
+    if (editingSnapPointId === null) return;
+
+    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    if (!snapPoint) return;
+
+    const btn = document.getElementById('snap-arrow-toggle');
+    const info = document.getElementById('snap-arrow-info');
+
+    if (!btn) return;
+
+    const hasAnchor = snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined;
+
+    if (hasAnchor) {
+        // Canal sélectionné → griser le bouton
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        if (info) info.textContent = 'Disponible uniquement sans canal d\'accrochage';
+    } else {
+        // Pas de canal → activer le bouton
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        if (info) info.textContent = 'Flèche libre pour pointer sans accrocher';
+
+        // Mettre à jour l'apparence selon l'état
+        if (snapPoint.hasArrow) {
+            btn.style.background = 'var(--accent-green)';
+            btn.style.color = 'white';
+            btn.innerHTML = '<i class="fas fa-arrow-right"></i> Activée';
+        } else {
+            btn.style.background = 'var(--bg-secondary)';
+            btn.style.color = 'var(--text-main)';
+            btn.innerHTML = '<i class="fas fa-arrow-right"></i> Activer';
+        }
     }
 }
 

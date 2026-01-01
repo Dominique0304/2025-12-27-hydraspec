@@ -1275,6 +1275,22 @@ button:focus, input:focus, select:focus {
 }
 
 /* Adaptation pour les thèmes */
+/* Thème clair - meilleure visibilité */
+[data-theme="light"] #mouse-halo {
+    mix-blend-mode: normal;
+    border-width: 3px;
+    opacity: 0.9 !important;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6), inset 0 0 15px rgba(33, 150, 243, 0.4);
+}
+
+[data-theme="light"] #mouse-halo.visible {
+    opacity: 0.9 !important;
+}
+
+[data-theme="light"] #mouse-halo::after {
+    opacity: 1;
+}
+
 [data-theme="steampunk"] #mouse-halo {
     border-style: dashed;
 }

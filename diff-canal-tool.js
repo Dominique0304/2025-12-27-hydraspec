@@ -702,8 +702,7 @@ function drawDiffCanalIntervals(chart) {
 
 // Détecter si on clique sur un point ou une annotation existante
 function handleDiffCanalMouseDown(event, chart) {
-    if (!diffCanalState.active) return false;
-
+    // Permettre le drag des éléments même quand l'outil n'est pas actif
     const rect = chart.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
@@ -832,13 +831,12 @@ function handleDiffCanalMouseDown(event, chart) {
 // Déplacer le point ou l'annotation en cours de drag
 function handleDiffCanalMouseMove(event, chart) {
     if (!diffCanalState.dragging || !diffCanalState.draggedInterval) {
-        // Changer le curseur si on survole un point ou une annotation
-        if (diffCanalState.active) {
-            const rect = chart.canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
+        // Changer le curseur si on survole un point ou une annotation (même si outil inactif)
+        const rect = chart.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
 
-            for (let interval of diffCanalIntervals) {
+        for (let interval of diffCanalIntervals) {
                 if (!interval.visible) continue;
 
                 // Récupérer l'échelle Y du canal

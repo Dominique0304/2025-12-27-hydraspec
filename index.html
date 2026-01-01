@@ -1146,6 +1146,15 @@
                         <span style="font-size:0.8em; color:var(--text-muted);">(Appliqué à toutes les courbes: temporel et FFT)</span>
                     </div>
 
+                    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                        <label style="font-size:0.9em; font-weight:bold;">Halo de souris :</label>
+                        <label class="switch" style="margin:0;">
+                            <input type="checkbox" id="halo-enabled-toggle" checked onchange="toggleHaloEnabled()">
+                            <span class="slider round"></span>
+                        </label>
+                        <span style="font-size:0.8em; color:var(--text-muted);">(Indicateur visuel de position de la souris)</span>
+                    </div>
+
                     <!-- Paramètres du fichier -->
                     <div style="border-top:1px solid var(--border-color); padding-top:15px;">
                         <h5 style="margin-top:0; margin-bottom:10px; color:var(--text-main);">

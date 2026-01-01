@@ -326,16 +326,16 @@ function drawIntervals(chart) {
 
         // Fond jaune
         ctx.fillStyle = '#FFD93D';
-        ctx.fillRect(centerX - rectWidth / 2, y - 6 - rectHeight / 2, rectWidth, rectHeight);
+        ctx.fillRect(centerX - rectWidth / 2, y - 18 - rectHeight / 2, rectWidth, rectHeight);
 
         // Encadrement noir
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;
-        ctx.strokeRect(centerX - rectWidth / 2, y - 6 - rectHeight / 2, rectWidth, rectHeight);
+        ctx.strokeRect(centerX - rectWidth / 2, y - 18 - rectHeight / 2, rectWidth, rectHeight);
 
         // Texte noir centré
         ctx.fillStyle = '#000';
-        ctx.fillText(text, centerX, y - 6);
+        ctx.fillText(text, centerX, y - 18);
 
         // Afficher le commentaire si présent
         if (interval.comment && interval.comment.trim() !== '') {

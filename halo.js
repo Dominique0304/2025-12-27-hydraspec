@@ -2,7 +2,42 @@
 // HALO DE SOURIS - Indicateur visuel compatible tous outils
 // =====================================================
 
+// Variable globale pour activer/désactiver le halo
+let haloEnabled = true;
+
+// Fonction globale pour basculer le halo
+function toggleHaloEnabled() {
+    const toggle = document.getElementById('halo-enabled-toggle');
+    haloEnabled = toggle ? toggle.checked : true;
+
+    // Sauvegarder dans localStorage
+    localStorage.setItem('haloEnabled', haloEnabled);
+
+    // Appliquer immédiatement
+    const halo = document.getElementById('mouse-halo');
+    if (halo && !haloEnabled) {
+        halo.style.opacity = '0';
+    }
+
+    console.log('Halo', haloEnabled ? 'activé' : 'désactivé');
+}
+
+// Charger la préférence au démarrage
+function loadHaloPreference() {
+    const saved = localStorage.getItem('haloEnabled');
+    if (saved !== null) {
+        haloEnabled = saved === 'true';
+        const toggle = document.getElementById('halo-enabled-toggle');
+        if (toggle) {
+            toggle.checked = haloEnabled;
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Charger la préférence
+    loadHaloPreference();
+
     // 1. Création de l'élément HTML du halo
     const halo = document.createElement('div');
     halo.id = 'mouse-halo';
@@ -343,6 +378,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 6. Fonction pour mettre à jour le style du halo
     function updateHaloStyle() {
+        // Vérifier si le halo est désactivé
+        if (!haloEnabled) {
+            halo.style.opacity = '0';
+            return;
+        }
+
         // Vérifier si une modale est ouverte
         const configModal = document.getElementById('channel-config-modal');
         const isModalOpen = configModal && configModal.style.display !== 'none';

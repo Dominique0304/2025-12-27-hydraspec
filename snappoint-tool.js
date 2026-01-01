@@ -1627,7 +1627,8 @@ function getCursorForResizeZone(zone) {
  * @returns {boolean} - true si l'événement a été géré
  */
 function handleSnapPointMouseDown(event, chart) {
-    if (!snapPointState.active || snapPoints.length === 0) {
+    // Permettre le drag des marqueurs même quand l'outil n'est pas actif
+    if (snapPoints.length === 0) {
         return false;
     }
 
@@ -1862,10 +1863,7 @@ function handleSnapPointMouseDown(event, chart) {
  * @param {Chart} chart - Instance Chart.js
  */
 function handleSnapPointMouseMove(event, chart) {
-    if (!snapPointState.active) {
-        return;
-    }
-
+    // Permettre le déplacement des marqueurs même quand l'outil n'est pas actif
     const rect = chart.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
@@ -2110,7 +2108,8 @@ function handleSnapPointMouseUp(event, chart) {
  * @returns {boolean} - true si un menu a été affiché
  */
 function handleSnapPointContextMenu(event, chart) {
-    if (!snapPointState.active || snapPoints.length === 0) {
+    // Permettre le menu contextuel même quand l'outil n'est pas actif
+    if (snapPoints.length === 0) {
         return false;
     }
 

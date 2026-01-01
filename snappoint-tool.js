@@ -604,9 +604,9 @@ function drawSnapPoints(chart) {
             }
         }
 
-        // Si pas de lignes à afficher, ne rien dessiner
+        // Si pas de lignes à afficher, afficher un texte par défaut pour que la boîte reste visible
         if (lines.length === 0) {
-            return;
+            lines.push('Marqueur');
         }
 
         // Calculer les dimensions de la boîte

@@ -1457,7 +1457,6 @@ function handleSnapPointMouseDown(event, chart) {
 
         const basePadding = 6; // Réduit de 10 à 6 pour moins de marge verticale
         const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
-        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
         let maxWidth = 0;
         lines.forEach(line => {
@@ -1674,7 +1673,6 @@ function handleSnapPointMouseMove(event, chart) {
         }
 
         const basePadding = 6; // Réduit de 10 à 6 pour moins de marge verticale
-        const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const padding = basePadding * (snapPoint.boxPaddingScale || 1.0);
         const lineHeight = snapPoint.fontSize + 4;
         let maxWidth = 0;

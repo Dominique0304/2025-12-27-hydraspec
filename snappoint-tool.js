@@ -704,50 +704,93 @@ function drawSnapPoints(chart) {
         if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
             const arrowColor = snapPoint.backgroundColor || '#FFD93D';
 
-            // Point de départ : bord droit de la boîte
-            const boxCenterX = boxPos.x;
-            const boxCenterY = boxPos.y + boxHeight / 2;
-            const boxRight = boxPos.x + boxWidth / 2;
-
             // Point d'arrivée : position définie par arrowEndX/Y (offsets)
             const arrowEndX = boxPos.x + snapPoint.arrowEndX;
             const arrowEndY = boxPos.y + snapPoint.arrowEndY;
 
-            // Dessiner la ligne de la flèche
+            // Calculer le point de départ de la flèche au bord de la boîte (même logique que le pointillé)
+            const boxLeft = boxPos.x - boxWidth / 2;
+            const boxRight = boxPos.x + boxWidth / 2;
+            const boxTop = boxPos.y;
+            const boxBottom = boxPos.y + boxHeight;
+            const boxCenterX = boxPos.x;
+            const boxCenterY = boxPos.y + boxHeight / 2;
+
+            // Calculer l'intersection entre la ligne (arrowEnd -> centre boîte) et le bord de la boîte
+            const dx = arrowEndX - boxCenterX;
+            const dy = arrowEndY - boxCenterY;
+
+            let lineStartX = boxCenterX;
+            let lineStartY = boxCenterY;
+
+            // Déterminer quel bord intersecte
+            if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) {
+                const angle = Math.atan2(dy, dx);
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+
+                // Tester l'intersection avec chaque bord
+                if (cos > 0) { // Vers la droite
+                    const t = (boxRight - boxCenterX) / dx;
+                    const y = boxCenterY + t * dy;
+                    if (y >= boxTop && y <= boxBottom) {
+                        lineStartX = boxRight;
+                        lineStartY = y;
+                    }
+                } else if (cos < 0) { // Vers la gauche
+                    const t = (boxLeft - boxCenterX) / dx;
+                    const y = boxCenterY + t * dy;
+                    if (y >= boxTop && y <= boxBottom) {
+                        lineStartX = boxLeft;
+                        lineStartY = y;
+                    }
+                }
+
+                if (sin < 0) { // Vers le haut
+                    const t = (boxTop - boxCenterY) / dy;
+                    const x = boxCenterX + t * dx;
+                    if (x >= boxLeft && x <= boxRight) {
+                        lineStartX = x;
+                        lineStartY = boxTop;
+                    }
+                } else if (sin > 0) { // Vers le bas
+                    const t = (boxBottom - boxCenterY) / dy;
+                    const x = boxCenterX + t * dx;
+                    if (x >= boxLeft && x <= boxRight) {
+                        lineStartX = x;
+                        lineStartY = boxBottom;
+                    }
+                }
+            }
+
+            // Dessiner la ligne de la flèche depuis le bord de la boîte
             ctx.strokeStyle = arrowColor;
             ctx.lineWidth = 2;
             ctx.setLineDash([]);
             ctx.beginPath();
-            ctx.moveTo(boxRight, boxCenterY);
+            ctx.moveTo(lineStartX, lineStartY);
             ctx.lineTo(arrowEndX, arrowEndY);
             ctx.stroke();
 
             // Dessiner la pointe de la flèche
-            const angle = Math.atan2(arrowEndY - boxCenterY, arrowEndX - boxRight);
+            const arrowAngle = Math.atan2(arrowEndY - lineStartY, arrowEndX - lineStartX);
             const arrowSize = 12;
 
             ctx.fillStyle = arrowColor;
             ctx.beginPath();
             ctx.moveTo(arrowEndX, arrowEndY);
             ctx.lineTo(
-                arrowEndX - arrowSize * Math.cos(angle - Math.PI / 6),
-                arrowEndY - arrowSize * Math.sin(angle - Math.PI / 6)
+                arrowEndX - arrowSize * Math.cos(arrowAngle - Math.PI / 6),
+                arrowEndY - arrowSize * Math.sin(arrowAngle - Math.PI / 6)
             );
             ctx.lineTo(
-                arrowEndX - arrowSize * Math.cos(angle + Math.PI / 6),
-                arrowEndY - arrowSize * Math.sin(angle + Math.PI / 6)
+                arrowEndX - arrowSize * Math.cos(arrowAngle + Math.PI / 6),
+                arrowEndY - arrowSize * Math.sin(arrowAngle + Math.PI / 6)
             );
             ctx.closePath();
             ctx.fill();
 
-            // Dessiner un petit cercle draggable à la fin de la flèche
-            ctx.fillStyle = arrowColor;
-            ctx.strokeStyle = '#FFF';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(arrowEndX, arrowEndY, 6, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+            // Note: le cercle draggable n'est plus visible, mais la zone reste cliquable pour le drag
         }
     });
 

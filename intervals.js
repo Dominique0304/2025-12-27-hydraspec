@@ -968,6 +968,7 @@ function getIntervalDragType(x, y, interval, chart) {
     if (!interval || !chart) return null;
 
     const xScale = chart.scales.x;
+    const yScale = chart.scales.y;
     const startTime = interval.getStartTime();
     const endTime = interval.getEndTime();
     const yPixel = interval.getYPixelPosition(chart);
@@ -976,21 +977,28 @@ function getIntervalDragType(x, y, interval, chart) {
     const endX = xScale.getPixelForValue(endTime * 1000);
     const centerX = (startX + endX) / 2;
 
-    const arrowTolerance = 15; // Zone de clic pour les flèches
+    const verticalTolerance = 10; // Zone de clic pour les lignes verticales (pointillés)
     const heightTolerance = 10; // Zone de clic pour la barre horizontale
 
-    // Vérifier si le clic est près de la flèche de gauche
-    if (Math.abs(x - startX) <= arrowTolerance && Math.abs(y - yPixel) <= heightTolerance) {
+    // Limites verticales du graphique
+    const chartTop = yScale.top || 0;
+    const chartBottom = yScale.bottom || chart.height;
+    const isInChartY = y >= chartTop && y <= chartBottom;
+
+    // Vérifier si le clic est près du curseur gauche (ligne verticale pointillée)
+    // On peut cliquer n'importe où le long de la ligne verticale
+    if (Math.abs(x - startX) <= verticalTolerance && isInChartY) {
         return 'start';
     }
 
-    // Vérifier si le clic est près de la flèche de droite
-    if (Math.abs(x - endX) <= arrowTolerance && Math.abs(y - yPixel) <= heightTolerance) {
+    // Vérifier si le clic est près du curseur droit (ligne verticale pointillée)
+    // On peut cliquer n'importe où le long de la ligne verticale
+    if (Math.abs(x - endX) <= verticalTolerance && isInChartY) {
         return 'end';
     }
 
     // Vérifier si le clic est sur la barre horizontale (milieu)
-    if (x > startX + arrowTolerance && x < endX - arrowTolerance && Math.abs(y - yPixel) <= heightTolerance) {
+    if (x > startX + verticalTolerance && x < endX - verticalTolerance && Math.abs(y - yPixel) <= heightTolerance) {
         return 'height';
     }
 

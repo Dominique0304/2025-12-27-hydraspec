@@ -122,10 +122,15 @@ function toggleIntervalTool() {
             btn.style.background = 'var(--accent-blue)';
             btn.style.boxShadow = '';
         }
-        setStatus('Mode Interval désactivé - Vous pouvez maintenant déplacer les curseurs', 'info');
 
-        // NE PAS fermer l'accordéon - laisser visible pour voir et dragger les intervals
-        // L'utilisateur peut le fermer manuellement s'il le souhaite
+        // Fermer l'accordéon quand l'outil est désactivé
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+
+        setStatus('Mode Interval désactivé - Vous pouvez maintenant déplacer les curseurs', 'info');
     }
 }
 

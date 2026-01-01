@@ -929,6 +929,9 @@ function openSnapPointEditModal(id) {
     // Mettre à jour les boutons d'alignement
     updateSnapPointAlignmentButtons();
 
+    // Mettre à jour l'état du bouton flèche
+    updateArrowButtonState();
+
     // Afficher la modale
     modal.style.display = 'flex';
 
@@ -1612,6 +1615,24 @@ function handleSnapPointMouseDown(event, chart) {
         const boxX = boxPos.x - boxWidth / 2;
         const boxY = boxPos.y;
 
+        // 1bis. Vérifier clic sur l'extrémité de la flèche (si flèche activée) - PRIORITAIRE
+        if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
+            const arrowEndX = boxPos.x + snapPoint.arrowEndX;
+            const arrowEndY = boxPos.y + snapPoint.arrowEndY;
+            const distToArrowEnd = Math.sqrt(Math.pow(mouseX - arrowEndX, 2) + Math.pow(mouseY - arrowEndY, 2));
+
+            if (distToArrowEnd <= 10) {
+                // Commencer le drag de l'extrémité de la flèche
+                snapPointState.dragging = 'arrow';
+                snapPointState.draggedSnapPoint = snapPoint;
+                snapPointState.dragStartX = mouseX;
+                snapPointState.dragStartY = mouseY;
+
+                chart.canvas.style.cursor = 'move';
+                return true; // Événement géré
+            }
+        }
+
         // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
         const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
@@ -1769,6 +1790,14 @@ function handleSnapPointMouseMove(event, chart) {
             if (direction.includes('n') || direction.includes('s')) {
                 snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + offsetYDelta;
             }
+        } else if (snapPointState.dragging === 'arrow') {
+            // Drag de l'extrémité de la flèche
+            snapPointState.draggedSnapPoint.arrowEndX += deltaX;
+            snapPointState.draggedSnapPoint.arrowEndY += deltaY;
+
+            // Mettre à jour les positions de départ pour le prochain delta
+            snapPointState.dragStartX = mouseX;
+            snapPointState.dragStartY = mouseY;
         }
 
         // Mettre à jour l'affichage

@@ -1124,6 +1124,54 @@ function deactivateAllTools() {
 function deactivateOtherTools(currentTool) {
     // Désactiver tous les autres outils directement
 
+    // Interval - TOUJOURS désactiver quand un autre outil est activé
+    if (currentTool !== 'interval' && typeof isCreatingInterval !== 'undefined' && isCreatingInterval) {
+        const btn = document.getElementById('btn-interval-main');
+        const content = document.getElementById('interval-content');
+        const icon = document.getElementById('interval-accordion-icon');
+
+        isCreatingInterval = false;
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Diff/Canal - TOUJOURS désactiver quand un autre outil est activé
+    if (currentTool !== 'diffcanal' && typeof diffCanalState !== 'undefined' && diffCanalState.active) {
+        const btn = document.getElementById('diff-canal-btn');
+        const content = document.getElementById('diff-canal-content');
+        const icon = btn ? btn.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
+
+        diffCanalState.active = false;
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Marqueur (SnapPoint) - TOUJOURS désactiver quand un autre outil est activé
+    if (currentTool !== 'snappoint' && typeof snapPointState !== 'undefined' && snapPointState.active) {
+        const btn = document.getElementById('snappoint-btn');
+        const content = document.getElementById('snappoint-content');
+        const icon = btn ? btn.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
+
+        snapPointState.active = false;
+        if (typeof isCreatingSnapPoint !== 'undefined') {
+            isCreatingSnapPoint = false;
+        }
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
     // Mesure de différence
     if (currentTool !== 'measure' && typeof measureState !== 'undefined' && measureState.active) {
         measureState.active = false;

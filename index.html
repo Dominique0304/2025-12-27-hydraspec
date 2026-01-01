@@ -579,45 +579,6 @@
                     </div>
                 </div>
 
-                <!-- Annotations -->
-                <div class="control-group">
-                    <h3 id="annotations-header" onclick="toggleAnnotations()" style="cursor:pointer;">
-                        <i class="fas fa-pen"></i> <span data-i18n="notes">Annotations</span>
-                        <i id="annotations-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
-                    </h3>
-
-                    <div id="annotations-content" style="display:none;">
-                        <!-- Boutons d'outils annotations -->
-                        <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <button onclick="toggleAnnotationMode()" id="btn-annotation-mode"
-                                    title="Mode Annotation (A)&#10;• Clic: Créer annotation&#10;• Drag boîte: Déplacer position&#10;• CTRL+DRAG marqueur ⭕: Déplacer ancrage sur courbe"
-                                    style="flex:1; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button onclick="toggleAllAnnotations()" id="btn-annotations-visibility"
-                                    title="Afficher/Masquer toutes les annotations"
-                                    style="flex:1; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-
-                        <!-- Liste des annotations -->
-                        <div style="margin-bottom:10px;">
-                            <div style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border-color);">
-                                <i class="fas fa-list"></i> Liste des annotations
-                            </div>
-                            <div id="annotations-list" style="max-height:200px; overflow-y:auto; background:var(--input-bg); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
-                                <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
-                                    Aucune annotation
-                                </div>
-                            </div>
-                        </div>
-
-                        <textarea id="user-notes" rows="4" placeholder="Notes..."
-                            style="width:93%; resize:vertical;"></textarea>
-                    </div>
-                </div>
-
                 <!-- Analysis Settings -->
                 <div class="control-group" id="fft-params-panel">
                     <h3 id="fft-params-header" onclick="toggleFFTParams()" style="cursor:pointer;">
@@ -778,6 +739,15 @@
                             <div class="color-scale" id="color-scale"></div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Commentaires -->
+                <div class="control-group">
+                    <h3 style="margin-bottom: 10px;">
+                        <i class="fas fa-comment"></i> Commentaires
+                    </h3>
+                    <textarea id="user-notes" rows="4" placeholder="Notes..."
+                        style="width:93%; resize:vertical;"></textarea>
                 </div>
 
         </aside>
@@ -1283,111 +1253,6 @@
         </div>
     </div>
 
-    <!-- Modal Saisie Annotation -->
-    <div id="annotation-input-modal" class="modal" style="display:none;">
-        <div id="annotation-modal-content" class="modal-content" style="width: 600px; max-width: 90vw; padding: 15px; position: relative;">
-            <!-- Bouton de fermeture -->
-            <button onclick="closeAnnotationInputModal()" class="btn-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
-                    onmouseover="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-main)';"
-                    onmouseout="this.style.background='none'; this.style.color='var(--text-muted)';"
-                    title="Fermer sans valider">&times;</button>
-
-            <!-- Titre draggable -->
-            <h2 id="annotation-modal-header" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); font-size: 1.3em; cursor: move; user-select: none; padding-right: 35px;"
-                title="Glissez pour déplacer la fenêtre">
-                <i class="fas fa-sticky-note"></i> <span id="annotation-modal-title">Nouvelle annotation</span>
-            </h2>
-
-            <!-- Canal, Couleur, Diamètre et Fond -->
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
-                        Canal:
-                    </label>
-                    <select id="annotation-channel-select"
-                            style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
-                    </select>
-                </div>
-                <div style="width: 90px;">
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
-                        Couleur:
-                    </label>
-                    <input type="color" id="annotation-color-picker" value="#FFD700"
-                           style="width: 100%; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
-                </div>
-                <div style="width: 75px;">
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;" title="Diamètre du point d'ancrage">
-                        Ø Ancr.:
-                    </label>
-                    <input type="number" id="annotation-marker-radius" value="6" min="2" max="15" step="1"
-                           style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; text-align: center;">
-                </div>
-                <div style="width: 110px;">
-                    <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;" title="Style d'arrière-plan">
-                        Fond:
-                    </label>
-                    <select id="annotation-background-style"
-                            style="width: 100%; padding: 6px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-size: 0.85em;">
-                        <option value="blur">Flouté</option>
-                        <option value="transparent">Transparent</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Texte avec formatage -->
-            <div style="margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <label style="font-weight: bold; font-size: 0.9em;">
-                        Texte de l'annotation:
-                    </label>
-                    <div style="display: flex; gap: 4px;" id="annotation-format-toolbar">
-                        <button onclick="toggleAnnotationFormat('bold')" id="fmt-bold" title="Gras"
-                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-weight: bold;">
-                            B
-                        </button>
-                        <button onclick="toggleAnnotationFormat('italic')" id="fmt-italic" title="Italique"
-                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-style: italic;">
-                            I
-                        </button>
-                        <button onclick="toggleAnnotationFormat('underline')" id="fmt-underline" title="Souligné"
-                                style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
-                            U
-                        </button>
-                        <select onchange="setAnnotationFontSize(this.value)" id="fmt-size" title="Taille du texte"
-                                style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                            <option value="0.7">Petit</option>
-                            <option value="0.85" selected>Normal</option>
-                            <option value="1.0">Grand</option>
-                            <option value="1.2">Très grand</option>
-                        </select>
-                    </div>
-                </div>
-                <textarea id="annotation-text-input" rows="3"
-                       style="width: 100%; padding: 8px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit;"
-                       placeholder="Entrez votre annotation... (retours à la ligne permis)"></textarea>
-            </div>
-
-            <!-- Info point -->
-            <div style="margin-bottom: 10px; padding: 6px 8px; background: var(--input-bg); border-radius: 4px; border-left: 3px solid var(--accent-blue); font-size: 0.85em;">
-                <span style="color: var(--text-muted);">
-                    <i class="fas fa-info-circle"></i> Temps: <span id="ann-info-time">--</span> | Valeur: <span id="ann-info-value">--</span>
-                </span>
-            </div>
-
-            <!-- Boutons -->
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
-                <button onclick="closeAnnotationInputModal()"
-                        style="padding: 8px 16px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
-                    Annuler
-                </button>
-                <button onclick="confirmAnnotationInput()"
-                        style="padding: 8px 16px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    <i class="fas fa-check"></i> Créer
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Modification Interval -->
     <div id="interval-edit-modal" class="modal" style="display:none;">
         <div id="interval-modal-content" class="modal-content" style="width: 600px; max-width: 90vw; padding: 15px; position: relative;">
@@ -1726,7 +1591,6 @@
     <script src="hsp-manager.js"></script>
 
     <!-- TOUTES LES DÉPENDANCES EN LOCAL ddx -->
-<script src="annotations.js"></script>
 <script src="intervals.js"></script>
 <script src="multi-channel.js"></script>
 <script src="measure-tool.js"></script>

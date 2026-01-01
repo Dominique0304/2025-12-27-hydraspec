@@ -307,9 +307,23 @@
                         </button>
 
                         <div id="snappoint-content" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
+                            <!-- Boutons Créer / Déplacer -->
+                            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                                <button id="snappoint-create-btn" onclick="setSnapPointMode('create')"
+                                        title="Mode Création : Cliquez sur le graphique pour créer un marqueur"
+                                        style="flex:1; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                    <i class="fas fa-plus"></i> Créer
+                                </button>
+                                <button id="snappoint-move-btn" onclick="setSnapPointMode('move')"
+                                        title="Mode Déplacement : Cliquez sur un marqueur pour le déplacer"
+                                        style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                    <i class="fas fa-arrows-alt"></i> Déplacer
+                                </button>
+                            </div>
+
                             <!-- Info -->
-                            <div style="margin-bottom:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;">
-                                <i class="fas fa-info-circle"></i> Cliquez sur le graphique pour créer un marqueur
+                            <div id="snappoint-info-text" style="margin-bottom:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;">
+                                <i class="fas fa-info-circle"></i> <span id="snappoint-mode-text">Cliquez sur le graphique pour créer un marqueur</span>
                             </div>
 
                             <!-- Liste des marqueurs -->

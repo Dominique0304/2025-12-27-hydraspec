@@ -12,6 +12,7 @@ let nextSnapPointId = 1;
 // État de l'outil
 let snapPointState = {
     active: false,
+    mode: 'create', // 'create' ou 'move'
     dragging: null, // 'point', 'box', 'resize', ou null
     draggedSnapPoint: null,
     dragStartX: 0,
@@ -182,9 +183,56 @@ function toggleSnapPointTool() {
     }
 }
 
+/**
+ * Changer le mode de l'outil Marqueur (Créer / Déplacer)
+ * @param {string} mode - 'create' ou 'move'
+ */
+function setSnapPointMode(mode) {
+    snapPointState.mode = mode;
+
+    const createBtn = document.getElementById('snappoint-create-btn');
+    const moveBtn = document.getElementById('snappoint-move-btn');
+    const modeText = document.getElementById('snappoint-mode-text');
+
+    if (mode === 'create') {
+        // Mode Création activé
+        if (createBtn) {
+            createBtn.style.background = 'var(--accent-green)';
+            createBtn.style.color = 'white';
+            createBtn.style.border = 'none';
+        }
+        if (moveBtn) {
+            moveBtn.style.background = 'var(--bg-secondary)';
+            moveBtn.style.color = 'var(--text-main)';
+            moveBtn.style.border = '1px solid var(--border-color)';
+        }
+        if (modeText) {
+            modeText.textContent = 'Cliquez sur le graphique pour créer un marqueur';
+        }
+        setStatus("Mode Création : Cliquez sur le graphique pour créer un marqueur");
+    } else if (mode === 'move') {
+        // Mode Déplacement activé
+        if (createBtn) {
+            createBtn.style.background = 'var(--bg-secondary)';
+            createBtn.style.color = 'var(--text-main)';
+            createBtn.style.border = '1px solid var(--border-color)';
+        }
+        if (moveBtn) {
+            moveBtn.style.background = 'var(--accent-green)';
+            moveBtn.style.color = 'white';
+            moveBtn.style.border = 'none';
+        }
+        if (modeText) {
+            modeText.textContent = 'Cliquez sur un marqueur pour le déplacer ou le redimensionner';
+        }
+        setStatus("Mode Déplacement : Cliquez sur un marqueur pour le déplacer");
+    }
+}
+
 // Gérer le clic sur le graphique pour créer un marqueur
 function handleSnapPointClick(event, chart) {
-    if (!snapPointState.active || !isCreatingSnapPoint) {
+    // Ne créer que si l'outil est actif ET en mode création
+    if (!snapPointState.active || !isCreatingSnapPoint || snapPointState.mode !== 'create') {
         return false;
     }
 
@@ -1533,24 +1581,24 @@ function handleSnapPointMouseMove(event, chart) {
 
             // Calculer les nouvelles dimensions selon la direction
             if (direction.includes('w')) {
-                // Resize vers la gauche (le bord gauche bouge)
+                // Resize vers la gauche (le bord gauche bouge, le bord droit reste fixe)
                 newWidth = snapPointState.resizeStartWidth - deltaX;
                 offsetXDelta = deltaX / 2; // Ajuster l'offset pour garder le centre
             }
             if (direction.includes('e')) {
-                // Resize vers la droite (le bord droit bouge)
+                // Resize vers la droite (le bord droit bouge, le bord gauche reste fixe)
                 newWidth = snapPointState.resizeStartWidth + deltaX;
                 offsetXDelta = deltaX / 2;
             }
             if (direction.includes('n')) {
-                // Resize vers le haut (le bord haut bouge)
+                // Resize vers le haut (le bord haut bouge, le bord BAS reste fixe)
                 newHeight = snapPointState.resizeStartHeight - deltaY;
-                offsetYDelta = deltaY / 2;
+                offsetYDelta = deltaY; // Déplacer toute la boîte vers le haut pour garder le bas fixe
             }
             if (direction.includes('s')) {
-                // Resize vers le bas (le bord bas bouge)
+                // Resize vers le bas (le bord bas bouge, le bord HAUT reste fixe)
                 newHeight = snapPointState.resizeStartHeight + deltaY;
-                offsetYDelta = deltaY / 2;
+                offsetYDelta = 0; // Ne PAS déplacer la boîte, juste agrandir vers le bas
             }
 
             // Appliquer des limites minimales

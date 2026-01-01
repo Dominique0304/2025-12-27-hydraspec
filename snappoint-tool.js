@@ -1815,6 +1815,12 @@ function handleSnapPointMouseDown(event, chart) {
             snapPointState.dragOffsetX = snapPoint.offsetX;
             snapPointState.dragOffsetY = snapPoint.offsetY;
 
+            // Sauvegarder les positions initiales de la flèche si elle existe
+            if (snapPoint.hasArrow) {
+                snapPointState.initialArrowEndX = snapPoint.arrowEndX;
+                snapPointState.initialArrowEndY = snapPoint.arrowEndY;
+            }
+
             chart.canvas.style.cursor = 'move';
             return true; // Événement géré
         }
@@ -1866,9 +1872,9 @@ function handleSnapPointMouseMove(event, chart) {
             snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + deltaY;
 
             // Si une flèche est active, ajuster arrowEndX/Y pour que l'extrémité reste en position absolue
-            if (snapPointState.draggedSnapPoint.hasArrow) {
-                snapPointState.draggedSnapPoint.arrowEndX -= deltaX;
-                snapPointState.draggedSnapPoint.arrowEndY -= deltaY;
+            if (snapPointState.draggedSnapPoint.hasArrow && snapPointState.initialArrowEndX !== undefined) {
+                snapPointState.draggedSnapPoint.arrowEndX = snapPointState.initialArrowEndX - deltaX;
+                snapPointState.draggedSnapPoint.arrowEndY = snapPointState.initialArrowEndY - deltaY;
             }
         } else if (snapPointState.dragging === 'point') {
             // Drag du point : recalculer time et value

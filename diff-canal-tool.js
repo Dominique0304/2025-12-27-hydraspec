@@ -84,6 +84,7 @@ class DiffCanalInterval {
 function toggleDiffCanalTool() {
     const btn = document.getElementById('diff-canal-btn');
     const content = document.getElementById('diff-canal-content');
+    const icon = document.getElementById('diff-canal-accordion-icon');
 
     // Vérifier l'état AVANT de changer
     if (!diffCanalState.active) {
@@ -119,9 +120,13 @@ function toggleDiffCanalTool() {
             btn.style.background = 'var(--accent-green)';
         }
 
-        // Afficher le contenu
+        // Afficher le contenu et mettre à jour l'icône
         if (content) {
             content.style.display = 'block';
+        }
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
         }
 
         // Mettre à jour la liste des canaux disponibles
@@ -138,9 +143,13 @@ function toggleDiffCanalTool() {
             btn.style.background = 'var(--accent-blue)';
         }
 
-        // Masquer le contenu
+        // Masquer le contenu et mettre à jour l'icône
         if (content) {
             content.style.display = 'none';
+        }
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
         }
 
         setStatus("Outil Diff/Canal désactivé");

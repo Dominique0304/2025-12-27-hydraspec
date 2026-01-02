@@ -1894,14 +1894,21 @@ window.toggleSidebar = toggleSidebar;
 // =====================================
 
 function makeDraggable(modalElement) {
+    console.log('🔧 makeDraggable appelé pour:', modalElement);
+
     // Vérifier si déjà initialisé pour éviter les doublons
     if (modalElement.dataset.draggableInitialized === 'true') {
+        console.log('⚠️ Modal déjà initialisée, skip');
         return;
     }
     modalElement.dataset.draggableInitialized = 'true';
 
     const header = modalElement.querySelector('h2');
-    if (!header) return;
+    if (!header) {
+        console.error('❌ Aucun h2 trouvé dans la modal');
+        return;
+    }
+    console.log('✅ Header trouvé:', header.textContent);
 
     let isDragging = false;
     let currentX;
@@ -1910,8 +1917,14 @@ function makeDraggable(modalElement) {
     let initialY;
 
     function dragStart(e) {
+        console.log('🖱️ mousedown détecté sur:', e.target);
+        console.log('🔍 header.contains(e.target):', header.contains(e.target));
+
         // Vérifier que le clic est bien sur le header
-        if (!header.contains(e.target)) return;
+        if (!header.contains(e.target)) {
+            console.log('⚠️ Clic en dehors du header, ignoré');
+            return;
+        }
 
         isDragging = true;
         modalElement.classList.add('dragging');
@@ -1931,7 +1944,13 @@ function makeDraggable(modalElement) {
         modalElement.style.top = currentY + 'px';
         modalElement.style.margin = '0';
 
-        console.log('🎯 Drag started');
+        console.log('🎯 Drag started - isDragging =', isDragging);
+        console.log('📍 Position initiale:', {
+            mouseX: initialX,
+            mouseY: initialY,
+            modalX: currentX,
+            modalY: currentY
+        });
     }
 
     function drag(e) {
@@ -1956,9 +1975,12 @@ function makeDraggable(modalElement) {
 
         modalElement.style.left = boundedX + 'px';
         modalElement.style.top = boundedY + 'px';
+
+        console.log('🔄 Dragging à:', boundedX, boundedY);
     }
 
     function dragEnd() {
+        console.log('🛑 mouseup - isDragging était:', isDragging);
         if (!isDragging) return;
         isDragging = false;
         modalElement.classList.remove('dragging');
@@ -1970,7 +1992,8 @@ function makeDraggable(modalElement) {
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', dragEnd);
 
-    console.log('✅ Modal draggable initialisée:', modalElement);
+    console.log('✅ Event listeners ajoutés');
+    console.log('📍 Modal draggable initialisée complètement');
 }
 
 // Initialiser les modales draggables au chargement

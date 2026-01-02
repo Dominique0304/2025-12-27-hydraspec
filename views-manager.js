@@ -66,17 +66,44 @@ function captureCurrentState() {
         spectroVisible: uiState.spectroVisible || false
     };
 
-    // Si multi-canaux, capturer tous les canaux visibles
-    if (appState.availableColumns && appState.availableColumns.length > 1) {
-        state.multiChannel = true;
-        state.visibleChannels = appState.availableColumns.map((col, idx) => ({
-            index: idx,
-            label: col.label,
-            visible: true // TODO: déterminer si le canal est visible
+    // Capturer la visibilité de chaque canal
+    if (appState.channelConfig && appState.channelConfig.length > 0) {
+        state.channelVisibility = appState.channelConfig.map(config => ({
+            index: config.index,
+            label: config.label,
+            visible: config.visible
         }));
+        console.log('📊 Canaux capturés:', state.channelVisibility);
     }
 
-    console.log('📸 État capturé:', state);
+    // Capturer la visibilité de chaque marqueur (SnapPoint)
+    if (typeof snapPoints !== 'undefined' && snapPoints.length > 0) {
+        state.snapPointsVisibility = snapPoints.map(sp => ({
+            id: sp.id,
+            visible: sp.visible !== false
+        }));
+        console.log('📍 Marqueurs capturés:', state.snapPointsVisibility.length);
+    }
+
+    // Capturer la visibilité de chaque interval
+    if (typeof intervals !== 'undefined' && intervals.length > 0) {
+        state.intervalsVisibility = intervals.map(interval => ({
+            id: interval.id,
+            visible: interval.visible !== false
+        }));
+        console.log('📏 Intervals capturés:', state.intervalsVisibility.length);
+    }
+
+    // Capturer la visibilité de chaque diff/canal
+    if (typeof diffCanalIntervals !== 'undefined' && diffCanalIntervals.length > 0) {
+        state.diffCanalVisibility = diffCanalIntervals.map(interval => ({
+            id: interval.id,
+            visible: interval.visible !== false
+        }));
+        console.log('🔀 Diff/Canal capturés:', state.diffCanalVisibility.length);
+    }
+
+    console.log('📸 État complet capturé:', state);
     return state;
 }
 
@@ -120,8 +147,23 @@ function displayView(viewId) {
         return;
     }
 
-    // Restaurer le canal actif si multi-canaux
-    if (view.multiChannel && view.currentChannel !== appState.currentColumnIndex) {
+    // Restaurer la visibilité des canaux
+    if (view.channelVisibility && appState.channelConfig) {
+        view.channelVisibility.forEach(savedChannel => {
+            const config = appState.channelConfig.find(c => c.index === savedChannel.index);
+            if (config) {
+                config.visible = savedChannel.visible;
+            }
+        });
+        // Rafraîchir le graphique multi-canaux
+        if (typeof updateTimeChartMultiChannel === 'function') {
+            updateTimeChartMultiChannel();
+        }
+        console.log('📊 Canaux restaurés');
+    }
+
+    // Restaurer le canal actif
+    if (view.currentChannel !== appState.currentColumnIndex) {
         if (typeof changeCurrentColumn === 'function') {
             changeCurrentColumn(view.currentChannel);
         }
@@ -151,8 +193,50 @@ function displayView(viewId) {
         toggleSpectrogram();
     }
 
+    // Restaurer la visibilité des marqueurs (SnapPoints)
+    if (view.snapPointsVisibility && typeof snapPoints !== 'undefined') {
+        view.snapPointsVisibility.forEach(savedSp => {
+            const sp = snapPoints.find(s => s.id === savedSp.id);
+            if (sp) {
+                sp.visible = savedSp.visible;
+            }
+        });
+        if (typeof renderSnapPoints === 'function') {
+            renderSnapPoints();
+        }
+        console.log('📍 Marqueurs restaurés');
+    }
+
+    // Restaurer la visibilité des intervals
+    if (view.intervalsVisibility && typeof intervals !== 'undefined') {
+        view.intervalsVisibility.forEach(savedInterval => {
+            const interval = intervals.find(i => i.id === savedInterval.id);
+            if (interval) {
+                interval.visible = savedInterval.visible;
+            }
+        });
+        if (typeof renderIntervals === 'function') {
+            renderIntervals();
+        }
+        console.log('📏 Intervals restaurés');
+    }
+
+    // Restaurer la visibilité des diff/canal
+    if (view.diffCanalVisibility && typeof diffCanalIntervals !== 'undefined') {
+        view.diffCanalVisibility.forEach(savedDiff => {
+            const diff = diffCanalIntervals.find(d => d.id === savedDiff.id);
+            if (diff) {
+                diff.visible = savedDiff.visible;
+            }
+        });
+        if (typeof renderDiffCanalIntervals === 'function') {
+            renderDiffCanalIntervals();
+        }
+        console.log('🔀 Diff/Canal restaurés');
+    }
+
     setStatus(`✅ Vue "${view.name}" restaurée`, 'success');
-    console.log('✅ Vue restaurée');
+    console.log('✅ Vue complètement restaurée');
 }
 
 // =====================================
@@ -183,10 +267,6 @@ function deleteView(viewId) {
     const view = viewsState.views.find(v => v.id === viewId);
     if (!view) {
         console.error('❌ Vue introuvable:', viewId);
-        return;
-    }
-
-    if (!confirm(`Supprimer la vue "${view.name}" ?\n\nCette action est irréversible.`)) {
         return;
     }
 

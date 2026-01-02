@@ -577,6 +577,12 @@ function saveAllToolsState(project) {
         project.toolsState.isCreatingSnapPoint = isCreatingSnapPoint;
     }
 
+    // Sauvegarder Vues sauvegardées
+    if (typeof viewsState !== 'undefined') {
+        project.toolsState.views = JSON.parse(JSON.stringify(viewsState.views));
+        console.log(`📸 Vues sauvegardées : ${viewsState.views.length} vue(s)`);
+    }
+
     // CRITIQUE : Sauvegarder les curseurs d'analyse depuis appState vers project.state
     if (typeof appState !== 'undefined' && appState.cursorStart !== undefined && appState.cursorEnd !== undefined) {
         project.state.cursorStart = appState.cursorStart;

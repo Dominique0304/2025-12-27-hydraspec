@@ -245,7 +245,10 @@ async function performHSPSave(project, fileName, isNewFile) {
         smoothedChannels: project.toolsState.smoothedChannels || [],
 
         // Notes utilisateur (depuis project.toolsState pour cohérence multi-projets)
-        notes: project.toolsState.notes || ""
+        notes: project.toolsState.notes || "",
+
+        // Vues sauvegardées (états du graphique)
+        views: project.toolsState.views || (typeof viewsState !== 'undefined' ? viewsState.views : [])
     };
 
     console.log("💾 Données HSP préparées:", {
@@ -253,6 +256,7 @@ async function performHSPSave(project, fileName, isNewFile) {
         annotations: hspData.annotations.length,
         intervals: hspData.intervals.length,
         diffCanal: hspData.diffCanal.intervals.length,
+        views: hspData.views.length,
         toolsState_annotations: project.toolsState.annotations?.length || 0,
         toolsState_intervals: project.toolsState.intervals?.length || 0,
         toolsState_diffCanal: project.toolsState.diffCanal?.intervals?.length || 0,
@@ -532,6 +536,21 @@ async function restoreProjectFromHSP(project, hspData) {
     if (hspData.snapPoints) {
         project.toolsState.snapPoints = hspData.snapPoints;
         console.log(`✅ Marqueurs restaurés (${hspData.snapPoints.length} marqueurs)`);
+    }
+
+    // Restaurer Vues sauvegardées
+    if (hspData.views && typeof viewsState !== 'undefined') {
+        viewsState.views = hspData.views;
+        // Mettre à jour nextId pour éviter les conflits
+        if (viewsState.views.length > 0) {
+            const maxId = Math.max(...viewsState.views.map(v => v.id));
+            viewsState.nextId = Math.floor(maxId / 1000) + 1; // Incrémenter basé sur timestamp
+        }
+        console.log(`✅ Vues restaurées (${hspData.views.length} vue(s))`);
+        // Rafraîchir l'affichage
+        if (typeof renderViewsList === 'function') {
+            setTimeout(renderViewsList, 100);
+        }
     }
 
     // Restaurer zoom (sera appliqué après création des graphiques)

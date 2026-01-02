@@ -738,6 +738,16 @@
                                 <span id="res-rms" style="color:var(--accent-blue);">--</span>
                             </div>
 
+                            <!-- BOUTON TEST COLOR PICKER - DÉMO -->
+                            <div style="border:2px solid var(--accent-orange); border-radius:4px; background:rgba(255,152,0,0.1); padding:10px; margin:15px 0;">
+                                <button onclick="openAdvancedColorPicker()" style="width:100%; padding:12px; background:var(--accent-orange); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.95rem; font-weight:bold; box-shadow:0 2px 8px rgba(255,152,0,0.3);">
+                                    <i class="fas fa-palette"></i> 🎨 Test Color Picker
+                                </button>
+                                <small style="display:block; text-align:center; color:var(--text-muted); font-size:0.75em; margin-top:5px; font-style:italic;">
+                                    (Démo - Version de test)
+                                </small>
+                            </div>
+
                             <!-- Stats Zone Curseurs -->
                             <div style="border-top:1px solid var(--border-color); margin-top:8px; padding-top:8px;">
                                 <div class="control-row">
@@ -1647,6 +1657,91 @@
     }
     </script>
 
+    <!-- Modal Color Picker Avancé - DÉMO -->
+    <div id="advanced-color-picker-modal">
+        <div class="advanced-color-picker-content">
+            <div class="color-picker-header">
+                <h3><i class="fas fa-palette"></i> Sélecteur de couleur avancé (DÉMO)</h3>
+                <button class="btn-close" onclick="closeAdvancedColorPicker()" style="background:none; border:none; font-size:1.5em; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+
+            <!-- Couleurs de base -->
+            <div class="color-picker-section">
+                <div class="color-picker-section-title">Couleurs de base :</div>
+                <div id="base-colors-grid" class="colors-grid-container"></div>
+            </div>
+
+            <!-- Couleurs personnalisées -->
+            <div class="color-picker-section">
+                <div class="color-picker-section-title">Couleurs personnalisées :</div>
+                <div id="custom-colors-grid" class="colors-grid-container" style="grid-template-columns: repeat(8, 1fr); margin-bottom:10px;"></div>
+                <button onclick="saveCustomColor()" class="color-picker-btn color-picker-btn-save" style="width:100%; margin-top:5px;">
+                    <i class="fas fa-plus"></i> Définir les couleurs personnalisées
+                </button>
+            </div>
+
+            <!-- Sélecteur principal -->
+            <div class="color-picker-section">
+                <div class="color-picker-section-title">Couleur Unie :</div>
+                <div class="color-selector-container">
+                    <div id="color-selector">
+                        <div id="color-cursor"></div>
+                    </div>
+                    <div id="hue-slider">
+                        <div id="hue-cursor"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aperçu et Hex -->
+            <div class="color-preview-section">
+                <div id="color-preview"></div>
+                <div class="color-info">
+                    <div class="color-info-label">Code hexadécimal :</div>
+                    <div id="color-hex-display">#FF0000</div>
+                </div>
+            </div>
+
+            <!-- Champs de saisie -->
+            <div class="color-inputs-grid">
+                <div class="input-group">
+                    <label>Teinte (0-360)</label>
+                    <input type="number" id="input-hue" min="0" max="360" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Rouge (0-255)</label>
+                    <input type="number" id="input-red" min="0" max="255" value="255">
+                </div>
+                <div class="input-group">
+                    <label>Saturation (0-100)</label>
+                    <input type="number" id="input-saturation" min="0" max="100" value="100">
+                </div>
+                <div class="input-group">
+                    <label>Vert (0-255)</label>
+                    <input type="number" id="input-green" min="0" max="255" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Luminosité (0-100)</label>
+                    <input type="number" id="input-lightness" min="0" max="100" value="50">
+                </div>
+                <div class="input-group">
+                    <label>Bleu (0-255)</label>
+                    <input type="number" id="input-blue" min="0" max="255" value="0">
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="color-picker-actions">
+                <button onclick="closeAdvancedColorPicker()" class="color-picker-btn color-picker-btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button onclick="applyAdvancedColor()" class="color-picker-btn color-picker-btn-primary">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="constants.js"></script>
     <!-- <script src="fft.js"></script> -->
@@ -1655,6 +1750,7 @@
     <script src="utils.js"></script>
     <script src="app.js"></script>
     <script src="halo.js"></script>
+    <script src="color-picker-advanced.js"></script>
 
     <!-- Architecture POO Multi-Projets -->
     <script src="project.js"></script>

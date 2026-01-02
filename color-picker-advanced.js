@@ -10,7 +10,9 @@ let colorPickerState = {
     red: 255,
     green: 0,
     blue: 0,
-    customColors: [] // Couleurs personnalisées sauvegardées
+    customColors: [], // Couleurs personnalisées sauvegardées
+    currentCallback: null, // Fonction à appeler quand une couleur est sélectionnée
+    targetElement: null // Élément cible (pour afficher la couleur)
 };
 
 // Couleurs de base prédéfinies (palette 8x8)
@@ -460,9 +462,16 @@ function saveCustomColor() {
 }
 
 // Ouvrir le color picker
-function openAdvancedColorPicker() {
+function openAdvancedColorPicker(initialColor = '#FF0000', callback = null, targetElement = null) {
     const modal = document.getElementById('advanced-color-picker-modal');
     if (modal) {
+        // Stocker le callback et l'élément cible
+        colorPickerState.currentCallback = callback;
+        colorPickerState.targetElement = targetElement;
+
+        // Initialiser avec la couleur initiale
+        setColorFromHex(initialColor);
+
         modal.style.display = 'flex';
         initAdvancedColorPicker();
         initModalDragDrop();
@@ -557,8 +566,21 @@ function closeAdvancedColorPicker() {
 // Valider et appliquer la couleur
 function applyAdvancedColor() {
     const hex = rgbToHex(colorPickerState.red, colorPickerState.green, colorPickerState.blue);
+
+    // Mettre à jour l'élément cible si défini
+    if (colorPickerState.targetElement) {
+        colorPickerState.targetElement.style.backgroundColor = hex;
+        if (colorPickerState.targetElement.dataset.colorValue) {
+            colorPickerState.targetElement.dataset.colorValue = hex;
+        }
+    }
+
+    // Appeler le callback si défini
+    if (colorPickerState.currentCallback) {
+        colorPickerState.currentCallback(hex);
+    }
+
     console.log('Couleur sélectionnée:', hex);
-    // TODO: Appliquer la couleur à l'élément cible
     closeAdvancedColorPicker();
 }
 

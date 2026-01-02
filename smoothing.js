@@ -68,7 +68,8 @@ function movingAverage(data, windowSize) {
 function updateSmoothingRealtime() {
     const sourceChannelIndex = parseInt(document.getElementById('smooth-source-channel').value);
     const windowSize = parseInt(document.getElementById('smooth-points').value);
-    const color = document.getElementById('smooth-channel-color').value;
+    const colorBtn = document.getElementById('smooth-channel-color-btn');
+    const color = colorBtn ? colorBtn.dataset.colorValue : '#FF6B00';
     const name = document.getElementById('smooth-channel-name').value.trim();
 
     // Si aucun canal source n'est sélectionné, ne rien faire
@@ -117,7 +118,8 @@ function updateSmoothingRealtime() {
 function createSmoothedChannel() {
     const sourceChannelIndex = parseInt(document.getElementById('smooth-source-channel').value);
     let name = document.getElementById('smooth-channel-name').value.trim();
-    const color = document.getElementById('smooth-channel-color').value;
+    const colorBtn = document.getElementById('smooth-channel-color-btn');
+    const color = colorBtn ? colorBtn.dataset.colorValue : '#FF6B00';
     const windowSize = parseInt(document.getElementById('smooth-points').value);
 
     // Si on est en mode édition, simplement sortir du mode édition
@@ -303,7 +305,11 @@ function editSmoothedChannel(channelId) {
     // Remplir le formulaire avec les valeurs actuelles
     document.getElementById('smooth-source-channel').value = channel.sourceIndex;
     document.getElementById('smooth-channel-name').value = channel.name;
-    document.getElementById('smooth-channel-color').value = channel.color;
+    const colorBtn = document.getElementById('smooth-channel-color-btn');
+    if (colorBtn) {
+        colorBtn.dataset.colorValue = channel.color;
+        colorBtn.style.backgroundColor = channel.color;
+    }
     document.getElementById('smooth-points').value = channel.windowSize;
     document.getElementById('smooth-points-value').textContent = channel.windowSize;
 

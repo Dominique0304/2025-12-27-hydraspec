@@ -433,7 +433,8 @@
                         <!-- Couleur -->
                         <div class="control-row" style="margin-bottom:8px;">
                             <label style="font-size:0.9em;">Couleur:</label>
-                            <input type="color" id="smooth-channel-color" value="#FF6B00" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;" oninput="updateSmoothingRealtime()">
+                            <!-- ANCIEN: <input type="color" id="smooth-channel-color" value="#FF6B00" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;" oninput="updateSmoothingRealtime()"> -->
+                            <div id="smooth-channel-color-btn" data-color-value="#FF6B00" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; updateSmoothingRealtime(); }, this)" style="width:50px; height:30px; background:#FF6B00; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
                         </div>
 
                         <!-- Nombre de points (slider) -->
@@ -536,7 +537,8 @@
                             <!-- Couleur -->
                             <div class="control-row" style="margin-bottom:12px;">
                                 <label style="font-size:0.9em;">Couleur:</label>
-                                <input type="color" id="calculated-channel-color" value="#FF00FF" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;">
+                                <!-- ANCIEN: <input type="color" id="calculated-channel-color" value="#FF00FF" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;"> -->
+                                <div id="calculated-channel-color-btn" data-color-value="#FF00FF" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; }, this)" style="width:50px; height:30px; background:#FF00FF; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
                             </div>
 
                             <!-- Bouton créer -->
@@ -1342,8 +1344,8 @@
                     <label style="display: block; margin-bottom: 4px; font-size: 0.9em; font-weight: bold;">
                         Couleur:
                     </label>
-                    <input type="color" id="interval-color-picker" value="#4ECDC4"
-                           style="width: 100%; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    <!-- ANCIEN: <input type="color" id="interval-color-picker" value="#4ECDC4" style="width: 100%; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;"> -->
+                    <div id="interval-color-picker-btn" data-color-value="#4ECDC4" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; if (window.updateIntervalColorFromPicker) updateIntervalColorFromPicker(color); }, this)" style="width: 100%; height: 32px; background:#4ECDC4; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;"></div>
                 </div>
             </div>
 
@@ -1571,8 +1573,8 @@
                     <label style="flex: 0 0 120px; font-size: 0.85em;">
                         Couleur fond:
                     </label>
-                    <input type="color" id="snap-bg-color" value="#FFD93D" onchange="setSnapPointBackgroundColor(this.value)"
-                           style="flex: 0 0 60px; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
+                    <!-- ANCIEN: <input type="color" id="snap-bg-color" value="#FFD93D" onchange="setSnapPointBackgroundColor(this.value)" style="flex: 0 0 60px; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;"> -->
+                    <div id="snap-bg-color-btn" data-color-value="#FFD93D" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; setSnapPointBackgroundColor(color); }, this)" style="flex: 0 0 60px; height: 32px; background:#FFD93D; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;"></div>
                     <button onclick="setSnapPointBackgroundColor('transparent')" title="Fond transparent"
                             style="flex: 0 0 auto; padding: 5px 10px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                         Transparent

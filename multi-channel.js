@@ -151,21 +151,27 @@ function updateChannelConfigUI() {
 
         // Couleur
         const colorCell = document.createElement('td');
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = config.color;
-        colorInput.style.width = '50px';
-        colorInput.style.height = '30px';
-        colorInput.style.border = '2px solid var(--border-color)';
-        colorInput.style.borderRadius = '4px';
-        colorInput.style.cursor = 'pointer';
-        colorInput.style.padding = '2px';
-        colorInput.onchange = (e) => {
-            config.color = e.target.value;
-            updateTimeChart();
-            performAnalysis(); // Mettre à jour le graphique FFT
+        colorCell.style.textAlign = 'center';
+        colorCell.style.padding = '8px';
+
+        // Créer un bouton coloré au lieu d'un input type="color"
+        const colorBtn = document.createElement('div');
+        colorBtn.dataset.colorValue = config.color;
+        colorBtn.style.width = '50px';
+        colorBtn.style.height = '30px';
+        colorBtn.style.backgroundColor = config.color;
+        colorBtn.style.border = '2px solid var(--border-color)';
+        colorBtn.style.borderRadius = '4px';
+        colorBtn.style.cursor = 'pointer';
+        colorBtn.onclick = function() {
+            openAdvancedColorPicker(this.dataset.colorValue, (color) => {
+                this.dataset.colorValue = color;
+                config.color = color;
+                updateTimeChart();
+                performAnalysis(); // Mettre à jour le graphique FFT
+            }, this);
         };
-        colorCell.appendChild(colorInput);
+        colorCell.appendChild(colorBtn);
 
         // Checkbox L (Left)
         const leftCell = document.createElement('td');

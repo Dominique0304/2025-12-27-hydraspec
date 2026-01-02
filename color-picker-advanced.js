@@ -567,17 +567,27 @@ function closeAdvancedColorPicker() {
 function applyAdvancedColor() {
     const hex = rgbToHex(colorPickerState.red, colorPickerState.green, colorPickerState.blue);
 
+    console.log('applyAdvancedColor appelée avec:', hex);
+    console.log('Élément cible:', colorPickerState.targetElement);
+    console.log('Callback:', colorPickerState.currentCallback);
+
     // Mettre à jour l'élément cible si défini
     if (colorPickerState.targetElement) {
+        console.log('Mise à jour élément cible');
         colorPickerState.targetElement.style.backgroundColor = hex;
-        if (colorPickerState.targetElement.dataset.colorValue) {
+        if (colorPickerState.targetElement.dataset && colorPickerState.targetElement.dataset.colorValue !== undefined) {
             colorPickerState.targetElement.dataset.colorValue = hex;
         }
     }
 
     // Appeler le callback si défini
-    if (colorPickerState.currentCallback) {
-        colorPickerState.currentCallback(hex);
+    if (colorPickerState.currentCallback && typeof colorPickerState.currentCallback === 'function') {
+        console.log('Appel du callback avec:', hex);
+        try {
+            colorPickerState.currentCallback(hex);
+        } catch (error) {
+            console.error('Erreur callback:', error);
+        }
     }
 
     console.log('Couleur sélectionnée:', hex);

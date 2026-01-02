@@ -2069,18 +2069,18 @@ button[disabled] {
     position: absolute;
     top: 2px;
     right: 2px;
-    width: 12px !important;
-    height: 12px !important;
-    max-width: 12px !important;
-    max-height: 12px !important;
-    min-width: 12px !important;
-    min-height: 12px !important;
+    width: 8px !important;
+    height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
     background: rgba(0, 0, 0, 0.8);
     color: white;
     border: none;
     border-radius: 50%;
-    font-size: 9px !important;
-    line-height: 12px;
+    font-size: 12px !important;
+    line-height: 1;
     cursor: pointer;
     display: none;
     align-items: center;
@@ -2088,7 +2088,6 @@ button[disabled] {
     padding: 0 !important;
     margin: 0 !important;
     box-sizing: border-box;
-    overflow: hidden;
 }
 
 .color-cell:hover .color-cell-reset {

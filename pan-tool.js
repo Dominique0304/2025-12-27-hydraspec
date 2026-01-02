@@ -618,11 +618,39 @@ function updateZoomInputs() {
     const chart = appState.charts?.time;
     if (!chart) return;
 
-    // Récupérer l'échelle Y principale
-    const yScale = chart.scales.y;
-    if (!yScale) return;
+    // Récupérer l'échelle X (temps)
+    const xScale = chart.scales.x;
+    if (!xScale) return;
 
-    // Mettre à jour les champs avec les valeurs min et max arrondies
-    tMinInput.value = yScale.min.toFixed(2);
-    tMaxInput.value = yScale.max.toFixed(2);
+    // Mettre à jour les champs avec les valeurs min et max en secondes (convertir de ms)
+    tMinInput.value = (xScale.min / 1000).toFixed(3);
+    tMaxInput.value = (xScale.max / 1000).toFixed(3);
+}
+
+// Appliquer le zoom depuis les champs T min et T max
+function applyPanToolZoom() {
+    const tMinInput = document.getElementById('zoom-t-min');
+    const tMaxInput = document.getElementById('zoom-t-max');
+
+    if (!tMinInput || !tMaxInput) return;
+
+    const minX = parseFloat(tMinInput.value);
+    const maxX = parseFloat(tMaxInput.value);
+
+    // Vérifier que les valeurs sont valides
+    if (isNaN(minX) || isNaN(maxX) || minX >= maxX) {
+        setStatus('Valeurs T min/T max invalides', 'error');
+        return;
+    }
+
+    // Récupérer le graphique time
+    const chart = appState.charts?.time;
+    if (!chart) return;
+
+    // Appliquer le zoom (convertir s en ms)
+    chart.options.scales.x.min = minX * 1000;
+    chart.options.scales.x.max = maxX * 1000;
+
+    chart.update('none');
+    setStatus(`Zoom appliqué: ${minX}s - ${maxX}s`, 'success');
 }

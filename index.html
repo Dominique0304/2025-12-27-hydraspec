@@ -603,13 +603,13 @@
                                 <!-- Champs T min et T max -->
                                 <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                                     <div style="display: flex; flex-direction: column; gap: 3px;">
-                                        <label style="font-size: 0.7em; color: var(--text-muted);">T min</label>
-                                        <input type="number" id="zoom-t-min" readonly
+                                        <label style="font-size: 0.7em; color: var(--text-muted);">T min (s)</label>
+                                        <input type="number" id="zoom-t-min" step="0.001" onchange="applyPanToolZoom()"
                                                style="padding: 4px; font-size: 0.75em; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 3px; color: var(--text-main);">
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 3px;">
-                                        <label style="font-size: 0.7em; color: var(--text-muted);">T max</label>
-                                        <input type="number" id="zoom-t-max" readonly
+                                        <label style="font-size: 0.7em; color: var(--text-muted);">T max (s)</label>
+                                        <input type="number" id="zoom-t-max" step="0.001" onchange="applyPanToolZoom()"
                                                style="padding: 4px; font-size: 0.75em; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 3px; color: var(--text-main);">
                                     </div>
                                 </div>

@@ -839,6 +839,16 @@ function updateTimeChart() {
     if (timeContainer) timeContainer.style.display = '';
     if (freqContainer) freqContainer.style.display = '';
 
+    // Masquer Fréquence et Spectro par défaut à l'ouverture d'un fichier
+    if (typeof uiState !== 'undefined') {
+        if (uiState.freqVisible && typeof toggleFreqDomain === 'function') {
+            toggleFreqDomain();
+        }
+        if (uiState.spectroVisible && typeof toggleSpectrogram === 'function') {
+            toggleSpectrogram();
+        }
+    }
+
     // Essayer le mode multi-canaux d'abord
     if (typeof updateTimeChartMultiChannel === 'function') {
         const multiChannelSuccess = updateTimeChartMultiChannel();

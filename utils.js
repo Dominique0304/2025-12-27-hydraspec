@@ -662,7 +662,7 @@ function deactivateOtherTools(currentTool) {
 function closeOtherToolAccordions(currentToolId) {
     const toolAccordions = [
         { id: 'interval', contentId: 'interval-content', iconId: 'interval-accordion-icon' },
-        { id: 'diffcanal', contentId: 'diff-canal-content', iconId: null },
+        { id: 'diffcanal', contentId: 'diff-canal-content', iconId: 'diff-canal-accordion-icon' },
         { id: 'smoothing', contentId: 'smoothing-content', iconId: 'smoothing-toggle-icon' },
         { id: 'calculated', contentId: 'calculated-channel-content', iconId: 'calculated-channel-toggle-icon' }
     ];

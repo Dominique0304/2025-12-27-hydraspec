@@ -843,30 +843,6 @@ function createPDFSummaryPage(pdf, filename) {
 
     const duration = (appState.fullDataTime[appState.fullDataTime.length - 1] - appState.fullDataTime[0]) / 1000;
     pdf.text(`• Durée totale: ${duration.toFixed(3)} secondes`, 25, y);
-    y += 6;
-
-    // Statistiques des données
-    const values = appState.fullDataPressure;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const stdDev = Math.sqrt(values.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b) / values.length);
-
-    pdf.setFont('helvetica', 'bold');
-    y += 5;
-    // Afficher le nom du canal dans les statistiques
-    const channelName = appState.yAxisLabel || 'Canal actuel';
-    pdf.text(`STATISTIQUES (${channelName}):`, 20, y);
-    pdf.setFont('helvetica', 'normal');
-    y += 7;
-
-    pdf.text(`• Minimum: ${min.toFixed(4)}`, 25, y);
-    y += 6;
-    pdf.text(`• Maximum: ${max.toFixed(4)}`, 25, y);
-    y += 6;
-    pdf.text(`• Moyenne: ${avg.toFixed(4)}`, 25, y);
-    y += 6;
-    pdf.text(`• Écart-type: ${stdDev.toFixed(4)}`, 25, y);
     y += 10;
 
     // Notes utilisateur

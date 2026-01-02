@@ -849,6 +849,22 @@ function updateTimeChart() {
         }
     }
 
+    // Forcer un refresh des tooltips à l'ouverture (activer puis désactiver)
+    if (typeof toggleTooltipsEnabled === 'function') {
+        const toggle = document.getElementById('tooltip-enabled-toggle');
+        if (toggle) {
+            // Désactiver temporairement
+            toggle.checked = false;
+            toggleTooltipsEnabled();
+
+            // Réactiver après un court délai
+            setTimeout(() => {
+                toggle.checked = true;
+                toggleTooltipsEnabled();
+            }, 50);
+        }
+    }
+
     // Essayer le mode multi-canaux d'abord
     if (typeof updateTimeChartMultiChannel === 'function') {
         const multiChannelSuccess = updateTimeChartMultiChannel();

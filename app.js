@@ -1921,89 +1921,75 @@ function makeDraggable(modalElement) {
     }
     console.log('✅ Header trouvé:', header.textContent);
 
-    let isDragging = false;
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
+    // Variables globales pour le drag
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-    function dragStart(e) {
-        console.log('🖱️ mousedown détecté sur:', e.target);
-        console.log('🔍 header.contains(e.target):', header.contains(e.target));
+    // Attacher l'événement au header
+    header.onmousedown = dragMouseDown;
+    console.log('✅ onmousedown attaché au header');
 
-        // Vérifier que le clic est bien sur le header
-        if (!header.contains(e.target)) {
-            console.log('⚠️ Clic en dehors du header, ignoré');
-            return;
-        }
-
-        isDragging = true;
-        modalElement.classList.add('dragging');
-
-        // Position initiale de la souris
-        initialX = e.clientX;
-        initialY = e.clientY;
-
-        // Position actuelle de la modal
-        const rect = modalElement.getBoundingClientRect();
-        currentX = rect.left;
-        currentY = rect.top;
-
-        // Fixer la position pour permettre le déplacement
-        modalElement.style.position = 'fixed';
-        modalElement.style.left = currentX + 'px';
-        modalElement.style.top = currentY + 'px';
-        modalElement.style.margin = '0';
-
-        console.log('🎯 Drag started - isDragging =', isDragging);
-        console.log('📍 Position initiale:', {
-            mouseX: initialX,
-            mouseY: initialY,
-            modalX: currentX,
-            modalY: currentY
-        });
-    }
-
-    function drag(e) {
-        if (!isDragging) return;
-
+    function dragMouseDown(e) {
+        e = e || window.event;
         e.preventDefault();
 
-        // Calculer le déplacement
-        const deltaX = e.clientX - initialX;
-        const deltaY = e.clientY - initialY;
+        console.log('🎯 dragMouseDown appelé!');
 
-        // Nouvelle position
-        const newX = currentX + deltaX;
-        const newY = currentY + deltaY;
+        // Obtenir la position initiale de la souris
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // Fixer la position de la modal
+        if (modalElement.style.position !== 'fixed') {
+            const rect = modalElement.getBoundingClientRect();
+            modalElement.style.position = 'fixed';
+            modalElement.style.left = rect.left + 'px';
+            modalElement.style.top = rect.top + 'px';
+            modalElement.style.margin = '0';
+        }
+
+        modalElement.classList.add('dragging');
+
+        console.log('📍 Position initiale souris:', pos3, pos4);
+
+        // Attacher les événements de mouvement
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        // Calculer la nouvelle position
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // Nouvelle position de la modal
+        let newTop = modalElement.offsetTop - pos2;
+        let newLeft = modalElement.offsetLeft - pos1;
 
         // Limiter au viewport
-        const maxX = window.innerWidth - modalElement.offsetWidth;
-        const maxY = window.innerHeight - modalElement.offsetHeight;
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - modalElement.offsetWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - modalElement.offsetHeight));
 
-        const boundedX = Math.max(0, Math.min(newX, maxX));
-        const boundedY = Math.max(0, Math.min(newY, maxY));
+        // Appliquer la nouvelle position
+        modalElement.style.top = newTop + "px";
+        modalElement.style.left = newLeft + "px";
 
-        modalElement.style.left = boundedX + 'px';
-        modalElement.style.top = boundedY + 'px';
-
-        console.log('🔄 Dragging à:', boundedX, boundedY);
+        console.log('🔄 Dragging - Position:', newLeft, newTop);
     }
 
-    function dragEnd() {
-        console.log('🛑 mouseup - isDragging était:', isDragging);
-        if (!isDragging) return;
-        isDragging = false;
+    function closeDragElement() {
+        console.log('✅ Drag terminé');
         modalElement.classList.remove('dragging');
-        console.log('✅ Drag ended');
+
+        // Arrêter le mouvement
+        document.onmouseup = null;
+        document.onmousemove = null;
     }
 
-    // Ajouter les event listeners
-    header.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-
-    console.log('✅ Event listeners ajoutés');
     console.log('📍 Modal draggable initialisée complètement');
 }
 

@@ -130,6 +130,7 @@ class SnapPoint {
 function toggleSnapPointTool() {
     const btn = document.getElementById('snappoint-btn');
     const content = document.getElementById('snappoint-content');
+    const icon = document.getElementById('snappoint-accordion-icon');
 
     if (!snapPointState.active) {
         // ACTIVATION
@@ -169,6 +170,10 @@ function toggleSnapPointTool() {
         if (content) {
             content.style.display = 'block';
         }
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
 
         setStatus("Outil Marqueur activé - Cliquez sur un point du graphique");
     } else {
@@ -182,6 +187,10 @@ function toggleSnapPointTool() {
         // Masquer le contenu
         if (content) {
             content.style.display = 'none';
+        }
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
         }
 
         setStatus("Outil Marqueur désactivé");

@@ -13,6 +13,7 @@ let rulerState = {
 function toggleRulerTool() {
     const btn = document.getElementById('ruler-tool-btn');
     const results = document.getElementById('ruler-results');
+    const icon = document.getElementById('ruler-accordion-icon');
 
     // Vérifier l'état AVANT de changer
     if (!rulerState.active) {
@@ -46,12 +47,20 @@ function toggleRulerTool() {
         rulerState.active = true;
         btn.style.background = 'var(--accent-green)';
         results.style.display = 'block';
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
         setStatus("Outil Mesurer activé - Cliquez sur le graphique pour placer le point");
     } else {
         // DÉSACTIVATION
         rulerState.active = false;
         btn.style.background = 'var(--accent-blue)';
         results.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
         rulerState.point = null;
         appState.charts.time.update('none');
         setStatus("Outil Mesurer désactivé");

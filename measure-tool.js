@@ -14,6 +14,7 @@ let measureState = {
 function toggleMeasureTool() {
     const btn = document.getElementById('measure-diff-btn');
     const results = document.getElementById('measure-results');
+    const icon = document.getElementById('measure-accordion-icon');
 
     // Vérifier l'état AVANT de changer
     if (!measureState.active) {
@@ -47,12 +48,20 @@ function toggleMeasureTool() {
         measureState.active = true;
         btn.style.background = 'var(--accent-green)';
         results.style.display = 'block';
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
         setStatus("Outil de mesure activé - Cliquez sur le graphique pour placer les points");
     } else {
         // DÉSACTIVATION
         measureState.active = false;
         btn.style.background = 'var(--accent-blue)';
         results.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
         measureState.point1 = null;
         measureState.point2 = null;
         appState.charts.time.update('none');

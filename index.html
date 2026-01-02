@@ -189,8 +189,9 @@
                     <!-- Mesurer (Règle simple) -->
                     <div style="margin-bottom:15px;">
                         <button id="ruler-tool-btn" onclick="toggleRulerTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
                             <i class="fas fa-ruler"></i> Mesurer
+                            <i id="ruler-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
                         </button>
 
                         <div id="ruler-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
@@ -215,8 +216,9 @@
                     <!-- Traquer (Curseur de suivi) -->
                     <div style="margin-bottom:15px;">
                         <button id="track-tool-btn" onclick="toggleTrackTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
                             <i class="fas fa-crosshairs"></i> Traquer
+                            <i id="track-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
                         </button>
 
                         <div id="track-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
@@ -236,8 +238,9 @@
                     <!-- Mesure de différence -->
                     <div style="margin-bottom:15px;">
                         <button id="measure-diff-btn" onclick="toggleMeasureTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
                             <i class="fas fa-ruler-combined"></i> Mesure de Différence
+                            <i id="measure-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
                         </button>
 
                         <div id="measure-results" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">
@@ -265,8 +268,9 @@
                     <!-- Marqueur (SnapPoint) -->
                     <div style="margin-bottom:15px;">
                         <button id="snappoint-btn" onclick="toggleSnapPointTool()"
-                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
+                                style="width:100%; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
                             <i class="fas fa-map-marker-alt"></i> Marqueur
+                            <i id="snappoint-accordion-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
                         </button>
 
                         <div id="snappoint-content" style="margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color); display:none;">

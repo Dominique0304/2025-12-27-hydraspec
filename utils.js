@@ -661,6 +661,10 @@ function deactivateOtherTools(currentTool) {
 // Fermer tous les accordéons d'outils sauf celui spécifié (pour exclusivité visuelle)
 function closeOtherToolAccordions(currentToolId) {
     const toolAccordions = [
+        { id: 'ruler', contentId: 'ruler-results', iconId: 'ruler-accordion-icon' },
+        { id: 'track', contentId: 'track-results', iconId: 'track-accordion-icon' },
+        { id: 'measure', contentId: 'measure-results', iconId: 'measure-accordion-icon' },
+        { id: 'snappoint', contentId: 'snappoint-content', iconId: 'snappoint-accordion-icon' },
         { id: 'interval', contentId: 'interval-content', iconId: 'interval-accordion-icon' },
         { id: 'diffcanal', contentId: 'diff-canal-content', iconId: 'diff-canal-accordion-icon' },
         { id: 'smoothing', contentId: 'smoothing-content', iconId: 'smoothing-toggle-icon' },

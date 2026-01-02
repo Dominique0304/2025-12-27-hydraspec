@@ -2067,21 +2067,28 @@ button[disabled] {
 /* Bouton reset pour couleurs personnalisées */
 .color-cell-reset {
     position: absolute;
-    top: 1px;
-    right: 1px;
-    width: 10px;
-    height: 10px;
+    top: 2px;
+    right: 2px;
+    width: 8px !important;
+    height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
     background: rgba(0, 0, 0, 0.8);
     color: white;
     border: none;
     border-radius: 50%;
-    font-size: 0.5em;
-    line-height: 1;
+    font-size: 6px !important;
+    line-height: 8px;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .color-cell:hover .color-cell-reset {

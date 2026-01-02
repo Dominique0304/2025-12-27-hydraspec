@@ -53,6 +53,9 @@ function openChannelConfig(silent = false) {
     // Mettre à jour le contenu de la modale
     updateChannelConfigUI();
 
+    // Synchroniser les champs min(s) et max(s) avec l'axe X actuel
+    syncZoomInputsWithChart();
+
     // Initialiser les écouteurs d'événements pour les presets globaux
     initPresetListeners();
 
@@ -1174,4 +1177,33 @@ function switchConfigTab(tabName) {
     }
 
     console.log(`✅ Onglet ${tabName} activé`);
+}
+
+// Synchroniser les champs min(s) et max(s) avec les valeurs actuelles de l'axe X
+function syncZoomInputsWithChart() {
+    const zoomMinInput = document.getElementById('zoom-min');
+    const zoomMaxInput = document.getElementById('zoom-max');
+
+    if (!zoomMinInput || !zoomMaxInput) {
+        console.warn('⚠️ Champs zoom-min ou zoom-max non trouvés');
+        return;
+    }
+
+    // Récupérer le graphique time
+    const chart = appState.charts?.time;
+    if (!chart || !chart.scales || !chart.scales.x) {
+        console.warn('⚠️ Graphique ou échelle X non disponible');
+        return;
+    }
+
+    // Récupérer les valeurs min et max de l'axe X (en ms)
+    const xScale = chart.scales.x;
+    const minMs = xScale.min;
+    const maxMs = xScale.max;
+
+    // Convertir en secondes et mettre à jour les champs
+    zoomMinInput.value = (minMs / 1000).toFixed(3);
+    zoomMaxInput.value = (maxMs / 1000).toFixed(3);
+
+    console.log(`✅ Champs zoom synchronisés: ${zoomMinInput.value}s - ${zoomMaxInput.value}s`);
 }

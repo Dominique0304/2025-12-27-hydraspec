@@ -854,7 +854,9 @@ function createPDFSummaryPage(pdf, filename) {
 
     pdf.setFont('helvetica', 'bold');
     y += 5;
-    pdf.text('STATISTIQUES:', 20, y);
+    // Afficher le nom du canal dans les statistiques
+    const channelName = appState.yAxisLabel || 'Canal actuel';
+    pdf.text(`STATISTIQUES (${channelName}):`, 20, y);
     pdf.setFont('helvetica', 'normal');
     y += 7;
 

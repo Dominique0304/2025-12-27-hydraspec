@@ -954,22 +954,16 @@
             </div>
 
             <label for="export-filename">Nom du fichier :</label>
-            <input type="text" id="export-filename" style="width:100%; margin: 10px 0 15px 0;"
+            <input type="text" id="export-filename" style="width:85%; margin: 10px 0 15px 0;"
                 placeholder="Entrez le nom...">
 
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <button onclick="showHelpDownloadLocation()" class="btn-small" style="background: var(--input-bg);">
-                    <i class="fas fa-question-circle"></i> Où sont mes fichiers ?
+            <div style="display: flex; justify-content: flex-start; align-items: center; gap: 10px;">
+                <button onclick="closeModal('filenameModal')" style="background: #555; width:100px;">
+                    Annuler
                 </button>
-
-                <div>
-                    <button onclick="closeModal('filenameModal')" style="margin-right: 10px; background: #555;">
-                        Annuler
-                    </button>
-                    <button id="confirm-export-btn" class="success" style="width:100px;">
-                        Exporter
-                    </button>
-                </div>
+                <button id="confirm-export-btn" class="success" style="width:100px;">
+                    Exporter
+                </button>
             </div>
         </div>
     </div>

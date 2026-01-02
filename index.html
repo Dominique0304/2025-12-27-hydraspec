@@ -153,16 +153,6 @@
                 </div>
             </div>
 
-            <!-- BOUTON TEST COLOR PICKER - DÉMO -->
-            <div class="control-group" style="border:1px solid var(--accent-orange); border-radius:3px; background:rgba(255,152,0,0.05); padding:5px; margin:5px 0;">
-                <button onclick="openAdvancedColorPicker()" style="width:100%; padding:6px; background:var(--accent-orange); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.8rem; box-shadow:0 1px 3px rgba(255,152,0,0.2);">
-                    <i class="fas fa-palette"></i> Test Color Picker
-                </button>
-                <small style="display:block; text-align:center; color:var(--text-muted); font-size:0.65em; margin-top:2px; font-style:italic;">
-                    (Démo)
-                </small>
-            </div>
-
             <!-- Canal -->
                 <div class="control-group">
                     <h3 id="canal-header" onclick="toggleCanal()" style="cursor:pointer;">
@@ -609,6 +599,21 @@
                                         <i class="fas fa-grip-lines-vertical"></i><br>Vertical
                                     </button>
                                 </div>
+
+                                <!-- Champs T min et T max -->
+                                <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                                        <label style="font-size: 0.7em; color: var(--text-muted);">T min</label>
+                                        <input type="number" id="zoom-t-min" readonly
+                                               style="padding: 4px; font-size: 0.75em; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 3px; color: var(--text-main);">
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                                        <label style="font-size: 0.7em; color: var(--text-muted);">T max</label>
+                                        <input type="number" id="zoom-t-max" readonly
+                                               style="padding: 4px; font-size: 0.75em; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 3px; color: var(--text-main);">
+                                    </div>
+                                </div>
+
                                 <div style="margin-top:8px; font-size:0.7rem; color:var(--text-muted); text-align:center; font-style:italic;">
                                     Ctrl+Molette et Alt+Molette conservent leur fonction
                                 </div>
@@ -796,7 +801,7 @@
 
             <!-- Time Plot -->
 
-            <div class="plot-container" id="time-container" style="height: 30%;">
+            <div class="plot-container" id="time-container" style="height: 30%; display: none;">
 
                 <div class="plot-toolbar">
                     <span class="toolbar-title"><i class="fas fa-stopwatch"></i> <span data-i18n="time_domain">DOMAINE
@@ -817,7 +822,7 @@
             <div class="gutter-v" id="resizer1"></div>
 
             <!-- Frequency Plot -->
-            <div class="plot-container" id="freq-container" style="height: 30%;">
+            <div class="plot-container" id="freq-container" style="height: 30%; display: none;">
                 <div class="plot-toolbar">
                     <span class="toolbar-title"><i class="fas fa-wave-square"></i> <span data-i18n="freq_domain">DOMAINE
                             FRÉQUENTIEL</span> <span style="font-weight:normal; font-size:0.9em; opacity:0.8;"
@@ -1765,6 +1770,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Bouton OK (en dessous des onglets) -->
+            <div style="text-align: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+                <button onclick="closeAdvancedColorPicker()" class="color-picker-ok-btn">OK</button>
             </div>
         </div>
     </div>

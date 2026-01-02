@@ -2295,3 +2295,18 @@ button[disabled] {
     background: #388E3C;
 }
 
+.color-picker-ok-btn {
+    padding: 4px 16px;
+    font-size: 0.7em;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-picker-ok-btn:hover {
+    background: #1976D2;
+}
+

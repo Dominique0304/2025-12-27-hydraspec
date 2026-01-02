@@ -602,3 +602,27 @@ function drawGridZoomSelection(chart, canvas) {
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
 }
+
+// =====================================
+// MISE À JOUR DES CHAMPS T MIN/T MAX
+// =====================================
+
+// Mettre à jour les champs T min et T max avec les valeurs actuelles du zoom
+function updateZoomInputs() {
+    const tMinInput = document.getElementById('zoom-t-min');
+    const tMaxInput = document.getElementById('zoom-t-max');
+
+    if (!tMinInput || !tMaxInput) return;
+
+    // Récupérer le graphique time
+    const chart = appState.charts?.time;
+    if (!chart) return;
+
+    // Récupérer l'échelle Y principale
+    const yScale = chart.scales.y;
+    if (!yScale) return;
+
+    // Mettre à jour les champs avec les valeurs min et max arrondies
+    tMinInput.value = yScale.min.toFixed(2);
+    tMaxInput.value = yScale.max.toFixed(2);
+}

@@ -833,6 +833,12 @@ function handleFreqZoom(chart, e) {
 
 // --- CHART DATA UPDATES ---
 function updateTimeChart() {
+    // Afficher les containers de graphiques (masqués par défaut)
+    const timeContainer = document.getElementById('time-container');
+    const freqContainer = document.getElementById('freq-container');
+    if (timeContainer) timeContainer.style.display = '';
+    if (freqContainer) freqContainer.style.display = '';
+
     // Essayer le mode multi-canaux d'abord
     if (typeof updateTimeChartMultiChannel === 'function') {
         const multiChannelSuccess = updateTimeChartMultiChannel();

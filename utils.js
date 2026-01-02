@@ -761,3 +761,252 @@ function closeAllMainAccordions(exceptTool) {
         }
     });
 }
+
+// =====================================
+// EXPORT PDF
+// =====================================
+
+function initCapturePDF() {
+    if (!appState.fullDataTime.length) {
+        alert("Aucune donnée à exporter.");
+        return;
+    }
+    appState.currentExportAction = 'exportPdf';
+    prepareFilename();
+    openModal('filenameModal');
+    setupExportButton();
+}
+
+function captureAsPDF(filename) {
+    console.log("📄 Début de l'export PDF...");
+    setStatus("Génération du PDF en cours...");
+
+    // Initialiser jsPDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('landscape', 'mm', 'a4');
+
+    // Définir les métadonnées
+    pdf.setProperties({
+        title: `Analyse HydraSpec - ${filename}`,
+        subject: 'Analyse spectrale et temporelle',
+        author: 'HydraSpec Pro v1.4.0',
+        keywords: 'FFT, spectrogramme, analyse signal, HydraSpec',
+        creator: 'HydraSpec Pro'
+    });
+
+    // Page 1: Page de résumé
+    createPDFSummaryPage(pdf, filename);
+
+    // Page 2: Graphique temporel
+    pdf.addPage();
+    capturePDFTimeDomain(pdf, filename);
+}
+
+function createPDFSummaryPage(pdf, filename) {
+    // Titre principal
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('RAPPORT D\'ANALYSE SPECTRALE', 148.5, 20, { align: 'center' });
+
+    // Informations générales
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('fr-FR');
+    const timeStr = now.toLocaleTimeString('fr-FR');
+
+    let y = 40;
+    pdf.text(`Fichier: ${filename}`, 20, y);
+    y += 7;
+    pdf.text(`Date d'analyse: ${dateStr} à ${timeStr}`, 20, y);
+    y += 7;
+
+    // Informations sur les données
+    pdf.setFont('helvetica', 'bold');
+    y += 5;
+    pdf.text('CARACTÉRISTIQUES DES DONNÉES:', 20, y);
+    pdf.setFont('helvetica', 'normal');
+    y += 7;
+
+    pdf.text(`• Nombre d'échantillons: ${appState.fullDataTime.length}`, 25, y);
+    y += 6;
+
+    if (appState.fs) {
+        pdf.text(`• Fréquence d'échantillonnage: ${appState.fs.toFixed(2)} Hz`, 25, y);
+        y += 6;
+    }
+
+    const duration = (appState.fullDataTime[appState.fullDataTime.length - 1] - appState.fullDataTime[0]) / 1000;
+    pdf.text(`• Durée totale: ${duration.toFixed(3)} secondes`, 25, y);
+    y += 6;
+
+    // Statistiques des données
+    const values = appState.fullDataPressure;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const stdDev = Math.sqrt(values.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b) / values.length);
+
+    pdf.setFont('helvetica', 'bold');
+    y += 5;
+    pdf.text('STATISTIQUES:', 20, y);
+    pdf.setFont('helvetica', 'normal');
+    y += 7;
+
+    pdf.text(`• Minimum: ${min.toFixed(4)}`, 25, y);
+    y += 6;
+    pdf.text(`• Maximum: ${max.toFixed(4)}`, 25, y);
+    y += 6;
+    pdf.text(`• Moyenne: ${avg.toFixed(4)}`, 25, y);
+    y += 6;
+    pdf.text(`• Écart-type: ${stdDev.toFixed(4)}`, 25, y);
+    y += 10;
+
+    // Notes utilisateur
+    const notesElement = document.getElementById('user-notes');
+    if (notesElement && notesElement.value.trim()) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('NOTES:', 20, y);
+        pdf.setFont('helvetica', 'normal');
+        y += 7;
+
+        const notes = notesElement.value.trim();
+        const lines = pdf.splitTextToSize(notes, 257);
+        pdf.text(lines, 25, y);
+    }
+
+    // Pied de page
+    pdf.setFontSize(8);
+    pdf.setTextColor(128, 128, 128);
+    pdf.text('HydraSpec Pro v1.4.0', 20, 200);
+    pdf.text(`Page 1/${pdf.internal.getNumberOfPages()}`, 270, 200);
+    pdf.setTextColor(0, 0, 0);
+}
+
+function capturePDFTimeDomain(pdf, filename) {
+    // Titre
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('DOMAINE TEMPOREL', 148.5, 15, { align: 'center' });
+
+    // Capturer le graphique temporel
+    const timeContainer = document.getElementById('time-container');
+    if (timeContainer && uiState.timeVisible) {
+        html2canvas(timeContainer, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 25, 277, 140);
+
+            // Ajouter les graphiques fréquentiels s'ils sont visibles
+            if (uiState.freqVisible) {
+                pdf.addPage();
+                capturePDFFrequencyDomain(pdf, filename);
+            } else if (uiState.spectroVisible) {
+                pdf.addPage();
+                capturePDFSpectrogram(pdf, filename);
+            } else {
+                // Finaliser et sauvegarder
+                finalizePDF(pdf, filename);
+            }
+        }).catch(err => {
+            console.error("❌ Erreur capture temps:", err);
+            setStatus("Erreur lors de la capture du graphique temporel", 'error');
+        });
+    } else {
+        // Pas de graphique temporel, passer au suivant
+        if (uiState.freqVisible) {
+            capturePDFFrequencyDomain(pdf, filename);
+        } else if (uiState.spectroVisible) {
+            capturePDFSpectrogram(pdf, filename);
+        } else {
+            finalizePDF(pdf, filename);
+        }
+    }
+}
+
+function capturePDFFrequencyDomain(pdf, filename) {
+    // Titre
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('DOMAINE FRÉQUENTIEL (FFT)', 148.5, 15, { align: 'center' });
+
+    const freqContainer = document.getElementById('freq-container');
+    if (freqContainer) {
+        html2canvas(freqContainer, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 25, 277, 140);
+
+            // Ajouter le spectrogramme s'il est visible
+            if (uiState.spectroVisible) {
+                pdf.addPage();
+                capturePDFSpectrogram(pdf, filename);
+            } else {
+                finalizePDF(pdf, filename);
+            }
+        }).catch(err => {
+            console.error("❌ Erreur capture fréquence:", err);
+            if (uiState.spectroVisible) {
+                pdf.addPage();
+                capturePDFSpectrogram(pdf, filename);
+            } else {
+                finalizePDF(pdf, filename);
+            }
+        });
+    } else {
+        if (uiState.spectroVisible) {
+            capturePDFSpectrogram(pdf, filename);
+        } else {
+            finalizePDF(pdf, filename);
+        }
+    }
+}
+
+function capturePDFSpectrogram(pdf, filename) {
+    // Titre
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('SPECTROGRAMME STFT', 148.5, 15, { align: 'center' });
+
+    const spectroContainer = document.getElementById('spectro-container');
+    if (spectroContainer) {
+        html2canvas(spectroContainer, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 25, 277, 140);
+
+            finalizePDF(pdf, filename);
+        }).catch(err => {
+            console.error("❌ Erreur capture spectrogramme:", err);
+            finalizePDF(pdf, filename);
+        });
+    } else {
+        finalizePDF(pdf, filename);
+    }
+}
+
+function finalizePDF(pdf, filename) {
+    // Ajouter les numéros de page sur toutes les pages
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(128, 128, 128);
+        pdf.text(`Page ${i}/${pageCount}`, 270, 200);
+    }
+
+    // Sauvegarder le PDF
+    pdf.save(`${filename}.pdf`);
+    setStatus("Export PDF réussi!", 'success');
+    closeModal('filenameModal');
+}

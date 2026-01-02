@@ -13,6 +13,7 @@
     <script src="lib/chart.min.js"></script>
     <script src="lib/marked.min.js"></script>
     <script src="lib/html2canvas.min.js"></script>
+    <script src="lib/jspdf.min.js"></script>
     <link rel="stylesheet" href="lib/all.min.css">
 
 
@@ -84,6 +85,9 @@
                     </button>
                     <button onclick="initCaptureScreenshot()">
                         <i class="fas fa-image" style="width:20px;"></i> <span>Exporter PNG</span>
+                    </button>
+                    <button onclick="initCapturePDF()">
+                        <i class="fas fa-file-pdf" style="width:20px;"></i> <span>Exporter PDF</span>
                     </button>
                 </div>
             </div>

@@ -21,8 +21,8 @@ function initCharts() {
         plugins: {
             legend: { display: false },
             tooltip: {
-                // Réactiver les tooltips (l'utilisateur confirme qu'ils ne dérangent pas)
-                enabled: true
+                // Tooltips activés/désactivés via le paramètre utilisateur
+                enabled: typeof uiState !== 'undefined' ? uiState.tooltipsEnabled : true
             }
         },
         scales: {
@@ -232,11 +232,16 @@ appState.charts.time = timeChart;
                     }
                 }
             },
+            interaction: {
+                mode: 'nearest',  // Afficher seulement le point le plus proche
+                intersect: false
+            },
             plugins: {
                 legend: {
                     display: false  // Masquer la légende "Spectrogram"
                 },
                 tooltip: {
+                    enabled: typeof uiState !== 'undefined' ? uiState.tooltipsEnabled : true,
                     callbacks: {
                         label: function(context) {
                             return `T: ${context.parsed.x.toFixed(2)}s, F: ${context.parsed.y.toFixed(1)}Hz, A: ${context.raw.v.toFixed(3)}`;

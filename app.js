@@ -784,7 +784,8 @@ let appState = {
 let uiState = {
     timeVisible: true,
     freqVisible: true,
-    spectroVisible: true
+    spectroVisible: true,
+    tooltipsEnabled: true  // Activer/désactiver les infos au survol
 };
 
 // Ajouter ces fonctions dans la section INIT (après window.onload)
@@ -1067,6 +1068,43 @@ function toggleTools() {
 
         // Désactiver tous les outils quand on ferme l'accordéon
         deactivateAllTools();
+    }
+}
+
+// Fonction pour activer/désactiver les tooltips
+function toggleTooltipsEnabled() {
+    const toggle = document.getElementById('tooltip-enabled-toggle');
+    uiState.tooltipsEnabled = toggle ? toggle.checked : true;
+
+    // Sauvegarder dans localStorage
+    localStorage.setItem('tooltipsEnabled', uiState.tooltipsEnabled);
+
+    // Appliquer aux graphiques existants
+    if (appState.charts.time) {
+        appState.charts.time.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.time.update('none');
+    }
+    if (appState.charts.freq) {
+        appState.charts.freq.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.freq.update('none');
+    }
+    if (appState.charts.spectro) {
+        appState.charts.spectro.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.spectro.update('none');
+    }
+
+    console.log('Tooltips', uiState.tooltipsEnabled ? 'activés' : 'désactivés');
+}
+
+// Charger la préférence des tooltips au démarrage
+function loadTooltipPreference() {
+    const saved = localStorage.getItem('tooltipsEnabled');
+    if (saved !== null) {
+        uiState.tooltipsEnabled = saved === 'true';
+        const toggle = document.getElementById('tooltip-enabled-toggle');
+        if (toggle) {
+            toggle.checked = uiState.tooltipsEnabled;
+        }
     }
 }
 
@@ -1371,23 +1409,26 @@ function updateChartSizes() {
 // Ajouter l'appel à initToggleButtons dans window.onload
 window.onload = function() {
     console.time('Initialisation');
-    
+
     initCharts();
     setupResizers();
     setupCanvasInteractions();
     changeLanguage('fr');
     updateColorScale();
-     
-    
+
+
     // INITIALISER LES CHAMPS DE ZOOM
     setTimeout(updateZoomInputs, 500);
     setupSpectrogramAutoUpdate();
-    
+
     // RÉINITIALISER L'AIDE
     document.getElementById('help-content').innerHTML = i18n.fr.help_text;
-    
+
     // Initialiser les boutons toggle
     initToggleButtons();
+
+    // Charger la préférence des tooltips
+    loadTooltipPreference();
 
     console.timeEnd('Initialisation');
 

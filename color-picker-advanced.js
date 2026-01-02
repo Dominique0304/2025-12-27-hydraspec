@@ -166,8 +166,28 @@ function createCustomColorsGrid() {
             }
         });
 
+        // Ajouter bouton reset si la couleur n'est pas vide
+        if (color !== '#CCCCCC') {
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'color-cell-reset';
+            resetBtn.innerHTML = '×';
+            resetBtn.title = 'Réinitialiser';
+            resetBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                resetCustomColor(index);
+            });
+            cell.appendChild(resetBtn);
+        }
+
         container.appendChild(cell);
     });
+}
+
+// Réinitialiser une couleur personnalisée
+function resetCustomColor(index) {
+    colorPickerState.customColors[index] = '#CCCCCC';
+    localStorage.setItem('customColors', JSON.stringify(colorPickerState.customColors));
+    createCustomColorsGrid();
 }
 
 // Définir une couleur à partir d'un code hexadécimal
@@ -443,7 +463,69 @@ function openAdvancedColorPicker() {
     if (modal) {
         modal.style.display = 'flex';
         initAdvancedColorPicker();
+        initModalDragDrop();
     }
+}
+
+// Initialiser le drag and drop du modal
+function initModalDragDrop() {
+    const modal = document.getElementById('advanced-color-picker-modal');
+    const content = document.querySelector('.advanced-color-picker-content');
+    if (!modal || !content) return;
+
+    let isDragging = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+
+    // Rendre le modal positionnable
+    content.style.position = 'fixed';
+    content.style.left = '50%';
+    content.style.top = '50%';
+    content.style.transform = 'translate(-50%, -50%)';
+    content.style.cursor = 'move';
+
+    const startDrag = (e) => {
+        // Ne pas démarrer le drag si on clique sur un input, button ou color-cell
+        if (e.target.tagName === 'INPUT' ||
+            e.target.tagName === 'BUTTON' ||
+            e.target.closest('.color-cell') ||
+            e.target.closest('#color-selector') ||
+            e.target.closest('#hue-slider')) {
+            return;
+        }
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = content.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        content.style.transform = 'none';
+        content.style.left = `${initialLeft}px`;
+        content.style.top = `${initialTop}px`;
+
+        e.preventDefault();
+    };
+
+    const drag = (e) => {
+        if (!isDragging) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        content.style.left = `${initialLeft + dx}px`;
+        content.style.top = `${initialTop + dy}px`;
+    };
+
+    const stopDrag = () => {
+        isDragging = false;
+    };
+
+    content.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', stopDrag);
 }
 
 // Fermer le color picker

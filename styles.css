@@ -1969,86 +1969,108 @@ button[disabled] {
 
 .advanced-color-picker-content {
     background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    width: 580px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    width: 420px;
+    max-width: 90vw;
     max-height: 90vh;
-    overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.color-picker-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.color-picker-header h3 {
-    margin: 0;
-    color: var(--text-main);
-    font-size: 1.2em;
+    resize: both;
+    overflow: hidden;
+    position: relative;
 }
 
 .color-picker-section {
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 }
 
 .color-picker-section-title {
-    font-size: 0.9em;
+    font-size: 0.75em;
     font-weight: bold;
-    margin-bottom: 8px;
-    color: var(--text-main);
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
 }
 
 /* Grilles de couleurs */
 .colors-grid-container {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    gap: 3px;
-    margin-bottom: 10px;
+    gap: 1px;
+    margin-bottom: 5px;
 }
 
 .color-cell {
-    width: 30px;
-    height: 25px;
+    width: 100%;
+    aspect-ratio: 1.2;
     border: 1px solid var(--border-color);
     cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
 }
 
 .color-cell:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
     z-index: 10;
 }
 
-/* Sélecteur de couleur principal */
+/* Bouton reset pour couleurs personnalisées */
+.color-cell-reset {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 0.6em;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.color-cell:hover .color-cell-reset {
+    display: flex;
+}
+
+/* Layout principal - sélecteur à gauche, inputs à droite */
+.color-picker-main {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.color-selector-wrapper {
+    flex-shrink: 0;
+}
+
 .color-selector-container {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 6px;
 }
 
 #color-selector {
     position: relative;
-    width: 300px;
-    height: 300px;
+    width: 150px;
+    height: 150px;
     background: linear-gradient(to bottom, white, transparent),
                 linear-gradient(to bottom, transparent, black),
                 hsl(0, 100%, 50%);
     border: 2px solid var(--border-color);
     cursor: crosshair;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 #color-cursor {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border: 2px solid white;
     border-radius: 50%;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
@@ -2059,8 +2081,8 @@ button[disabled] {
 /* Slider de teinte */
 #hue-slider {
     position: relative;
-    width: 30px;
-    height: 300px;
+    width: 20px;
+    height: 150px;
     background: linear-gradient(to bottom,
         #ff0000 0%,
         #ffff00 16.67%,
@@ -2072,87 +2094,71 @@ button[disabled] {
     );
     border: 2px solid var(--border-color);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 #hue-cursor {
     position: absolute;
-    left: -4px;
-    width: 38px;
-    height: 6px;
+    left: -3px;
+    width: 26px;
+    height: 4px;
     border: 2px solid white;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
     transform: translateY(-50%);
     pointer-events: none;
 }
 
-/* Aperçu et Hex */
-.color-preview-section {
+/* Preview et inputs à droite */
+.color-inputs-wrapper {
     display: flex;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 10px;
-    background: var(--input-bg);
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
 }
 
 #color-preview {
-    width: 80px;
-    height: 50px;
+    width: 100%;
+    height: 35px;
     border: 2px solid var(--border-color);
-    border-radius: 4px;
-}
-
-.color-info {
-    flex: 1;
-}
-
-.color-info-label {
-    font-size: 0.85em;
-    color: var(--text-muted);
-    margin-bottom: 5px;
+    border-radius: 3px;
+    margin-bottom: 2px;
 }
 
 #color-hex-display {
     font-family: 'Courier New', monospace;
-    font-size: 1.1em;
+    font-size: 0.75em;
     font-weight: bold;
     color: var(--accent-blue);
+    text-align: center;
+    margin-bottom: 4px;
 }
 
-/* Champs de saisie */
-.color-inputs-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.input-group {
+/* Champs de saisie compacts */
+.input-group-compact {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    align-items: center;
+    gap: 4px;
 }
 
-.input-group label {
-    font-size: 0.85em;
+.input-group-compact label {
+    font-size: 0.7em;
     color: var(--text-muted);
-    font-weight: 500;
+    font-weight: 600;
+    min-width: 12px;
 }
 
-.input-group input {
-    padding: 6px 8px;
+.input-group-compact input {
+    padding: 3px 4px;
     background: var(--input-bg);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 2px;
     color: var(--text-main);
-    font-size: 0.9em;
+    font-size: 0.75em;
     width: 100%;
 }
 
-.input-group input:focus {
+.input-group-compact input:focus {
     outline: none;
     border-color: var(--accent-blue);
 }
@@ -2160,19 +2166,19 @@ button[disabled] {
 /* Boutons d'action */
 .color-picker-actions {
     display: flex;
-    gap: 10px;
+    gap: 5px;
     justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 15px;
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px solid var(--border-color);
 }
 
 .color-picker-btn {
-    padding: 8px 20px;
+    padding: 5px 12px;
     border: none;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.75em;
     font-weight: 500;
     transition: all 0.2s;
 }

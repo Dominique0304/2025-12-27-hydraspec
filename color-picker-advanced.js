@@ -142,6 +142,7 @@ function createBaseColorsGrid() {
         cell.title = color;
 
         cell.addEventListener('click', () => {
+            console.log('🖱️ Clic sur couleur de base:', color);
             setColorFromHex(color);
             // Ne pas fermer - l'utilisateur ferme en cliquant dehors
         });
@@ -164,9 +165,12 @@ function createCustomColorsGrid() {
         cell.title = `Couleur personnalisée ${index + 1}`;
 
         cell.addEventListener('click', () => {
+            console.log('🖱️ Clic sur couleur personnalisée:', color);
             if (color !== '#CCCCCC') {
                 setColorFromHex(color);
                 // Ne pas fermer - l'utilisateur ferme en cliquant dehors
+            } else {
+                console.log('⚠️ Couleur vide, pas de sélection');
             }
         });
 
@@ -196,8 +200,15 @@ function resetCustomColor(index) {
 
 // Définir une couleur à partir d'un code hexadécimal
 function setColorFromHex(hex) {
+    console.log('🎨 setColorFromHex appelée avec:', hex);
+
     const rgb = hexToRgb(hex);
-    if (!rgb) return;
+    if (!rgb) {
+        console.error('❌ hexToRgb a retourné null pour:', hex);
+        return;
+    }
+
+    console.log('✅ RGB converti:', rgb);
 
     const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
 
@@ -214,6 +225,7 @@ function setColorFromHex(hex) {
     updateHueSliderCursor();
 
     // Mettre à jour l'élément cible et appeler le callback SANS fermer
+    console.log('🔄 Appel de updateTargetWithoutClosing depuis setColorFromHex');
     updateTargetWithoutClosing();
 }
 
@@ -221,25 +233,34 @@ function setColorFromHex(hex) {
 function updateTargetWithoutClosing() {
     const hex = rgbToHex(colorPickerState.red, colorPickerState.green, colorPickerState.blue);
 
-    console.log('updateTargetWithoutClosing appelée avec:', hex);
+    console.log('📢 updateTargetWithoutClosing appelée avec:', hex);
+    console.log('  - targetElement:', colorPickerState.targetElement);
+    console.log('  - currentCallback:', colorPickerState.currentCallback ? 'défini' : 'null');
 
     // Mettre à jour l'élément cible si défini
     if (colorPickerState.targetElement) {
-        console.log('Mise à jour élément cible (sans fermer)');
+        console.log('✅ Mise à jour élément cible (sans fermer)');
         colorPickerState.targetElement.style.backgroundColor = hex;
+        console.log('  - backgroundColor mis à jour:', hex);
         if (colorPickerState.targetElement.dataset && colorPickerState.targetElement.dataset.colorValue !== undefined) {
             colorPickerState.targetElement.dataset.colorValue = hex;
+            console.log('  - dataset.colorValue mis à jour:', hex);
         }
+    } else {
+        console.warn('⚠️ targetElement est null, pas de mise à jour visuelle');
     }
 
     // Appeler le callback si défini
     if (colorPickerState.currentCallback && typeof colorPickerState.currentCallback === 'function') {
-        console.log('Appel du callback (sans fermer) avec:', hex);
+        console.log('✅ Appel du callback (sans fermer) avec:', hex);
         try {
             colorPickerState.currentCallback(hex);
+            console.log('✅ Callback exécuté avec succès');
         } catch (error) {
-            console.error('Erreur callback:', error);
+            console.error('❌ Erreur callback:', error);
         }
+    } else {
+        console.warn('⚠️ Callback non défini ou invalide');
     }
 }
 
@@ -351,6 +372,9 @@ function updateFromHSL() {
     updateColorPreview();
     updateColorSelectorCursor();
     updateHueSliderCursor();
+
+    // Appeler le callback pour mettre à jour en temps réel
+    updateTargetWithoutClosing();
 }
 
 // Mettre à jour à partir des valeurs RGB
@@ -365,6 +389,9 @@ function updateFromRGB() {
     updateColorSelectorCursor();
     updateHueSliderCursor();
     updateColorSelectorBackground();
+
+    // Appeler le callback pour mettre à jour en temps réel
+    updateTargetWithoutClosing();
 }
 
 // Mettre à jour tous les champs de saisie
@@ -492,11 +519,18 @@ function saveCustomColor() {
 
 // Ouvrir le color picker
 function openAdvancedColorPicker(initialColor = '#FF0000', callback = null, targetElement = null) {
+    console.log('🚀 openAdvancedColorPicker appelée');
+    console.log('  - initialColor:', initialColor);
+    console.log('  - callback:', callback ? 'défini' : 'null');
+    console.log('  - targetElement:', targetElement);
+
     const modal = document.getElementById('advanced-color-picker-modal');
     if (modal) {
         // Stocker le callback et l'élément cible
         colorPickerState.currentCallback = callback;
         colorPickerState.targetElement = targetElement;
+
+        console.log('✅ Callback et targetElement stockés dans colorPickerState');
 
         // Initialiser avec la couleur initiale
         setColorFromHex(initialColor);
@@ -505,6 +539,8 @@ function openAdvancedColorPicker(initialColor = '#FF0000', callback = null, targ
         initAdvancedColorPicker();
         initModalDragDrop();
         initModalClickOutside();
+    } else {
+        console.error('❌ Modal non trouvée');
     }
 }
 

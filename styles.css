@@ -2067,15 +2067,16 @@ button[disabled] {
 /* Bouton reset pour couleurs personnalisées */
 .color-cell-reset {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 14px;
-    height: 14px;
-    background: rgba(0, 0, 0, 0.7);
+    top: 1px;
+    right: 1px;
+    width: 10px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.8);
     color: white;
     border: none;
     border-radius: 50%;
-    font-size: 0.6em;
+    font-size: 0.5em;
+    line-height: 1;
     cursor: pointer;
     display: none;
     align-items: center;

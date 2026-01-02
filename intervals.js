@@ -407,7 +407,7 @@ function openIntervalEditModal(interval) {
 
     // Récupérer les éléments de la modale
     const modal = document.getElementById('interval-edit-modal');
-    const colorPicker = document.getElementById('interval-color-picker');
+    const colorPicker = document.getElementById('interval-color-picker-btn');
     const commentInput = document.getElementById('interval-comment-input');
     const infoTimes = document.getElementById('interval-info-times');
     const infoDuration = document.getElementById('interval-info-duration');
@@ -419,7 +419,11 @@ function openIntervalEditModal(interval) {
     if (!modal) return;
 
     // Remplir les valeurs
-    if (colorPicker) colorPicker.value = interval.color || '#4ECDC4';
+    if (colorPicker) {
+        const color = interval.color || '#4ECDC4';
+        colorPicker.dataset.colorValue = color;
+        colorPicker.style.backgroundColor = color;
+    }
     if (commentInput) commentInput.value = interval.comment || '';
 
     // Afficher les infos de temps
@@ -469,16 +473,24 @@ function closeIntervalEditModal() {
     currentEditingInterval = null;
 }
 
+// Mettre à jour la couleur depuis le picker (appelée par le callback)
+function updateIntervalColorFromPicker(color) {
+    if (currentEditingInterval) {
+        currentEditingInterval.color = color;
+        currentEditingInterval.draw();
+    }
+}
+
 // Confirmer l'édition de l'intervalle
 function confirmIntervalEdit() {
     if (!currentEditingInterval) return;
 
-    const colorPicker = document.getElementById('interval-color-picker');
+    const colorPicker = document.getElementById('interval-color-picker-btn');
     const commentInput = document.getElementById('interval-comment-input');
     const fmtSize = document.getElementById('int-fmt-size');
 
     // Appliquer les modifications
-    if (colorPicker) currentEditingInterval.color = colorPicker.value;
+    if (colorPicker) currentEditingInterval.color = colorPicker.dataset.colorValue;
     if (commentInput) currentEditingInterval.comment = commentInput.value;
     if (fmtSize) currentEditingInterval.fontSize = parseInt(fmtSize.value) || 11;
 

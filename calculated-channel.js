@@ -2,6 +2,20 @@
 // SYSTÈME DE CANAL CALCULÉ
 // =====================================
 
+// Fonctions helper pour le color picker
+function getCalculatedChannelColor() {
+    const colorBtn = document.getElementById('calculated-channel-color-btn');
+    return colorBtn ? colorBtn.dataset.colorValue : '#FF00FF';
+}
+
+function setCalculatedChannelColor(color) {
+    const colorBtn = document.getElementById('calculated-channel-color-btn');
+    if (colorBtn) {
+        colorBtn.dataset.colorValue = color;
+        colorBtn.style.backgroundColor = color;
+    }
+}
+
 // Stockage des canaux calculés
 if (!appState.calculatedChannels) {
     appState.calculatedChannels = [];
@@ -147,7 +161,7 @@ function createCalculatedChannel() {
     try {
         const formula = document.getElementById('calculated-formula').value.trim();
         let name = document.getElementById('calculated-channel-name').value.trim();
-        const color = document.getElementById('calculated-channel-color').value;
+        const color = getCalculatedChannelColor();
 
         if (!formula) {
             alert('Veuillez entrer une formule');
@@ -271,7 +285,7 @@ function createCalculatedChannel() {
         // Réinitialiser le formulaire
         document.getElementById('calculated-formula').value = '';
         document.getElementById('calculated-channel-name').value = '';
-        document.getElementById('calculated-channel-color').value = '#FF00FF';
+        setCalculatedChannelColor('#FF00FF');
 
         // Mettre à jour la liste des canaux calculés
         updateCalculatedChannelsList();
@@ -369,7 +383,7 @@ function updateExistingCalculatedChannel(channelId, formula, name, color) {
         // Réinitialiser le formulaire
         document.getElementById('calculated-formula').value = '';
         document.getElementById('calculated-channel-name').value = '';
-        document.getElementById('calculated-channel-color').value = '#FF00FF';
+        setCalculatedChannelColor('#FF00FF');
 
         // Mettre à jour la liste
         updateCalculatedChannelsList();
@@ -445,7 +459,7 @@ function editCalculatedChannel(channelId) {
     // Remplir le formulaire avec les valeurs actuelles
     document.getElementById('calculated-formula').value = channel.formula;
     document.getElementById('calculated-channel-name').value = channel.name;
-    document.getElementById('calculated-channel-color').value = channel.color;
+    setCalculatedChannelColor(channel.color);
 
     // Changer le texte du bouton
     const createBtn = document.querySelector('button[onclick="createCalculatedChannel()"]');

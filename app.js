@@ -1555,8 +1555,15 @@ function updateColorScale() {
 }
 
 // --- UTILS ---
-function openModal(id) { 
-    document.getElementById(id).style.display = 'block'; 
+function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.style.display = 'block';
+
+    // Initialiser draggable si la modale a la classe
+    const modalContent = modal.querySelector('.draggable-modal');
+    if (modalContent && typeof makeDraggable === 'function') {
+        makeDraggable(modalContent);
+    }
 }
 
 function closeModal(id) { 
@@ -1887,6 +1894,12 @@ window.toggleSidebar = toggleSidebar;
 // =====================================
 
 function makeDraggable(modalElement) {
+    // Vérifier si déjà initialisé pour éviter les doublons
+    if (modalElement.dataset.draggableInitialized === 'true') {
+        return;
+    }
+    modalElement.dataset.draggableInitialized = 'true';
+
     const header = modalElement.querySelector('h2');
     if (!header) return;
 
@@ -1896,12 +1909,9 @@ function makeDraggable(modalElement) {
     let initialX;
     let initialY;
 
-    header.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-
     function dragStart(e) {
-        if (e.target !== header && !header.contains(e.target)) return;
+        // Vérifier que le clic est bien sur le header
+        if (!header.contains(e.target)) return;
 
         isDragging = true;
         modalElement.classList.add('dragging');
@@ -1920,6 +1930,8 @@ function makeDraggable(modalElement) {
         modalElement.style.left = currentX + 'px';
         modalElement.style.top = currentY + 'px';
         modalElement.style.margin = '0';
+
+        console.log('🎯 Drag started');
     }
 
     function drag(e) {
@@ -1950,7 +1962,15 @@ function makeDraggable(modalElement) {
         if (!isDragging) return;
         isDragging = false;
         modalElement.classList.remove('dragging');
+        console.log('✅ Drag ended');
     }
+
+    // Ajouter les event listeners
+    header.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    console.log('✅ Modal draggable initialisée:', modalElement);
 }
 
 // Initialiser les modales draggables au chargement

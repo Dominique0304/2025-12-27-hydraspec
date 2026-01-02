@@ -1882,3 +1882,80 @@ function toggleSidebar() {
 }
 
 window.toggleSidebar = toggleSidebar;
+// =====================================
+// MODALES DRAGGABLES
+// =====================================
+
+function makeDraggable(modalElement) {
+    const header = modalElement.querySelector('h2');
+    if (!header) return;
+
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+
+    header.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+        if (e.target !== header && !header.contains(e.target)) return;
+
+        isDragging = true;
+        modalElement.classList.add('dragging');
+
+        // Position initiale de la souris
+        initialX = e.clientX;
+        initialY = e.clientY;
+
+        // Position actuelle de la modal
+        const rect = modalElement.getBoundingClientRect();
+        currentX = rect.left;
+        currentY = rect.top;
+
+        // Fixer la position pour permettre le déplacement
+        modalElement.style.position = 'fixed';
+        modalElement.style.left = currentX + 'px';
+        modalElement.style.top = currentY + 'px';
+        modalElement.style.margin = '0';
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+
+        e.preventDefault();
+
+        // Calculer le déplacement
+        const deltaX = e.clientX - initialX;
+        const deltaY = e.clientY - initialY;
+
+        // Nouvelle position
+        const newX = currentX + deltaX;
+        const newY = currentY + deltaY;
+
+        // Limiter au viewport
+        const maxX = window.innerWidth - modalElement.offsetWidth;
+        const maxY = window.innerHeight - modalElement.offsetHeight;
+
+        const boundedX = Math.max(0, Math.min(newX, maxX));
+        const boundedY = Math.max(0, Math.min(newY, maxY));
+
+        modalElement.style.left = boundedX + 'px';
+        modalElement.style.top = boundedY + 'px';
+    }
+
+    function dragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        modalElement.classList.remove('dragging');
+    }
+}
+
+// Initialiser les modales draggables au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    const draggableModals = document.querySelectorAll('.draggable-modal');
+    draggableModals.forEach(modal => makeDraggable(modal));
+    console.log('✅ Modales draggables initialisées:', draggableModals.length);
+});

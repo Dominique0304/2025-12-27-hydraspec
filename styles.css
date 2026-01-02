@@ -2310,3 +2310,23 @@ button[disabled] {
     background: #1976D2;
 }
 
+/* =====================================
+   MODALES DRAGGABLES
+   ===================================== */
+
+.draggable-modal {
+    position: relative;
+    cursor: default;
+}
+
+.draggable-modal h2 {
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.draggable-modal.dragging {
+    opacity: 0.9;
+}

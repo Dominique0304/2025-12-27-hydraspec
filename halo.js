@@ -422,9 +422,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const configModal = document.getElementById('channel-config-modal');
         const settingsModal = document.getElementById('settingsModal');
         const helpModal = document.getElementById('helpModal');
-        const isModalOpen = (configModal && configModal.style.display !== 'none') ||
-                           (settingsModal && settingsModal.style.display !== 'none') ||
-                           (helpModal && helpModal.style.display !== 'none');
+        const isModalOpen = (configModal && configModal.style.display === 'block') ||
+                           (settingsModal && settingsModal.style.display === 'block') ||
+                           (helpModal && helpModal.style.display === 'block');
 
         // Si une modale est ouverte, masquer le halo
         if (isModalOpen) {
@@ -518,9 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const configModal = document.getElementById('channel-config-modal');
         const settingsModal = document.getElementById('settingsModal');
         const helpModal = document.getElementById('helpModal');
-        const isModalOpen = (configModal && configModal.style.display !== 'none') ||
-                           (settingsModal && settingsModal.style.display !== 'none') ||
-                           (helpModal && helpModal.style.display !== 'none');
+        const isModalOpen = (configModal && configModal.style.display === 'block') ||
+                           (settingsModal && settingsModal.style.display === 'block') ||
+                           (helpModal && helpModal.style.display === 'block');
 
         if (!isInTimeDomain || isModalOpen) {
             halo.style.opacity = '0';

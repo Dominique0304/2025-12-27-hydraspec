@@ -551,6 +551,13 @@ function updateTimeChartMultiChannel() {
 
     console.log("🎨 Mise à jour du graphique en mode multi-canaux");
 
+    // 🔒 SAUVEGARDER LE ZOOM ACTUEL AVANT LA MISE À JOUR
+    const currentZoomX = {
+        min: chart.options.scales.x.min,
+        max: chart.options.scales.x.max
+    };
+    console.log("💾 Zoom sauvegardé:", currentZoomX);
+
     // Obtenir les canaux visibles
     const visibleChannels = appState.channelConfig.filter(config => config.visible);
 
@@ -600,21 +607,11 @@ function updateTimeChartMultiChannel() {
         };
     });
 
-    // Configurer les échelles X
-    // Vérifier si l'utilisateur a défini des valeurs personnalisées
-    const zoomMinInput = document.getElementById('zoom-min');
-    const zoomMaxInput = document.getElementById('zoom-max');
-    const userMinX = zoomMinInput ? parseFloat(zoomMinInput.value) : NaN;
-    const userMaxX = zoomMaxInput ? parseFloat(zoomMaxInput.value) : NaN;
-
-    // Utiliser les valeurs utilisateur si valides, sinon utiliser les valeurs par défaut
-    if (!isNaN(userMinX) && !isNaN(userMaxX) && userMinX < userMaxX) {
-        chart.options.scales.x.min = userMinX * 1000; // Convertir s en ms
-        chart.options.scales.x.max = userMaxX * 1000;
-    } else {
-        chart.options.scales.x.min = downsampledX[0];
-        chart.options.scales.x.max = downsampledX[downsampledX.length - 1];
-    }
+    // 🔓 RESTAURER LE ZOOM SAUVEGARDÉ (ne pas réinitialiser)
+    // Utiliser le zoom actuel du graphique au lieu de réinitialiser
+    chart.options.scales.x.min = currentZoomX.min;
+    chart.options.scales.x.max = currentZoomX.max;
+    console.log("🔓 Zoom restauré:", currentZoomX);
 
     // Label de l'axe X
     if (appState.xAxisChannel === 0) {
@@ -624,7 +621,19 @@ function updateTimeChartMultiChannel() {
         chart.options.scales.x.title.text = xChannelConfig.label + (xChannelConfig.unit ? ` (${xChannelConfig.unit})` : '');
     }
 
-    // Supprimer les anciennes échelles Y (sauf 'y' qu'on va recréer pour compatibilité)
+    // 💾 SAUVEGARDER LES ZOOMS Y ACTUELS AVANT DE SUPPRIMER LES ÉCHELLES
+    const savedYZooms = {};
+    Object.keys(chart.options.scales).forEach(key => {
+        if (key !== 'x' && chart.options.scales[key]) {
+            savedYZooms[key] = {
+                min: chart.options.scales[key].min,
+                max: chart.options.scales[key].max
+            };
+        }
+    });
+    console.log("💾 Zooms Y sauvegardés:", savedYZooms);
+
+    // Supprimer les anciennes échelles Y
     const oldScales = Object.keys(chart.options.scales).filter(key => key !== 'x');
     oldScales.forEach(key => {
         delete chart.options.scales[key];
@@ -636,7 +645,13 @@ function updateTimeChartMultiChannel() {
 
         // Calculer min/max
         let yMin, yMax;
-        if (config.yMin !== null && config.yMax !== null) {
+
+        // 🔓 RESTAURER LE ZOOM Y SAUVEGARDÉ SI DISPONIBLE
+        if (savedYZooms[config.yAxisID]) {
+            yMin = savedYZooms[config.yAxisID].min;
+            yMax = savedYZooms[config.yAxisID].max;
+            console.log(`🔓 Zoom Y restauré pour ${config.yAxisID}:`, {yMin, yMax});
+        } else if (config.yMin !== null && config.yMax !== null) {
             yMin = config.yMin;
             yMax = config.yMax;
         } else {

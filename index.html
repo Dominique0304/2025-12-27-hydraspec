@@ -1660,22 +1660,20 @@
     <!-- Modal Color Picker Avancé - DÉMO -->
     <div id="advanced-color-picker-modal">
         <div class="advanced-color-picker-content">
-            <!-- Couleurs de base -->
-            <div class="color-picker-section">
-                <div class="color-picker-section-title">Couleurs de base</div>
-                <div id="base-colors-grid" class="colors-grid-container"></div>
+            <!-- Onglets -->
+            <div class="color-picker-tabs">
+                <button class="color-picker-tab active" data-tab="selector" onclick="switchColorPickerTab('selector')">
+                    <i class="fas fa-palette"></i> Sélecteur
+                </button>
+                <button class="color-picker-tab" data-tab="palettes" onclick="switchColorPickerTab('palettes')">
+                    <i class="fas fa-th"></i> Palettes
+                </button>
             </div>
 
-            <!-- Couleurs personnalisées -->
-            <div class="color-picker-section">
-                <div class="color-picker-section-title">Couleurs personnalisées</div>
-                <div id="custom-colors-grid" class="colors-grid-container"></div>
-            </div>
-
-            <!-- Sélecteur et Preview côte à côte -->
-            <div class="color-picker-main">
-                <!-- Sélecteur 2D + Hue slider -->
-                <div class="color-selector-wrapper">
+            <!-- Contenu Onglet 1 : Sélecteur -->
+            <div class="color-picker-tab-content active" id="tab-selector">
+                <div class="color-picker-main-vertical">
+                    <!-- Sélecteur 2D + Hue slider -->
                     <div class="color-selector-container">
                         <div id="color-selector">
                             <div id="color-cursor"></div>
@@ -1684,55 +1682,87 @@
                             <div id="hue-cursor"></div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Preview + Champs à droite -->
-                <div class="color-inputs-wrapper">
-                    <!-- Aperçu -->
-                    <div id="color-preview"></div>
+                    <!-- Preview + Champs RGB -->
+                    <div class="color-inputs-wrapper-horizontal">
+                        <!-- Aperçu -->
+                        <div id="color-preview"></div>
+
+                        <!-- Champs RGB -->
+                        <div class="rgb-inputs-grid">
+                            <div class="input-group-compact">
+                                <label>R</label>
+                                <input type="number" id="input-red" min="0" max="255" value="255">
+                            </div>
+                            <div class="input-group-compact">
+                                <label>G</label>
+                                <input type="number" id="input-green" min="0" max="255" value="0">
+                            </div>
+                            <div class="input-group-compact">
+                                <label>B</label>
+                                <input type="number" id="input-blue" min="0" max="255" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hex display en bas -->
                     <div id="color-hex-display">#FF0000</div>
-
-                    <!-- Champs HSL -->
-                    <div class="input-group-compact">
-                        <label>H</label>
-                        <input type="number" id="input-hue" min="0" max="360" value="0">
-                    </div>
-                    <div class="input-group-compact">
-                        <label>S</label>
-                        <input type="number" id="input-saturation" min="0" max="100" value="100">
-                    </div>
-                    <div class="input-group-compact">
-                        <label>L</label>
-                        <input type="number" id="input-lightness" min="0" max="100" value="50">
-                    </div>
-
-                    <!-- Champs RGB -->
-                    <div class="input-group-compact">
-                        <label>R</label>
-                        <input type="number" id="input-red" min="0" max="255" value="255">
-                    </div>
-                    <div class="input-group-compact">
-                        <label>G</label>
-                        <input type="number" id="input-green" min="0" max="255" value="0">
-                    </div>
-                    <div class="input-group-compact">
-                        <label>B</label>
-                        <input type="number" id="input-blue" min="0" max="255" value="0">
-                    </div>
                 </div>
             </div>
 
-            <!-- Boutons d'action -->
-            <div class="color-picker-actions">
-                <button onclick="saveCustomColor()" class="color-picker-btn color-picker-btn-save">
-                    <i class="fas fa-plus"></i> Sauver
+            <!-- Contenu Onglet 2 : Palettes -->
+            <div class="color-picker-tab-content" id="tab-palettes">
+                <!-- Couleurs de base (sans titre) -->
+                <div id="base-colors-grid" class="colors-grid-container"></div>
+
+                <!-- Séparation -->
+                <div class="color-palette-separator"></div>
+
+                <!-- Couleurs personnalisées (sans titre) -->
+                <div id="custom-colors-grid" class="colors-grid-container"></div>
+
+                <!-- Bouton Sauver -->
+                <button onclick="saveCustomColor()" class="color-picker-btn color-picker-btn-save" style="width:100%; margin-top:8px; font-size:0.75em; padding:6px;">
+                    <i class="fas fa-plus"></i> Sauver dans couleurs personnalisées
                 </button>
-                <button onclick="closeAdvancedColorPicker()" class="color-picker-btn color-picker-btn-secondary">
-                    Annuler
-                </button>
-                <button onclick="applyAdvancedColor()" class="color-picker-btn color-picker-btn-primary">
-                    OK
-                </button>
+
+                <!-- Option pour afficher les champs -->
+                <div style="margin-top:8px; text-align:center;">
+                    <label style="font-size:0.7em; cursor:pointer; color:var(--text-muted);">
+                        <input type="checkbox" id="show-palette-inputs" onchange="togglePaletteInputs()">
+                        Afficher H,S,L,R,G,B
+                    </label>
+                </div>
+
+                <!-- Champs HSL/RGB (masqués par défaut) -->
+                <div id="palette-inputs" style="display:none; margin-top:8px;">
+                    <div class="palette-inputs-grid">
+                        <div class="input-group-compact">
+                            <label>H</label>
+                            <input type="number" id="input-hue" min="0" max="360" value="0">
+                        </div>
+                        <div class="input-group-compact">
+                            <label>S</label>
+                            <input type="number" id="input-saturation" min="0" max="100" value="100">
+                        </div>
+                        <div class="input-group-compact">
+                            <label>L</label>
+                            <input type="number" id="input-lightness" min="0" max="100" value="50">
+                        </div>
+                        <div class="input-group-compact">
+                            <label>R</label>
+                            <input type="number" id="input-red-2" min="0" max="255" value="255">
+                        </div>
+                        <div class="input-group-compact">
+                            <label>G</label>
+                            <input type="number" id="input-green-2" min="0" max="255" value="0">
+                        </div>
+                        <div class="input-group-compact">
+                            <label>B</label>
+                            <input type="number" id="input-blue-2" min="0" max="255" value="0">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

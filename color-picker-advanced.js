@@ -141,6 +141,8 @@ function createBaseColorsGrid() {
 
         cell.addEventListener('click', () => {
             setColorFromHex(color);
+            // Fermer automatiquement après sélection
+            applyAdvancedColor();
         });
 
         container.appendChild(cell);
@@ -163,6 +165,8 @@ function createCustomColorsGrid() {
         cell.addEventListener('click', () => {
             if (color !== '#CCCCCC') {
                 setColorFromHex(color);
+                // Fermer automatiquement après sélection
+                applyAdvancedColor();
             }
         });
 
@@ -464,7 +468,23 @@ function openAdvancedColorPicker() {
         modal.style.display = 'flex';
         initAdvancedColorPicker();
         initModalDragDrop();
+        initModalClickOutside();
     }
+}
+
+// Fermer au clic en dehors
+function initModalClickOutside() {
+    const modal = document.getElementById('advanced-color-picker-modal');
+    const content = document.querySelector('.advanced-color-picker-content');
+
+    if (!modal || !content) return;
+
+    // Fermer si clic sur le fond (modal) mais pas sur le contenu
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeAdvancedColorPicker();
+        }
+    });
 }
 
 // Initialiser le drag and drop du modal
@@ -542,4 +562,52 @@ function applyAdvancedColor() {
     console.log('Couleur sélectionnée:', hex);
     // TODO: Appliquer la couleur à l'élément cible
     closeAdvancedColorPicker();
+}
+
+// Changer d'onglet
+function switchColorPickerTab(tabName) {
+    // Désactiver tous les onglets
+    document.querySelectorAll('.color-picker-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.color-picker-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+
+    // Activer l'onglet sélectionné
+    const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+    const selectedContent = document.getElementById(`tab-${tabName}`);
+
+    if (selectedTab) selectedTab.classList.add('active');
+    if (selectedContent) selectedContent.classList.add('active');
+}
+
+// Afficher/masquer les champs dans l'onglet Palettes
+function togglePaletteInputs() {
+    const checkbox = document.getElementById('show-palette-inputs');
+    const inputs = document.getElementById('palette-inputs');
+
+    if (checkbox && inputs) {
+        inputs.style.display = checkbox.checked ? 'block' : 'none';
+    }
+}
+
+// Synchroniser les inputs entre les deux onglets
+function syncInputsBetweenTabs() {
+    // Récupérer les valeurs de l'onglet Sélecteur
+    const red = document.getElementById('input-red');
+    const green = document.getElementById('input-green');
+    const blue = document.getElementById('input-blue');
+    const hue = document.getElementById('input-hue');
+    const saturation = document.getElementById('input-saturation');
+    const lightness = document.getElementById('input-lightness');
+
+    // Synchroniser avec l'onglet Palettes
+    const red2 = document.getElementById('input-red-2');
+    const green2 = document.getElementById('input-green-2');
+    const blue2 = document.getElementById('input-blue-2');
+
+    if (red2 && red) red2.value = red.value;
+    if (green2 && green) green2.value = green.value;
+    if (blue2 && blue) blue2.value = blue.value;
 }

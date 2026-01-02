@@ -929,7 +929,6 @@ function handleDiffCanalMouseMove(event, chart) {
                 }
             }
             chart.canvas.style.cursor = 'crosshair';
-        }
         return false;
     }
 

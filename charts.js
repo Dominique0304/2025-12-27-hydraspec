@@ -849,19 +849,20 @@ function updateTimeChart() {
         }
     }
 
-    // Forcer un refresh des tooltips à l'ouverture (activer puis désactiver)
+    // Synchroniser le select du thème avec le thème actuel à l'ouverture
+    const currentTheme = document.body.getAttribute('data-theme') || 'light';
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = currentTheme;
+    }
+
+    // Désactiver les tooltips à l'ouverture (case décochée et fonction inactive)
     if (typeof toggleTooltipsEnabled === 'function') {
         const toggle = document.getElementById('tooltip-enabled-toggle');
-        if (toggle) {
-            // Désactiver temporairement
+        if (toggle && toggle.checked) {
+            // Si les tooltips sont activés, les désactiver
             toggle.checked = false;
             toggleTooltipsEnabled();
-
-            // Réactiver après un court délai
-            setTimeout(() => {
-                toggle.checked = true;
-                toggleTooltipsEnabled();
-            }, 50);
         }
     }
 

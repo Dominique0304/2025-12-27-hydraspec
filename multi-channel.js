@@ -551,13 +551,6 @@ function updateTimeChartMultiChannel() {
 
     console.log("🎨 Mise à jour du graphique en mode multi-canaux");
 
-    // 🔒 SAUVEGARDER LE ZOOM ACTUEL AVANT LA MISE À JOUR
-    const currentZoomX = {
-        min: chart.options.scales.x.min,
-        max: chart.options.scales.x.max
-    };
-    console.log("💾 Zoom sauvegardé:", currentZoomX);
-
     // Obtenir les canaux visibles
     const visibleChannels = appState.channelConfig.filter(config => config.visible);
 
@@ -607,11 +600,13 @@ function updateTimeChartMultiChannel() {
         };
     });
 
-    // 🔓 RESTAURER LE ZOOM SAUVEGARDÉ (ne pas réinitialiser)
-    // Utiliser le zoom actuel du graphique au lieu de réinitialiser
-    chart.options.scales.x.min = currentZoomX.min;
-    chart.options.scales.x.max = currentZoomX.max;
-    console.log("🔓 Zoom restauré:", currentZoomX);
+    // ✅ CONSERVER LE ZOOM X ACTUEL (ne pas réinitialiser)
+    // On ne modifie pas chart.options.scales.x.min/max
+    // Le zoom actuel est déjà présent dans le graphique
+    console.log("✅ Zoom X conservé:", {
+        min: chart.options.scales.x.min,
+        max: chart.options.scales.x.max
+    });
 
     // Label de l'axe X
     if (appState.xAxisChannel === 0) {
@@ -646,20 +641,26 @@ function updateTimeChartMultiChannel() {
         // Calculer min/max
         let yMin, yMax;
 
-        // 🔓 RESTAURER LE ZOOM Y SAUVEGARDÉ SI DISPONIBLE
-        if (savedYZooms[config.yAxisID]) {
+        // ✅ PRIORITÉ 1: Valeurs définies par l'utilisateur (config modal)
+        if (config.yMin !== null && config.yMax !== null) {
+            yMin = config.yMin;
+            yMax = config.yMax;
+            console.log(`✅ Utilisation valeurs config pour ${config.yAxisID}:`, {yMin, yMax});
+        }
+        // ✅ PRIORITÉ 2: Zoom sauvegardé (changement visibilité canal)
+        else if (savedYZooms[config.yAxisID]) {
             yMin = savedYZooms[config.yAxisID].min;
             yMax = savedYZooms[config.yAxisID].max;
             console.log(`🔓 Zoom Y restauré pour ${config.yAxisID}:`, {yMin, yMax});
-        } else if (config.yMin !== null && config.yMax !== null) {
-            yMin = config.yMin;
-            yMax = config.yMax;
-        } else {
+        }
+        // ✅ PRIORITÉ 3: Calcul automatique
+        else {
             const dataMin = Math.min(...channelData);
             const dataMax = Math.max(...channelData);
             const range = dataMax - dataMin;
-            yMin = config.yMin !== null ? config.yMin : dataMin - range * 0.1;
-            yMax = config.yMax !== null ? config.yMax : dataMax + range * 0.1;
+            yMin = dataMin - range * 0.1;
+            yMax = dataMax + range * 0.1;
+            console.log(`📐 Calcul auto pour ${config.yAxisID}:`, {yMin, yMax});
         }
 
         // Créer l'échelle Y

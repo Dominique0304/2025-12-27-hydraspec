@@ -1556,13 +1556,24 @@ function updateColorScale() {
 
 // --- UTILS ---
 function openModal(id) {
+    console.log('🔓 openModal appelé pour:', id);
     const modal = document.getElementById(id);
+    console.log('📦 Modal trouvée:', modal);
     modal.style.display = 'block';
 
     // Initialiser draggable si la modale a la classe
     const modalContent = modal.querySelector('.draggable-modal');
+    console.log('🔍 modalContent:', modalContent);
+    console.log('🔍 typeof makeDraggable:', typeof makeDraggable);
+
     if (modalContent && typeof makeDraggable === 'function') {
+        console.log('✅ Appel de makeDraggable...');
         makeDraggable(modalContent);
+    } else {
+        console.error('❌ Ne peut pas appeler makeDraggable:', {
+            modalContent: !!modalContent,
+            makeDraggableExists: typeof makeDraggable === 'function'
+        });
     }
 }
 

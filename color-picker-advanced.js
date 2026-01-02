@@ -212,6 +212,35 @@ function setColorFromHex(hex) {
     updateColorPreview();
     updateColorSelectorCursor();
     updateHueSliderCursor();
+
+    // Mettre à jour l'élément cible et appeler le callback SANS fermer
+    updateTargetWithoutClosing();
+}
+
+// Mettre à jour l'élément cible et appeler le callback sans fermer le picker
+function updateTargetWithoutClosing() {
+    const hex = rgbToHex(colorPickerState.red, colorPickerState.green, colorPickerState.blue);
+
+    console.log('updateTargetWithoutClosing appelée avec:', hex);
+
+    // Mettre à jour l'élément cible si défini
+    if (colorPickerState.targetElement) {
+        console.log('Mise à jour élément cible (sans fermer)');
+        colorPickerState.targetElement.style.backgroundColor = hex;
+        if (colorPickerState.targetElement.dataset && colorPickerState.targetElement.dataset.colorValue !== undefined) {
+            colorPickerState.targetElement.dataset.colorValue = hex;
+        }
+    }
+
+    // Appeler le callback si défini
+    if (colorPickerState.currentCallback && typeof colorPickerState.currentCallback === 'function') {
+        console.log('Appel du callback (sans fermer) avec:', hex);
+        try {
+            colorPickerState.currentCallback(hex);
+        } catch (error) {
+            console.error('Erreur callback:', error);
+        }
+    }
 }
 
 // Conversion Hex vers RGB

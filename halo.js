@@ -314,9 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Vérifier la proximité avec les curseurs
         checkCursorProximity();
 
-        // Mettre à jour la visibilité
-        halo.style.opacity = isInTimeDomain ? '1' : '0';
-
+        // Mettre à jour la visibilité (géré dans updateHaloStyle)
         // Mettre à jour le style en fonction de l'état
         updateHaloStyle();
     });
@@ -392,6 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
             halo.style.opacity = '0';
             return;
         }
+
+        // Déterminer l'opacité selon le thème
+        const theme = document.documentElement.getAttribute('data-theme');
+        const baseOpacity = (theme === 'light') ? '0.9' : '1';
+
+        // Appliquer l'opacité de base
+        halo.style.opacity = baseOpacity;
 
         // Vérifier si on est en train de dragger un outil
         const isDraggingTool =

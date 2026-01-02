@@ -457,6 +457,8 @@ async function downloadBlob(blob, name) {
                 accepts['text/csv'] = ['.csv'];
             } else if (extension === 'png') {
                 accepts['image/png'] = ['.png'];
+            } else if (extension === 'pdf') {
+                accepts['application/pdf'] = ['.pdf'];
             }
 
             // Afficher le dialogue "Enregistrer sous"
@@ -1007,8 +1009,9 @@ function finalizePDF(pdf, filename) {
         pdf.text(`Page ${i}/${pageCount}`, 270, 200);
     }
 
-    // Sauvegarder le PDF
-    pdf.save(`${filename}.pdf`);
+    // Convertir le PDF en Blob et utiliser downloadBlob pour la boîte de dialogue native
+    const blob = pdf.output('blob');
+    downloadBlob(blob, `${filename}.pdf`);
     setStatus("Export PDF réussi!", 'success');
     closeModal('filenameModal');
 }

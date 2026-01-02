@@ -141,8 +141,7 @@ function createBaseColorsGrid() {
 
         cell.addEventListener('click', () => {
             setColorFromHex(color);
-            // Fermer automatiquement après sélection
-            applyAdvancedColor();
+            // Ne pas fermer - l'utilisateur ferme en cliquant dehors
         });
 
         container.appendChild(cell);
@@ -165,8 +164,7 @@ function createCustomColorsGrid() {
         cell.addEventListener('click', () => {
             if (color !== '#CCCCCC') {
                 setColorFromHex(color);
-                // Fermer automatiquement après sélection
-                applyAdvancedColor();
+                // Ne pas fermer - l'utilisateur ferme en cliquant dehors
             }
         });
 

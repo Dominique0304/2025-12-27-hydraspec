@@ -310,6 +310,8 @@ function handleExportConfirm() {
             performExportCsv(name);
         } else if (appState.currentExportAction === 'exportPng') {
             performCapture(name);
+        } else if (appState.currentExportAction === 'exportPdf') {
+            captureAsPDF(name);
         } else {
             console.error("❌ Action inconnue:", appState.currentExportAction);
             setStatus("Erreur: type d'export inconnu");

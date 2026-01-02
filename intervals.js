@@ -477,7 +477,8 @@ function closeIntervalEditModal() {
 function updateIntervalColorFromPicker(color) {
     if (currentEditingInterval) {
         currentEditingInterval.color = color;
-        currentEditingInterval.draw();
+        // Mettre à jour l'affichage du graphique
+        updateIntervalsDisplay();
     }
 }
 

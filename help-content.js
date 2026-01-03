@@ -14,11 +14,11 @@ const helpContent = {
                 { id: "temporal", label: "Temporel" },
                 { id: "frequency", label: "Fréquentiel" },
                 { id: "spectrogram", label: "Spectrogramme" },
-                { id: "measure-tools", label: "Mesures" },
-                { id: "annotations", label: "Annotations" },
-                { id: "navigation-zoom", label: "Navigation" },
+                { id: "measurement", label: "Mesures" },
+                { id: "annotation", label: "Annotations" },
+                { id: "navigation", label: "Navigation" },
                 { id: "channels", label: "Canaux" },
-                { id: "config", label: "Configuration" },
+                { id: "configuration", label: "Configuration" },
                 { id: "shortcuts", label: "Raccourcis" },
                 { id: "tips", label: "Astuces" }
             ]
@@ -809,11 +809,11 @@ const helpContent = {
                 { id: "temporal", label: "Time Domain" },
                 { id: "frequency", label: "Frequency" },
                 { id: "spectrogram", label: "Spectrogram" },
-                { id: "measure-tools", label: "Measurements" },
-                { id: "annotations", label: "Annotations" },
-                { id: "navigation-zoom", label: "Navigation" },
+                { id: "measurement", label: "Measurements" },
+                { id: "annotation", label: "Annotations" },
+                { id: "navigation", label: "Navigation" },
                 { id: "channels", label: "Channels" },
-                { id: "config", label: "Configuration" },
+                { id: "configuration", label: "Configuration" },
                 { id: "shortcuts", label: "Shortcuts" },
                 { id: "tips", label: "Tips" }
             ]

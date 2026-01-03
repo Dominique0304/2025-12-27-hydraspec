@@ -60,21 +60,21 @@ function loadHelpContent(lang = 'fr') {
     html += `</section>`;
 
     // Section Outils de Mesure
-    html += `<section id="measure-tools" style="margin-bottom: 30px;">`;
-    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.measureTools.title}</h3>`;
-    html += sections.measureTools.content;
+    html += `<section id="measurement" style="margin-bottom: 30px;">`;
+    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.measurement.title}</h3>`;
+    html += sections.measurement.content;
     html += `</section>`;
 
     // Section Annotations
-    html += `<section id="annotations" style="margin-bottom: 30px;">`;
-    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.annotations.title}</h3>`;
-    html += sections.annotations.content;
+    html += `<section id="annotation" style="margin-bottom: 30px;">`;
+    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.annotation.title}</h3>`;
+    html += sections.annotation.content;
     html += `</section>`;
 
     // Section Navigation & Zoom
-    html += `<section id="navigation-zoom" style="margin-bottom: 30px;">`;
-    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.navigationZoom.title}</h3>`;
-    html += sections.navigationZoom.content;
+    html += `<section id="navigation" style="margin-bottom: 30px;">`;
+    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.navigation.title}</h3>`;
+    html += sections.navigation.content;
     html += `</section>`;
 
     // Section Canaux
@@ -84,9 +84,9 @@ function loadHelpContent(lang = 'fr') {
     html += `</section>`;
 
     // Section Configuration
-    html += `<section id="config" style="margin-bottom: 30px;">`;
-    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.config.title}</h3>`;
-    html += sections.config.content;
+    html += `<section id="configuration" style="margin-bottom: 30px;">`;
+    html += `<h3 style="color: var(--accent-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">${sections.configuration.title}</h3>`;
+    html += sections.configuration.content;
     html += `</section>`;
 
     // Section Raccourcis

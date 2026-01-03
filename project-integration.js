@@ -182,7 +182,7 @@ function updateProjectTabs() {
     sidebarContainer.innerHTML = '';
 
     if (projectsWithData.length === 0) {
-        sidebarContainer.innerHTML = '<div style="padding:8px; text-align:center; color:var(--text-muted); font-size:0.8rem; font-style:italic;">Aucun projet</div>';
+        sidebarContainer.innerHTML = `<div style="padding:8px; text-align:center; color:var(--text-muted); font-size:0.8rem; font-style:italic;">${t('labels.no_project')}</div>`;
         return;
     }
 

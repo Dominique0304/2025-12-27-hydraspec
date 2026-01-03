@@ -221,7 +221,7 @@ function setSnapPointMode(mode) {
             moveBtn.style.border = '1px solid var(--border-color)';
         }
         if (modeText) {
-            modeText.textContent = 'Cliquez sur le graphique pour créer un marqueur';
+            modeText.textContent = t('labels.click_create_marker');
         }
         setStatus("Mode Création : Cliquez sur le graphique pour créer un marqueur");
     } else if (mode === 'move') {
@@ -237,7 +237,7 @@ function setSnapPointMode(mode) {
             moveBtn.style.border = 'none';
         }
         if (modeText) {
-            modeText.textContent = 'Cliquez sur un marqueur pour le déplacer ou le redimensionner';
+            modeText.textContent = t('labels.click_move_resize_marker');
         }
         setStatus("Mode Déplacement : Cliquez sur un marqueur pour le déplacer");
     }

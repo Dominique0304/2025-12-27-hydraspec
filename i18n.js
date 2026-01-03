@@ -385,12 +385,35 @@ const i18nTranslations = {
             drag_to_move: "Glissez pour déplacer la fenêtre",
             close_without_validate: "Fermer sans valider",
             channel_colon: "Canal:",
-            comment: "Commentaire:"
+            comment: "Commentaire:",
+
+            // Instructions complètes
+            check_channels_display_full: "Cochez les canaux à afficher simultanément dans le domaine temporel et fréquentiel",
+            rename_channels_full: "Renommez les canaux dans la colonne \"Nom\" pour une identification plus claire",
+            choose_color_full: "Choisissez une couleur pour chaque canal en cliquant sur le bouton de couleur",
+            set_minmax_full: "Définissez min/max manuellement ou laissez vide pour l'échelle automatique",
+            enable_fft_full: "Activez la FFT pour afficher le spectre fréquentiel du canal",
+            use_presets_full: "Utilisez les presets pour appliquer rapidement les mêmes valeurs Y à plusieurs canaux",
+            adjust_thickness_full: "Ajustez l'épaisseur de trait pour toutes les courbes (temporel et FFT)",
+            configure_step_full: "Configurez le pas d'échantillonnage (ms) du fichier",
+            view_info_full: "Consultez les informations du fichier (Fs, Points, Incrément)",
+            view_help_full: "Consultez cette aide à tout moment"
         },
 
         tooltips: {
             create_mode: "Mode Création : Cliquez sur le graphique pour créer un marqueur",
-            move_mode: "Mode Déplacement : Cliquez sur un marqueur pour le déplacer"
+            move_mode: "Mode Déplacement : Cliquez sur un marqueur pour le déplacer",
+            y_axis_left: "Axe Y à gauche",
+            y_axis_right: "Axe Y à droite",
+            auto_y_per_channel: "Appliquer automatiquement les échelles Y par canal individuellement",
+            auto_y_grouped: "Appliquer automatiquement les échelles Y groupées par unité",
+            align_left: "Aligner à gauche",
+            align_right: "Aligner à droite",
+            center: "Centrer",
+            toggle_sidebar: "Afficher/Masquer Sidebar",
+            multi_channel_config: "Configuration Multi-Canaux",
+            settings: "Paramètres",
+            help: "Aide"
         },
 
         placeholders: {
@@ -762,11 +785,34 @@ const i18nTranslations = {
             close_without_validate: "Close without validating",
             channel_colon: "Channel:",
             comment: "Comment:"
+
+            // Full instructions
+            check_channels_display_full: "Check channels to display simultaneously in time and frequency domain",
+            rename_channels_full: "Rename channels in the "Name" column for clearer identification",
+            choose_color_full: "Choose a color for each channel by clicking the color button",
+            set_minmax_full: "Set min/max manually or leave blank for automatic scaling",
+            enable_fft_full: "Enable FFT to display the channel frequency spectrum",
+            use_presets_full: "Use presets to quickly apply the same Y values to multiple channels",
+            adjust_thickness_full: "Adjust line thickness for all curves (time and FFT)",
+            configure_step_full: "Configure file sampling step (ms)",
+            view_info_full: "View file information (Fs, Points, Increment)",
+            view_help_full: "View this help at any time"
         },
 
         tooltips: {
             create_mode: "Create mode: Click on the graph to create a marker",
-            move_mode: "Move mode: Click on a marker to move it"
+            move_mode: "Move mode: Click on a marker to move it",
+            y_axis_left: "Y axis on left",
+            y_axis_right: "Y axis on right",
+            auto_y_per_channel: "Automatically apply Y scales per individual channel",
+            auto_y_grouped: "Automatically apply Y scales grouped by unit",
+            align_left: "Align left",
+            align_right: "Align right",
+            center: "Center",
+            toggle_sidebar: "Show/Hide Sidebar",
+            multi_channel_config: "Multi-Channel Configuration",
+            settings: "Settings",
+            help: "Help"
         },
 
         placeholders: {
@@ -1137,12 +1183,35 @@ const i18nTranslations = {
             drag_to_move: "Ziehen Sie, um das Fenster zu verschieben",
             close_without_validate: "Schließen ohne Bestätigung",
             channel_colon: "Kanal:",
-            comment: "Kommentar:"
+            comment: "Kommentar:",
+
+            // Vollständige Anweisungen
+            check_channels_display_full: "Wählen Sie Kanäle aus, die gleichzeitig im Zeit- und Frequenzbereich angezeigt werden sollen",
+            rename_channels_full: "Benennen Sie Kanäle in der Spalte \"Name\" für eine klarere Identifizierung um",
+            choose_color_full: "Wählen Sie eine Farbe für jeden Kanal durch Klicken auf die Farbtaste",
+            set_minmax_full: "Setzen Sie min/max manuell oder lassen Sie es leer für automatische Skalierung",
+            enable_fft_full: "Aktivieren Sie FFT, um das Kanalfrequenzspektrum anzuzeigen",
+            use_presets_full: "Verwenden Sie Voreinstellungen, um schnell dieselben Y-Werte auf mehrere Kanäle anzuwenden",
+            adjust_thickness_full: "Passen Sie die Linienstärke für alle Kurven an (Zeit und FFT)",
+            configure_step_full: "Konfigurieren Sie den Datei-Abtastschritt (ms)",
+            view_info_full: "Dateiinformationen anzeigen (Fs, Punkte, Inkrement)",
+            view_help_full: "Diese Hilfe jederzeit anzeigen"
         },
 
         tooltips: {
             create_mode: "Erstellungsmodus: Klicken Sie auf das Diagramm, um eine Markierung zu erstellen",
-            move_mode: "Verschiebungsmodus: Klicken Sie auf eine Markierung, um sie zu verschieben"
+            move_mode: "Verschiebungsmodus: Klicken Sie auf eine Markierung, um sie zu verschieben",
+            y_axis_left: "Y-Achse links",
+            y_axis_right: "Y-Achse rechts",
+            auto_y_per_channel: "Y-Skalen automatisch pro Kanal anwenden",
+            auto_y_grouped: "Y-Skalen automatisch nach Einheit gruppiert anwenden",
+            align_left: "Links ausrichten",
+            align_right: "Rechts ausrichten",
+            center: "Zentrieren",
+            toggle_sidebar: "Seitenleiste ein-/ausblenden",
+            multi_channel_config: "Mehrkanal-Konfiguration",
+            settings: "Einstellungen",
+            help: "Hilfe"
         },
 
         placeholders: {

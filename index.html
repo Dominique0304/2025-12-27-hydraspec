@@ -170,8 +170,8 @@
                                 <thead style="background:var(--bg-secondary); border-bottom:2px solid var(--border-color);">
                                     <tr>
                                         <th style="padding:8px; text-align:left; border-right:1px solid var(--border-color);">Canal</th>
-                                        <th style="padding:6px; text-align:center; border-right:1px solid var(--border-color);" title="Axe Y à gauche">L</th>
-                                        <th style="padding:6px; text-align:center;" title="Axe Y à droite">R</th>
+                                        <th style="padding:6px; text-align:center; border-right:1px solid var(--border-color);" data-i18n-title="tooltips.y_axis_left" title="Axe Y à gauche">L</th>
+                                        <th style="padding:6px; text-align:center;" data-i18n-title="tooltips.y_axis_right" title="Axe Y à droite">R</th>
                                     </tr>
                                 </thead>
                                 <tbody id="canal-tbody">
@@ -663,8 +663,8 @@
                                 <thead style="background:var(--bg-secondary); border-bottom:2px solid var(--border-color);">
                                     <tr>
                                         <th style="padding:8px; text-align:left; border-right:1px solid var(--border-color);"<span data-i18n="labels.fft_channel">Canal FFT</span></th>
-                                        <th style="padding:6px; text-align:center; border-right:1px solid var(--border-color);" title="Axe Y à gauche">L</th>
-                                        <th style="padding:6px; text-align:center;" title="Axe Y à droite">R</th>
+                                        <th style="padding:6px; text-align:center; border-right:1px solid var(--border-color);" data-i18n-title="tooltips.y_axis_left" title="Axe Y à gauche">L</th>
+                                        <th style="padding:6px; text-align:center;" data-i18n-title="tooltips.y_axis_right" title="Axe Y à droite">R</th>
                                     </tr>
                                 </thead>
                                 <tbody id="fft-canal-tbody">
@@ -1077,10 +1077,10 @@
                             <th style="padding:12px; text-align:center;">
                                 <i class="fas fa-palette"></i>
                             </th>
-                            <th style="padding:12px; text-align:center;" title="Axe Y à gauche">
+                            <th style="padding:12px; text-align:center;" data-i18n-title="tooltips.y_axis_left" title="Axe Y à gauche">
                                 L
                             </th>
-                            <th style="padding:12px; text-align:center;" title="Axe Y à droite">
+                            <th style="padding:12px; text-align:center;" data-i18n-title="tooltips.y_axis_right" title="Axe Y à droite">
                                 R
                             </th>
                             <th style="padding:12px; text-align:center;">Y Min</th>
@@ -1106,12 +1106,12 @@
                     <div style="display:flex; gap:8px;">
                         <button onclick="autoPresetYScalesPerChannel()"
                                 style="padding:6px 12px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;"
-                                title="Appliquer automatiquement les échelles Y par canal individuellement">
+                                data-i18n-title="tooltips.auto_y_per_channel" title="Appliquer automatiquement les échelles Y par canal individuellement">
                             <i class="fas fa-chart-line"></i> <span data-i18n="labels.auto_channel">Auto Canal</span>
                         </button>
                         <button onclick="autoPresetYScales()"
                                 style="padding:6px 12px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;"
-                                title="Appliquer automatiquement les échelles Y groupées par unité (même échelle pour tous les canaux de même unité)">
+                                data-i18n-title="tooltips.auto_y_grouped" title="Appliquer automatiquement les échelles Y groupées par unité">
                             <i class="fas fa-chart-line"></i> <span data-i18n="labels.auto_grouped">Auto Groupé</span>
                         </button>
                     </div>
@@ -1240,25 +1240,25 @@
                         <h4 style="margin-top:0; margin-bottom:15px; color:var(--accent-blue);">
                             <i class="fas fa-info-circle"></i> <span data-i18n="modals.instructions">Instructions</span <span data-i18n="labels.usage">d'utilisation</span>
                         </h4>
-                        <p style="margin-bottom:10px;"><strong<span data-i18n="labels.channels_tab">Onglet Canaux :</span></strong></p>
+                        <p style="margin-bottom:10px;"><strong><span data-i18n="labels.channels_tab">Onglet Canaux :</span></strong></p>
                         <ul style="margin-left:20px; margin-bottom:15px;">
-                            <li<span data-i18n="labels.check_channels_display">Cochez les canaux à afficher</span> simultanément dans le domaine temporel et fréquentiel</li>
-                            <li<span data-i18n="labels.rename_channels">Renommez les canaux</span> dans la colonne "Nom" pour une identification plus claire</li>
-                            <li<span data-i18n="labels.choose_color">Choisissez une couleur</span> pour chaque canal en cliquant sur le bouton de couleur</li>
+                            <li><span data-i18n="labels.check_channels_display_full">Cochez les canaux à afficher simultanément dans le domaine temporel et fréquentiel</span></li>
+                            <li><span data-i18n="labels.rename_channels_full">Renommez les canaux dans la colonne "Nom" pour une identification plus claire</span></li>
+                            <li><span data-i18n="labels.choose_color_full">Choisissez une couleur pour chaque canal en cliquant sur le bouton de couleur</span></li>
                             <li<span data-i18n="labels.position_y_scales">Positionnez les échelles Y : <strong>L</strong> (Gauche), <strong>R</strong> (Droite), ou aucune (Masquée)</span></li>
-                            <li<span data-i18n="labels.set_minmax">Définissez min/max</span> manuellement ou laissez vide pour l'échelle automatique</li>
-                            <li<span data-i18n="labels.enable_fft">Activez la FFT</span> pour afficher le spectre fréquentiel du canal</li>
-                            <li<span data-i18n="labels.use_presets">Utilisez les presets</span> pour appliquer rapidement les mêmes valeurs Y à plusieurs canaux</li>
+                            <li><span data-i18n="labels.set_minmax_full">Définissez min/max manuellement ou laissez vide pour l'échelle automatique</span></li>
+                            <li><span data-i18n="labels.enable_fft_full">Activez la FFT pour afficher le spectre fréquentiel du canal</span></li>
+                            <li><span data-i18n="labels.use_presets_full">Utilisez les presets pour appliquer rapidement les mêmes valeurs Y à plusieurs canaux</span></li>
                         </ul>
-                        <p style="margin-bottom:10px;"><strong<span data-i18n="labels.parameters_tab">Onglet Paramètres :</span></strong></p>
+                        <p style="margin-bottom:10px;"><strong><span data-i18n="labels.parameters_tab">Onglet Paramètres :</span></strong></p>
                         <ul style="margin-left:20px; margin-bottom:15px;">
-                            <li<span data-i18n="labels.adjust_thickness">Ajustez l'épaisseur</span> de trait pour toutes les courbes (temporel et FFT)</li>
-                            <li<span data-i18n="labels.configure_step">Configurez le pas</span> d'échantillonnage (ms) du fichier</li>
-                            <li<span data-i18n="labels.view_info">Consultez les informations</span> du fichier (Fs, Points, Incrément)</li>
+                            <li><span data-i18n="labels.adjust_thickness_full">Ajustez l'épaisseur de trait pour toutes les courbes (temporel et FFT)</span></li>
+                            <li><span data-i18n="labels.configure_step_full">Configurez le pas d'échantillonnage (ms) du fichier</span></li>
+                            <li><span data-i18n="labels.view_info_full">Consultez les informations du fichier (Fs, Points, Incrément)</span></li>
                         </ul>
-                        <p style="margin-bottom:10px;"><strong<span data-i18n="labels.instructions_tab">Onglet Instructions :</span></strong></p>
+                        <p style="margin-bottom:10px;"><strong><span data-i18n="labels.instructions_tab">Onglet Instructions :</span></strong></p>
                         <ul style="margin-left:20px;">
-                            <li<span data-i18n="labels.view_help">Consultez cette aide</span> à tout moment</li>
+                            <li><span data-i18n="labels.view_help_full">Consultez cette aide à tout moment</span></li>
                         </ul>
                     </div>
                 </div>
@@ -1509,15 +1509,15 @@
                         Horizontal:
                     </label>
                     <div style="display: flex; gap: 4px; flex: 1;">
-                        <button onclick="setSnapPointTextAlign('left')" id="snap-align-left" title="Aligner à gauche"
+                        <button onclick="setSnapPointTextAlign('left')" id="snap-align-left" data-i18n-title="tooltips.align_left" title="Aligner à gauche"
                                 style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                             <i class="fas fa-align-left"></i> Gauche
                         </button>
-                        <button onclick="setSnapPointTextAlign('center')" id="snap-align-center" title="Centrer"
+                        <button onclick="setSnapPointTextAlign('center')" id="snap-align-center" data-i18n-title="tooltips.center" title="Centrer"
                                 style="flex: 1; padding: 5px 10px; background: var(--accent-green); color: white; border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                             <i class="fas fa-align-center"></i> Centre
                         </button>
-                        <button onclick="setSnapPointTextAlign('right')" id="snap-align-right" title="Aligner à droite"
+                        <button onclick="setSnapPointTextAlign('right')" id="snap-align-right" data-i18n-title="tooltips.align_right" title="Aligner à droite"
                                 style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                             <i class="fas fa-align-right"></i> Droite
                         </button>

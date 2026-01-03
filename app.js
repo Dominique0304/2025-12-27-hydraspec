@@ -1421,8 +1421,8 @@ window.onload = function() {
     setTimeout(updateZoomInputs, 500);
     setupSpectrogramAutoUpdate();
 
-    // RÉINITIALISER L'AIDE
-    document.getElementById('help-content').innerHTML = i18n.fr.help_text;
+    // RÉINITIALISER L'AIDE (désactivé - maintenant géré par help-loader.js)
+    // document.getElementById('help-content').innerHTML = i18n.fr.help_text;
 
     // Initialiser les boutons toggle
     initToggleButtons();
@@ -1448,7 +1448,8 @@ function changeLanguage(lang) {
         const key = el.getAttribute('data-i18n');
         if (texts[key]) el.textContent = texts[key];
     });
-    document.getElementById('help-content').innerHTML = texts.help_text;
+    // Désactivé - maintenant géré par help-loader.js qui intercepte changeLanguage
+    // document.getElementById('help-content').innerHTML = texts.help_text;
 }
 
 // --- ZOOM TEMPOREL MANUEL ---

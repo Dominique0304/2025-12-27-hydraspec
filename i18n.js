@@ -203,7 +203,8 @@ const i18nTranslations = {
             enter_name: "Entrez le nom...",
             preset_name: "Ex: Ma config vibration",
             preset_desc: "Description de ce preset...",
-            comment: "Entrez un commentaire..."
+            comment: "Entrez un commentaire...",
+            enter_comment: "Entrez un commentaire..."
         },
 
         // ===== MESSAGES DE STATUT =====
@@ -548,10 +549,6 @@ const i18nTranslations = {
             align_middle: "Centrer verticalement",
             align_bottom: "Aligner en bas",
             transparent_background: "Fond transparent"
-        },
-
-        placeholders: {
-            enter_comment: "Entrez un commentaire..."
         }
     },
 
@@ -754,7 +751,8 @@ const i18nTranslations = {
             enter_name: "Enter name...",
             preset_name: "Ex: My vibration config",
             preset_desc: "Preset description...",
-            comment: "Enter a comment..."
+            comment: "Enter a comment...",
+            enter_comment: "Enter a comment..."
         },
 
         // MESSAGES DE STATUT
@@ -1081,10 +1079,6 @@ const i18nTranslations = {
             align_middle: "Center vertically",
             align_bottom: "Align bottom",
             transparent_background: "Transparent background"
-        },
-
-        placeholders: {
-            enter_comment: "Enter a comment..."
         }
     },
 
@@ -1287,7 +1281,8 @@ const i18nTranslations = {
             enter_name: "Name eingeben...",
             preset_name: "Bsp: Meine Schwingungskonfiguration",
             preset_desc: "Voreinstellungsbeschreibung...",
-            comment: "Kommentar eingeben..."
+            comment: "Kommentar eingeben...",
+            enter_comment: "Geben Sie einen Kommentar ein..."
         },
 
         // MESSAGES DE STATUT
@@ -1614,10 +1609,6 @@ const i18nTranslations = {
             align_middle: "Vertikal zentrieren",
             align_bottom: "Unten ausrichten",
             transparent_background: "Transparenter Hintergrund"
-        },
-
-        placeholders: {
-            enter_comment: "Geben Sie einen Kommentar ein..."
         }
     }
 };

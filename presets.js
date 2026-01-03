@@ -291,7 +291,7 @@ function deletePreset(presetId) {
         return;
     }
 
-    if (confirm(`Supprimer le preset "${userPresets[presetId].name}" ?`)) {
+    if (confirm(t("dialogs.confirm_delete_preset", {name: userPresets[presetId].name}))) {
         delete userPresets[presetId];
         saveUserPresets();
         updatePresetSelector();

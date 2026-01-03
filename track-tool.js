@@ -66,7 +66,7 @@ function toggleTrackTool() {
         trackState.currentX = null;
         trackState.values = {};
         appState.charts.time.update('none');
-        setStatus("Outil Traquer désactivé");
+        setStatus(t("status.track_tool_deactivated"));
     }
 }
 

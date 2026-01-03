@@ -119,7 +119,7 @@ function handleMeasureClick(event, chart) {
     // Sinon, placer un nouveau point (seulement si moins de 2 points)
     if (!measureState.point1) {
         measureState.point1 = { x: xValue, y: yValue };
-        setStatus("Point 1 placé - Cliquez pour placer le point 2");
+        setStatus(t("status.point1_placed"));
     } else if (!measureState.point2) {
         measureState.point2 = { x: xValue, y: yValue };
         updateMeasureResults();

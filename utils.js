@@ -22,7 +22,7 @@ function handleFileUpload(input) {
             const lines = content.split('\n').filter(l => l.trim());
 
             if (lines.length < 2) {
-                setStatus("Fichier CSV invalide");
+                setStatus(t("status.invalid_csv"));
                 return;
             }
 
@@ -149,11 +149,11 @@ function handleFileUpload(input) {
                 loadColumnData(0);
 
             } else {
-                setStatus("Pas assez de données valides dans le fichier");
+                setStatus(t("status.not_enough_data"));
             }
         } catch (err) {
             console.error("Erreur lors du parsing CSV:", err);
-            setStatus("Erreur lors du chargement du fichier");
+            setStatus(t("status.file_load_error"));
         }
     };
     reader.readAsText(file);
@@ -170,7 +170,7 @@ async function handleFileUpload_POO(input) {
     if (!file) return;
 
     try {
-        setStatus(`Chargement de ${file.name}...`);
+        setStatus(t("status.loading_file", {name: file.name}));
 
         console.log(`📂 Création du projet depuis : ${file.name}`);
 
@@ -226,13 +226,13 @@ async function handleFileUpload_POO(input) {
             }
         }, 300);
 
-        setStatus(`Fichier chargé : ${project.name}`);
+        setStatus(t("status.file_loaded", {name: project.name}));
 
         return project;
 
     } catch (error) {
         console.error("❌ Erreur lors du chargement CSV :", error);
-        setStatus(`Erreur : ${error.message}`);
+        setStatus(t("status.error_msg", {msg: error.message}));
     }
 }
 
@@ -243,7 +243,7 @@ async function handleFileUpload_POO(input) {
 
 function initExportData() {
     if (!appState.fullDataTime.length) {
-        alert("Aucune donnée.");
+        alert(t("dialogs.no_data"));
         return;
     }
     appState.currentExportAction = 'exportCsv';
@@ -254,7 +254,7 @@ function initExportData() {
 
 function initCaptureScreenshot() {
     if (!appState.fullDataTime.length) {
-        alert("Aucune donnée.");
+        alert(t("dialogs.no_data"));
         return;
     }
     appState.currentExportAction = 'exportPng';
@@ -298,7 +298,7 @@ function setupExportButton() {
 function handleExportConfirm() {
     const name = document.getElementById('export-filename').value;
     if (!name) {
-        setStatus("Veuillez entrer un nom de fichier");
+        setStatus(t("status.please_enter_filename"));
         return;
     }
 
@@ -314,7 +314,7 @@ function handleExportConfirm() {
             captureAsPDF(name);
         } else {
             console.error("❌ Action inconnue:", appState.currentExportAction);
-            setStatus("Erreur: type d'export inconnu");
+            setStatus(t("status.unknown_export_type"));
             return;
         }
 
@@ -323,7 +323,7 @@ function handleExportConfirm() {
 
     } catch (error) {
         console.error("❌ Erreur lors de l'export:", error);
-        setStatus("Erreur lors de l'export");
+        setStatus(t("status.export_error"));
     }
 }
 
@@ -368,7 +368,7 @@ async function performExportCsv(filename) {
             content += timeInSeconds + ";" + values.join(";") + "\n";
         }
 
-        setStatus(`Fichier CSV exporté : ${appState.availableColumns.length} canaux, ${endIdx} points`);
+        setStatus(t("status.csv_exported", {channels: appState.availableColumns.length, points: endIdx}));
 
     } else {
         // MODE MONO-CANAL : Export simple (compatibilité)
@@ -385,7 +385,7 @@ async function performExportCsv(filename) {
             content += `${timeInSeconds};${pressure}\n`;
         }
 
-        setStatus("Fichier CSV exporté (1 canal, toutes les données, format européen).");
+        setStatus(t("status.csv_exported_european"));
     }
 
     await downloadBlob(new Blob([content], { type: "text/csv;charset=utf-8" }), `${filename}.csv`);
@@ -401,7 +401,7 @@ function performCapture(filename) {
         const mainContent = document.querySelector('.plots-area');
         const elementToCapture = mainContent || document.body;
         
-        setStatus("Préparation de la capture...");
+        setStatus(t("status.preparing_capture"));
         
         html2canvas(elementToCapture, {
             scale: 1.5,
@@ -411,11 +411,11 @@ function performCapture(filename) {
             // Convertir le canvas en Blob
             canvas.toBlob(blob => {
                 downloadBlob(blob, `${filename}.png`);
-                setStatus("Capture réussie!");
+                setStatus(t("status.capture_success"));
             }, 'image/png');
         }).catch(err => {
             console.error(err);
-            setStatus("Erreur: " + err.message);
+            setStatus(t("status.error_msg", {msg: err.message}));
         });
     }, 500);
 }
@@ -433,12 +433,12 @@ function attemptSimpleCapture(filename) {
         }).then(canvas => {
             canvas.toBlob(blob => {
                 downloadBlob(blob, `${filename}_simple.png`);
-                setStatus("Capture simplifiée effectuée");
+                setStatus(t("status.simplified_capture_done"));
             }, 'image/png');
         });
     } catch (error) {
         console.error("❌ Échec capture simplifiée:", error);
-        setStatus("Échec complet de la capture");
+        setStatus(t("status.capture_total_failure"));
     }
 }
 
@@ -476,13 +476,13 @@ async function downloadBlob(blob, name) {
             await writable.close();
 
             console.log(`✅ Fichier sauvegardé avec succès: ${name}`);
-            setStatus(`Fichier sauvegardé: ${name}`);
+            setStatus(t("status.file_saved", {name}));
             return handle; // Retourner le fileHandle pour stockage
         } catch (err) {
             // Si l'utilisateur annule, ne rien faire
             if (err.name === 'AbortError') {
                 console.log('❌ Sauvegarde annulée par l\'utilisateur');
-                setStatus('Sauvegarde annulée');
+                setStatus(t("status.save_cancelled"));
                 return null;
             }
             // Sinon, utiliser le fallback
@@ -772,7 +772,7 @@ function closeAllMainAccordions(exceptTool) {
 
 function initCapturePDF() {
     if (!appState.fullDataTime.length) {
-        alert("Aucune donnée à exporter.");
+        alert(t("dialogs.no_data_export"));
         return;
     }
     appState.currentExportAction = 'exportPdf';
@@ -783,7 +783,7 @@ function initCapturePDF() {
 
 function captureAsPDF(filename) {
     console.log("📄 Début de l'export PDF...");
-    setStatus("Génération du PDF en cours...");
+    setStatus(t("status.generating_pdf"));
 
     // Initialiser jsPDF
     const { jsPDF } = window.jspdf;
@@ -896,7 +896,7 @@ function capturePDFTimeDomain(pdf, filename) {
             }
         }).catch(err => {
             console.error("❌ Erreur capture temps:", err);
-            setStatus("Erreur lors de la capture du graphique temporel", 'error');
+            setStatus(t("status.time_graph_capture_error"), 'error');
         });
     } else {
         // Pas de graphique temporel, passer au suivant
@@ -990,6 +990,6 @@ function finalizePDF(pdf, filename) {
     // Convertir le PDF en Blob et utiliser downloadBlob pour la boîte de dialogue native
     const blob = pdf.output('blob');
     downloadBlob(blob, `${filename}.pdf`);
-    setStatus("Export PDF réussi!", 'success');
+    setStatus(t("status.pdf_export_success"), 'success');
     closeModal('filenameModal');
 }

@@ -864,7 +864,7 @@ function toggleTimeDomain() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(uiState.timeVisible ? "Domaine temporel affiché" : "Domaine temporel masqué");
+    setStatus(uiState.timeVisible ? t("status.time_domain_shown") : t("status.time_domain_hidden"));
 }
 
 function toggleFreqDomain() {
@@ -904,7 +904,7 @@ function toggleFreqDomain() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(uiState.freqVisible ? "Domaine fréquentiel affiché" : "Domaine fréquentiel masqué");
+    setStatus(uiState.freqVisible ? t("status.freq_domain_shown") : t("status.freq_domain_hidden"));
 }
 
 function toggleSpectrogram() {
@@ -930,7 +930,7 @@ function toggleSpectrogram() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(uiState.spectroVisible ? "Spectrogramme affiché" : "Spectrogramme masqué");
+    setStatus(uiState.spectroVisible ? t("status.spectrogram_shown") : t("status.spectrogram_hidden"));
 }
 
 function toggleFFTParams() {
@@ -1349,7 +1349,7 @@ function toggleAllGraphs() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(allVisible ? "Tous les graphiques affichés" : "Tous les graphiques masqués");
+    setStatus(allVisible ? t("status.all_graphs_shown") : t("status.all_graphs_hidden"));
 }
 
 function adjustPlotLayout() {
@@ -1438,9 +1438,9 @@ window.onload = function() {
     // Initialiser le système POO Multi-Projets
     if (typeof initPOOSystem === 'function') {
         initPOOSystem();
-        setStatus("Application prête (Système multi-projets activé)");
+        setStatus(t("status.ready_multi_projects"));
     } else {
-        setStatus("Application prête");
+        setStatus(t("status.ready"));
     }
 };
 // --- TRANSLATION ---
@@ -1555,9 +1555,9 @@ function applyTimeZoom() {
     
     if (zoomApplied) {
         chart.update('none');
-        setStatus("Zoom appliqué");
+        setStatus(t("status.zoom_applied"));
     } else {
-        setStatus("Valeurs de zoom invalides");
+        setStatus(t("status.invalid_zoom_values"));
         updateZoomInputs(); // Réaffiche les valeurs actuelles
     }
 }
@@ -1632,7 +1632,7 @@ function setStatus(msg) {
 function resetTimeZoom() {
     const chart = appState.charts.time;
     if (!chart || !appState.fullDataTime.length) {
-        setStatus("Aucune donnée à afficher");
+        setStatus(t("status.no_data_display"));
         return;
     }
 
@@ -1656,7 +1656,7 @@ function resetTimeZoom() {
     // Mettre à jour les champs de zoom pour refléter les nouvelles valeurs
     setTimeout(updateZoomInputs, 10);
 
-    setStatus("Zoom réinitialisé sur toute la plage temporelle");
+    setStatus(t("status.zoom_reset"));
 }
 
 function resetFreqZoom() { 
@@ -1695,14 +1695,14 @@ function updateFsFromStep() {
         updateStats();
         performAnalysis();
         updateSpectrogram();
-        setStatus("Fs mis à jour à " + newFs.toFixed(1) + " Hz");
+        setStatus(t("status.fs_updated", {fs: newFs.toFixed(1)}));
     } else if (s > 0) {
         // Cas où il n'y a pas encore de données
         appState.fs = 1000/s;
         appState.timeIncrement = s;
         document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
         document.getElementById('display-increment-config').textContent = s.toFixed(2) + " ms";
-        setStatus("Fs configuré à " + appState.fs.toFixed(1) + " Hz");
+        setStatus(t("status.fs_configured", {fs: appState.fs.toFixed(1)}));
     }
 }
 

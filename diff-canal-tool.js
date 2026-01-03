@@ -132,7 +132,7 @@ function toggleDiffCanalTool() {
         // Mettre à jour la liste des canaux disponibles
         updateChannelSelect();
 
-        setStatus("Outil Diff/Canal activé - Sélectionnez un canal puis cliquez 2 points");
+        setStatus(t("status.diff_canal_tool_activated"));
     } else {
         // DÉSACTIVATION
         diffCanalState.active = false;
@@ -152,7 +152,7 @@ function toggleDiffCanalTool() {
             icon.classList.add('fa-chevron-down');
         }
 
-        setStatus("Outil Diff/Canal désactivé");
+        setStatus(t("status.diff_canal_tool_deactivated"));
     }
 }
 
@@ -184,12 +184,12 @@ function onChannelSelect(event) {
     if (value === '') {
         selectedChannelIndex = null;
         isCreatingDiffCanal = false;
-        setStatus("Aucun canal sélectionné");
+        setStatus(t("status.no_channel_selected"));
     } else {
         selectedChannelIndex = parseInt(value);
         isCreatingDiffCanal = true;
         const channelLabel = appState.channelConfig[selectedChannelIndex].label;
-        setStatus(`Canal "${channelLabel}" sélectionné - Cliquez 2 points sur le graphique`);
+        setStatus(t("status.channel_selected_click_2_points", {channel: channelLabel}));
     }
 }
 
@@ -203,7 +203,7 @@ function handleDiffCanalClick(event, chart) {
 
     // Vérifier si le canal sélectionné existe et est visible
     if (!appState.channelConfig[selectedChannelIndex] || !appState.channelConfig[selectedChannelIndex].visible) {
-        setStatus("Le canal sélectionné n'est plus disponible");
+        setStatus(t("status.selected_channel_unavailable"));
         return false;
     }
 
@@ -219,7 +219,7 @@ function handleDiffCanalClick(event, chart) {
     const yValue = interpolateChannelValue(selectedChannelIndex, timeSec);
 
     if (yValue === null) {
-        setStatus("Impossible d'interpoler la valeur sur ce canal");
+        setStatus(t("status.cannot_interpolate"));
         return false;
     }
 
@@ -228,7 +228,7 @@ function handleDiffCanalClick(event, chart) {
     if (!pendingDiffCanalPoint) {
         // Premier point
         pendingDiffCanalPoint = point;
-        setStatus("Point 1 placé - Cliquez pour placer le point 2");
+        setStatus(t("status.point1_placed"));
     } else {
         // Deuxième point - créer l'interval
         const interval = new DiffCanalInterval(
@@ -248,7 +248,7 @@ function handleDiffCanalClick(event, chart) {
         // Mettre à jour la liste des diff/canal
         updateDiffCanalList();
 
-        setStatus(`Diff/Canal créée (ID: ${interval.id}) - Sélectionnez un canal pour en créer une autre`);
+        setStatus(t("status.diff_canal_created_select_another", {id: interval.id}));
     }
 
     chart.update('none');
@@ -331,7 +331,7 @@ function interpolateChannelValue(channelIndex, timeSec) {
 function createDiffCanalFromInputs() {
 
     if (selectedChannelIndex === null) {
-        setStatus("Veuillez d'abord sélectionner un canal", 'error');
+        setStatus(t("status.please_select_channel"), 'error');
         return;
     }
 
@@ -340,12 +340,12 @@ function createDiffCanalFromInputs() {
 
 
     if (isNaN(timeStart) || isNaN(timeEnd)) {
-        setStatus("Veuillez entrer des temps valides", 'error');
+        setStatus(t("status.please_enter_valid_times"), 'error');
         return;
     }
 
     if (timeStart === timeEnd) {
-        setStatus("Les deux temps doivent être différents", 'error');
+        setStatus(t("status.times_must_differ"), 'error');
         return;
     }
 
@@ -354,7 +354,7 @@ function createDiffCanalFromInputs() {
     const y2 = interpolateChannelValue(selectedChannelIndex, timeEnd);
 
     if (y1 === null || y2 === null) {
-        setStatus("Impossible d'interpoler les valeurs sur ce canal", 'error');
+        setStatus(t("status.cannot_interpolate_values"), 'error');
         return;
     }
 
@@ -378,7 +378,7 @@ function createDiffCanalFromInputs() {
     // Mettre à jour le graphique
     appState.charts.time.update('none');
 
-    setStatus(`Diff/Canal créée (ID: ${interval.id})`);
+    setStatus(t("status.diff_canal_created", {id: interval.id}));
 }
 
 // Mettre à jour la liste des diff/canal
@@ -476,7 +476,7 @@ function applyDiffCanalTimes(id) {
     const t2 = parseFloat(tmaxInput.value);
 
     if (isNaN(t1) || isNaN(t2)) {
-        alert('Temps invalides');
+        alert(t('dialogs.invalid_times'));
         return;
     }
 
@@ -495,7 +495,7 @@ function applyDiffCanalTimes(id) {
 
     updateDiffCanalList();
     appState.charts.time.update('none');
-    setStatus(`Diff/Canal ${id} modifiée`);
+    setStatus(t("status.diff_canal_modified", {id}));
 }
 
 // Supprimer une diff/canal
@@ -505,7 +505,7 @@ function deleteDiffCanal(id) {
         diffCanalIntervals.splice(index, 1);
         updateDiffCanalList();
         appState.charts.time.update('none');
-        setStatus(`Diff/Canal ${id} supprimée`);
+        setStatus(t("status.diff_canal_deleted", {id}));
     }
 }
 
@@ -1045,13 +1045,13 @@ function handleDiffCanalMouseUp(event, chart) {
         chart.canvas.style.cursor = 'crosshair';
 
         if (dragType === 'point1' || dragType === 'point2') {
-            setStatus('Point modifié');
+            setStatus(t("status.point_modified"));
         } else if (dragType === 'horizontal-label') {
-            setStatus('Annotation horizontale repositionnée');
+            setStatus(t("status.horizontal_annotation_repositioned"));
         } else if (dragType === 'vertical-label') {
-            setStatus('Annotation verticale repositionnée');
+            setStatus(t("status.vertical_annotation_repositioned"));
         } else if (dragType === 'diagonal-label') {
-            setStatus('Annotation diagonale repositionnée');
+            setStatus(t("status.diagonal_annotation_repositioned"));
         }
 
         return true;

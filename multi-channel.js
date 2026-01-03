@@ -528,7 +528,7 @@ function applyChannelConfig() {
 
 // Réinitialiser la configuration par défaut
 function resetChannelConfig() {
-    if (!confirm('Réinitialiser la configuration des canaux à leur état par défaut ?')) {
+    if (!confirm(t('dialogs.confirm_reset_channels'))) {
         return;
     }
 

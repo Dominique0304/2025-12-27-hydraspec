@@ -385,7 +385,7 @@ function drawIntervals(chart) {
 
 // Ouvrir la modale de commentaire pour un intervalle (legacy - utilisé après création)
 function openIntervalCommentModal(interval) {
-    const comment = prompt(`Commentaire pour cet intervalle (${interval.getDuration().toFixed(3)}s):`, interval.comment || '');
+    const comment = prompt(t('dialogs.comment_for_interval', {duration: interval.getDuration().toFixed(3)}), interval.comment || '');
 
     if (comment !== null) {
         interval.comment = comment;

@@ -22,25 +22,25 @@
 function exportToHSP() {
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert("Système de projets non initialisé");
+        alert(t("dialogs.project_system_not_initialized"));
         return;
     }
 
     const project = projectManager.getActive();
 
     if (!project) {
-        alert("Aucun projet actif");
+        alert(t("dialogs.no_active_project"));
         return;
     }
 
     if (project.fileType === 'hsp') {
-        alert("Ce fichier est déjà au format .HSP. Utilisez 'Enregistrer' ou 'Enregistrer sous'.");
+        alert(t("dialogs.already_hsp_format"));
         return;
     }
 
     // Générer un nom par défaut basé sur le nom du CSV
     let defaultName = project.fileName ? project.fileName.replace(/\.csv$/i, '') : project.name;
-    const fileName = prompt("Nom du fichier .HSP:", defaultName);
+    const fileName = prompt(t("dialogs.hsp_filename"), defaultName);
 
     if (!fileName) return; // Annulé
 
@@ -59,19 +59,19 @@ function exportToHSP() {
 function saveHSP() {
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert("Système de projets non initialisé");
+        alert(t("dialogs.project_system_not_initialized"));
         return;
     }
 
     const project = projectManager.getActive();
 
     if (!project) {
-        alert("Aucun projet actif");
+        alert(t("dialogs.no_active_project"));
         return;
     }
 
     if (project.fileType !== 'hsp') {
-        alert("Ce projet n'est pas un fichier .HSP. Utilisez 'Exporter vers .HSP'.");
+        alert(t("dialogs.not_hsp_file"));
         return;
     }
 
@@ -91,25 +91,25 @@ function saveHSP() {
 function saveHSPAs() {
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert("Système de projets non initialisé");
+        alert(t("dialogs.project_system_not_initialized"));
         return;
     }
 
     const project = projectManager.getActive();
 
     if (!project) {
-        alert("Aucun projet actif");
+        alert(t("dialogs.no_active_project"));
         return;
     }
 
     if (project.fileType !== 'hsp') {
-        alert("Ce projet n'est pas un fichier .HSP. Utilisez 'Exporter vers .HSP'.");
+        alert(t("dialogs.not_hsp_file"));
         return;
     }
 
     // Demander le nom
     const defaultName = project.fileName ? project.fileName.replace(/\.hsp$/i, '') : project.name;
-    const fileName = prompt("Nom du fichier .HSP:", defaultName);
+    const fileName = prompt(t("dialogs.hsp_filename"), defaultName);
 
     if (!fileName) return; // Annulé
 
@@ -394,7 +394,7 @@ async function loadHSPFromFile(file) {
 
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert("Système de projets non initialisé");
+        alert(t("dialogs.project_system_not_initialized"));
         return Promise.reject("ProjectManager non disponible");
     }
 
@@ -433,7 +433,7 @@ async function loadHSPFromFile(file) {
 
             } catch (error) {
                 console.error("❌ Erreur chargement HSP:", error);
-                alert("Erreur lors du chargement du fichier .HSP");
+                alert(t("dialogs.hsp_load_error"));
                 reject(error);
             }
         };

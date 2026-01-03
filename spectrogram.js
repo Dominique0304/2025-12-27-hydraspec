@@ -248,7 +248,7 @@ function getColorForValue(value) {
 
 function exportSpectrogram() {
     if (!appState.spectroData) {
-        alert("Aucun spectrogramme à exporter.");
+        alert(t("dialogs.no_spectrogram_export"));
         return;
     }
 

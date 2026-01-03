@@ -250,7 +250,7 @@ function editViewName(viewId) {
         return;
     }
 
-    const newName = prompt('Nouveau nom de la vue:', view.name);
+    const newName = prompt(t('dialogs.new_view_name'), view.name);
     if (newName && newName.trim()) {
         view.name = newName.trim();
         saveViewsToLocalStorage();

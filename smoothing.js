@@ -295,7 +295,7 @@ function updateSmoothedChannelsList() {
 function editSmoothedChannel(channelId) {
     const channel = appState.smoothedChannels.find(ch => ch.id === channelId);
     if (!channel) {
-        setStatus('⚠️ Canal lissé introuvable');
+        setStatus(t("status.smoothed_channel_not_found"));
         return;
     }
 
@@ -326,7 +326,7 @@ function editSmoothedChannel(channelId) {
 function deleteSmoothedChannel(channelId, silent = false) {
     const channelIndex = appState.smoothedChannels.findIndex(ch => ch.id === channelId);
     if (channelIndex === -1) {
-        if (!silent) setStatus('⚠️ Canal lissé introuvable');
+        if (!silent) setStatus(t("status.smoothed_channel_not_found"));
         return;
     }
 

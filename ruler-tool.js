@@ -63,7 +63,7 @@ function toggleRulerTool() {
         }
         rulerState.point = null;
         appState.charts.time.update('none');
-        setStatus("Outil Mesurer désactivé");
+        setStatus(t("status.ruler_tool_deactivated"));
     }
 }
 
@@ -73,7 +73,7 @@ function clearRuler() {
     document.getElementById('ruler-x').textContent = '--';
     document.getElementById('ruler-y').textContent = '--';
     appState.charts.time.update('none');
-    setStatus("Mesure effacée");
+    setStatus(t("status.ruler_cleared"));
 }
 
 // Gérer le clic sur le graphique pour placer le point

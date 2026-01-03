@@ -175,7 +175,7 @@ function toggleSnapPointTool() {
             icon.classList.add('fa-chevron-up');
         }
 
-        setStatus("Outil Marqueur activé - Cliquez sur un point du graphique");
+        setStatus(t("status.marker_tool_activated"));
     } else {
         // DÉSACTIVATION
         snapPointState.active = false;
@@ -193,7 +193,7 @@ function toggleSnapPointTool() {
             icon.classList.add('fa-chevron-down');
         }
 
-        setStatus("Outil Marqueur désactivé");
+        setStatus(t("status.marker_tool_deactivated"));
     }
 }
 

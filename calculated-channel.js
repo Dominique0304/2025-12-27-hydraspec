@@ -164,7 +164,7 @@ function createCalculatedChannel() {
         const color = getCalculatedChannelColor();
 
         if (!formula) {
-            alert('Veuillez entrer une formule');
+            alert(t('dialogs.please_enter_formula'));
             return;
         }
 
@@ -201,7 +201,7 @@ function createCalculatedChannel() {
         });
 
         if (Object.keys(channelData).length === 0) {
-            alert('Aucun canal avec des données valides trouvé.');
+            alert(t('dialogs.no_valid_channels'));
             return;
         }
 
@@ -290,10 +290,10 @@ function createCalculatedChannel() {
         // Mettre à jour la liste des canaux calculés
         updateCalculatedChannelsList();
 
-        setStatus(`Canal calculé "${name}" créé`);
+        setStatus(t("status.calculated_channel_created", {name}));
         console.log('✅ Canal calculé créé:', name);
     } catch (error) {
-        alert(`Erreur: ${error.message}`);
+        alert(t('dialogs.error_msg', {msg: error.message}));
         console.error('❌ Erreur création canal calculé:', error);
     }
 }
@@ -306,7 +306,7 @@ function updateExistingCalculatedChannel(channelId, formula, name, color) {
     try {
         const channel = appState.calculatedChannels.find(ch => ch.id === channelId);
         if (!channel) {
-            alert('Canal calculé introuvable');
+            alert(t('dialogs.calculated_channel_not_found'));
             return;
         }
 
@@ -329,7 +329,7 @@ function updateExistingCalculatedChannel(channelId, formula, name, color) {
         });
 
         if (Object.keys(channelData).length === 0) {
-            alert('Aucun canal avec des données valides trouvé.');
+            alert(t('dialogs.no_valid_channels'));
             return;
         }
 
@@ -388,10 +388,10 @@ function updateExistingCalculatedChannel(channelId, formula, name, color) {
         // Mettre à jour la liste
         updateCalculatedChannelsList();
 
-        setStatus(`✅ Canal calculé "${name}" mis à jour`);
+        setStatus(t("status.calculated_channel_updated", {name}));
         console.log('✅ Canal calculé mis à jour:', name);
     } catch (error) {
-        alert(`Erreur: ${error.message}`);
+        alert(t('dialogs.error_msg', {msg: error.message}));
         console.error('❌ Erreur mise à jour canal calculé:', error);
     }
 }
@@ -449,7 +449,7 @@ function updateCalculatedChannelsList() {
 function editCalculatedChannel(channelId) {
     const channel = appState.calculatedChannels.find(ch => ch.id === channelId);
     if (!channel) {
-        setStatus('⚠️ Canal calculé introuvable');
+        setStatus(t("status.calculated_channel_not_found"));
         return;
     }
 
@@ -467,14 +467,14 @@ function editCalculatedChannel(channelId) {
         createBtn.innerHTML = '<i class="fas fa-check"></i> Sauvegarder';
     }
 
-    setStatus(`📝 Modification du canal "${channel.name}"`);
+    setStatus(t("status.editing_channel", {name: channel.name}));
 }
 
 // Supprimer un canal calculé
 function deleteCalculatedChannel(channelId, silent = false) {
     const channelIndex = appState.calculatedChannels.findIndex(ch => ch.id === channelId);
     if (channelIndex === -1) {
-        if (!silent) setStatus('⚠️ Canal calculé introuvable');
+        if (!silent) setStatus(t("status.calculated_channel_not_found"));
         return;
     }
 
@@ -516,7 +516,7 @@ function deleteCalculatedChannel(channelId, silent = false) {
     updateTimeChart();
     updateAvailableChannelsList();
 
-    if (!silent) setStatus(`✅ Canal calculé "${channelName}" supprimé`);
+    if (!silent) setStatus(t("status.calculated_channel_deleted", {name: channelName}));
 }
 
 // =====================================

@@ -372,7 +372,7 @@
 
                             <!-- Aide -->
                             <div style="font-size:0.75rem; margin-bottom:10px; padding:6px; background:var(--bg-secondary); border-radius:4px; color:var(--text-muted);">
-                                <i class="fas fa-info-circle"></i> Sélectionnez un canal puis cliquez 2 points sur le graphique OU utilisez la saisie manuelle
+                                <i class="fas fa-info-circle"></i> <span data-i18n="labels.select_channel_or_manual">Sélectionnez un canal puis cliquez 2 points sur le graphique OU utilisez la saisie manuelle</span>
                             </div>
 
                             <!-- Liste des diff/canal -->
@@ -385,7 +385,7 @@
                                         <thead>
                                             <tr style="background:var(--bg-secondary);">
                                                 <th style="padding:4px; text-align:left;"<span data-i18n="labels.id">ID</span></th>
-                                                <th style="padding:4px; text-align:left;">Canal</th>
+                                                <th style="padding:4px; text-align:left;"><span data-i18n="labels.channel_header">Canal</span></th>
                                                 <th style="padding:4px; text-align:left;">Δt</th>
                                                 <th style="padding:4px; text-align:left;"<span data-i18n="labels.actions">Actions</span></th>
                                             </tr>
@@ -442,7 +442,7 @@
 
                         <!-- Bouton créer -->
                         <button onclick="createSmoothedChannel()" style="width:100%; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem; margin-bottom:10px;">
-                            <i class="fas fa-plus-circle"></i> Créer
+                            <i class="fas fa-plus-circle"></i> <span data-i18n="labels.create">Créer</span>
                         </button>
 
                         <!-- Liste des canaux lissés -->
@@ -537,7 +537,7 @@
 
                             <!-- Bouton créer -->
                             <button onclick="createCalculatedChannel()" style="width:100%; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
-                                <i class="fas fa-plus-circle"></i> Créer
+                                <i class="fas fa-plus-circle"></i> <span data-i18n="labels.create">Créer</span>
                             </button>
 
                             <!-- Liste des canaux calculés -->
@@ -965,7 +965,7 @@
 
             <div style="display: flex; justify-content: flex-start; align-items: center; gap: 10px;">
                 <button onclick="closeModal('filenameModal')" style="background: #555; width:100px;">
-                    Annuler
+                    <span data-i18n="labels.cancel">Annuler</span>
                 </button>
                 <button id="confirm-export-btn" class="success" style="width:100px;">
                     Exporter
@@ -1270,7 +1270,7 @@
                 </button>
                 <div style="display:flex; gap:10px;">
                     <button onclick="closeChannelConfig()" style="background:#555; padding:10px 20px;">
-                        Annuler
+                    <span data-i18n="labels.cancel">Annuler</span>
                     </button>
                     <button onclick="applyChannelConfig()" class="success" style="padding:10px 30px;">
                         <i class="fas fa-check"></i> <span data-i18n="labels.apply">Appliquer</span>
@@ -1322,7 +1322,7 @@
 
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button onclick="closePresetModal()" style="padding: 10px 20px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
-                    Annuler
+                    <span data-i18n="labels.cancel">Annuler</span>
                 </button>
                 <button onclick="saveAsPreset(document.getElementById('preset-name-input').value, document.getElementById('preset-desc-input').value)"
                         style="padding: 10px 20px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
@@ -1430,7 +1430,7 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
                 <button onclick="closeIntervalEditModal()"
                         style="padding: 8px 16px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
-                    Annuler
+                    <span data-i18n="labels.cancel">Annuler</span>
                 </button>
                 <button onclick="confirmIntervalEdit()"
                         style="padding: 8px 16px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
@@ -1555,7 +1555,7 @@
                 <!-- Canal d'accrochage -->
                 <div style="display: flex; gap: 10px; margin-bottom: 8px; align-items: center;">
                     <label style="flex: 0 0 120px; font-size: 0.85em;">
-                        Canal accrochage:
+                        <span data-i18n="labels.anchor_channel">Canal accrochage:</span>
                     </label>
                     <select id="snap-anchor-channel" onchange="setSnapPointAnchorChannel(this.value)"
                             style="flex: 1; padding: 5px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
@@ -1568,9 +1568,9 @@
                     <label style="flex: 0 0 120px; font-size: 0.85em;">
                         Flèche libre:
                     </label>
-                    <button id="snap-arrow-toggle" onclick="toggleSnapPointArrow()" title="Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)"
+                    <button id="snap-arrow-toggle" onclick="toggleSnapPointArrow()" data-i18n-title="tooltips.toggle_arrow" title="Activer/Désactiver la flèche"
                             style="flex: 0 0 auto; padding: 5px 15px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                        <i class="fas fa-arrow-right"></i> Activer
+                        <i class="fas fa-arrow-right"></i> <span data-i18n="labels.activate">Activer</span>
                     </button>
                     <span id="snap-arrow-info" style="flex: 1; font-size: 0.75em; color: var(--text-muted); font-style: italic;">
                         Flèche libre pour pointer sans accrocher
@@ -1611,7 +1611,7 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
                 <button onclick="closeSnapPointEditModal()"
                         style="padding: 8px 16px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">
-                    Annuler
+                    <span data-i18n="labels.cancel">Annuler</span>
                 </button>
                 <button onclick="confirmSnapPointEdit()"
                         style="padding: 8px 16px; background: var(--accent-green); color: white; border: none; border-radius: 4px; cursor: pointer;">
@@ -1840,7 +1840,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Afficher message de bienvenue
     setTimeout(() => {
-        showInfo('💡 Appuyez sur H pour voir les raccourcis clavier', 4000);
+        showInfo(t('labels.press_h_for_shortcuts'), 4000);
     }, 2000);
 });
 </script>

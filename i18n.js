@@ -16,6 +16,7 @@ const i18nTranslations = {
         export_png: "Exporter PNG",
         settings: "Paramètres",
         help: "Aide",
+            toggle_arrow: "Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)",
         acquisition: "Acquisition",
         channel: "Canal:",
         step_ms: "Pas (ms):",
@@ -120,6 +121,7 @@ const i18nTranslations = {
             multi_channel_config: "Configuration Multi-Canaux",
             settings: "Paramètres",
             help: "Aide",
+            toggle_arrow: "Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)",
             y_axis_left: "Axe Y à gauche",
             y_axis_right: "Axe Y à droite",
             mode_create: "Mode Création : Cliquez sur le graphique pour créer un marqueur",
@@ -356,6 +358,7 @@ const i18nTranslations = {
             settings: "Paramètres",
             preferences: "Préférences",
             help: "Aide",
+            toggle_arrow: "Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)",
             about: "À propos",
             version: "Version",
             status: "Statut",
@@ -397,7 +400,11 @@ const i18nTranslations = {
             adjust_thickness_full: "Ajustez l'épaisseur de trait pour toutes les courbes (temporel et FFT)",
             configure_step_full: "Configurez le pas d'échantillonnage (ms) du fichier",
             view_info_full: "Consultez les informations du fichier (Fs, Points, Incrément)",
-            view_help_full: "Consultez cette aide à tout moment"
+            view_help_full: "Consultez cette aide à tout moment",
+            select_channel_or_manual: "Sélectionnez un canal puis cliquez 2 points sur le graphique OU utilisez la saisie manuelle",
+            press_h_for_shortcuts: "💡 Appuyez sur H pour voir les raccourcis clavier",
+            activate: "Activer",
+            channel_header: "Canal"
         },
 
         tooltips: {
@@ -413,7 +420,8 @@ const i18nTranslations = {
             toggle_sidebar: "Afficher/Masquer Sidebar",
             multi_channel_config: "Configuration Multi-Canaux",
             settings: "Paramètres",
-            help: "Aide"
+            help: "Aide",
+            toggle_arrow: "Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)"
         },
 
         placeholders: {
@@ -433,6 +441,7 @@ const i18nTranslations = {
         export_png: "Export PNG",
         settings: "Settings",
         help: "Help",
+            toggle_arrow: "Enable/Disable arrow (available only without anchor channel)",
         acquisition: "Acquisition",
         channel: "Channel:",
         step_ms: "Step (ms):",
@@ -537,6 +546,7 @@ const i18nTranslations = {
             multi_channel_config: "Multi-Channel Configuration",
             settings: "Settings",
             help: "Help",
+            toggle_arrow: "Enable/Disable arrow (available only without anchor channel)",
             y_axis_left: "Y axis on left",
             y_axis_right: "Y axis on right",
             mode_create: "Create Mode: Click on the graph to create a marker",
@@ -755,6 +765,7 @@ const i18nTranslations = {
             settings: "Settings",
             preferences: "Preferences",
             help: "Help",
+            toggle_arrow: "Enable/Disable arrow (available only without anchor channel)",
             about: "About",
             version: "Version",
             status: "Status",
@@ -796,7 +807,11 @@ const i18nTranslations = {
             adjust_thickness_full: "Adjust line thickness for all curves (time and FFT)",
             configure_step_full: "Configure file sampling step (ms)",
             view_info_full: "View file information (Fs, Points, Increment)",
-            view_help_full: "View this help at any time"
+            view_help_full: "View this help at any time",
+            select_channel_or_manual: "Select a channel then click 2 points on the graph OR use manual input",
+            press_h_for_shortcuts: "💡 Press H to see keyboard shortcuts",
+            activate: "Activate",
+            channel_header: "Channel"
         },
 
         tooltips: {
@@ -812,7 +827,8 @@ const i18nTranslations = {
             toggle_sidebar: "Show/Hide Sidebar",
             multi_channel_config: "Multi-Channel Configuration",
             settings: "Settings",
-            help: "Help"
+            help: "Help",
+            toggle_arrow: "Enable/Disable arrow (available only without anchor channel)"
         },
 
         placeholders: {
@@ -832,6 +848,7 @@ const i18nTranslations = {
         export_png: "PNG exportieren",
         settings: "Einstellungen",
         help: "Hilfe",
+            toggle_arrow: "Pfeil aktivieren/deaktivieren (nur verfügbar ohne Ankerkanal)",
         acquisition: "Erfassung",
         channel: "Kanal:",
         step_ms: "Schritt (ms):",
@@ -936,6 +953,7 @@ const i18nTranslations = {
             multi_channel_config: "Mehrkanal-Konfiguration",
             settings: "Einstellungen",
             help: "Hilfe",
+            toggle_arrow: "Pfeil aktivieren/deaktivieren (nur verfügbar ohne Ankerkanal)",
             y_axis_left: "Y-Achse links",
             y_axis_right: "Y-Achse rechts",
             mode_create: "Erstellungsmodus: Klicken Sie auf das Diagramm, um eine Markierung zu erstellen",
@@ -1154,6 +1172,7 @@ const i18nTranslations = {
             settings: "Einstellungen",
             preferences: "Einstellungen",
             help: "Hilfe",
+            toggle_arrow: "Pfeil aktivieren/deaktivieren (nur verfügbar ohne Ankerkanal)",
             about: "Über",
             version: "Version",
             status: "Status",
@@ -1195,7 +1214,11 @@ const i18nTranslations = {
             adjust_thickness_full: "Passen Sie die Linienstärke für alle Kurven an (Zeit und FFT)",
             configure_step_full: "Konfigurieren Sie den Datei-Abtastschritt (ms)",
             view_info_full: "Dateiinformationen anzeigen (Fs, Punkte, Inkrement)",
-            view_help_full: "Diese Hilfe jederzeit anzeigen"
+            view_help_full: "Diese Hilfe jederzeit anzeigen",
+            select_channel_or_manual: "Wählen Sie einen Kanal aus und klicken Sie dann auf 2 Punkte im Diagramm ODER verwenden Sie die manuelle Eingabe",
+            press_h_for_shortcuts: "💡 Drücken Sie H, um Tastaturkürzel anzuzeigen",
+            activate: "Aktivieren",
+            channel_header: "Kanal"
         },
 
         tooltips: {
@@ -1211,7 +1234,8 @@ const i18nTranslations = {
             toggle_sidebar: "Seitenleiste ein-/ausblenden",
             multi_channel_config: "Mehrkanal-Konfiguration",
             settings: "Einstellungen",
-            help: "Hilfe"
+            help: "Hilfe",
+            toggle_arrow: "Pfeil aktivieren/deaktivieren (nur verfügbar ohne Ankerkanal)"
         },
 
         placeholders: {

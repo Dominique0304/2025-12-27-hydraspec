@@ -22,7 +22,7 @@
 function exportToHSP() {
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert(t("dialogs.project_system_not_initialized"));
+        alert(t("dialogs.project_not_initialized"));
         return;
     }
 
@@ -59,7 +59,7 @@ function exportToHSP() {
 function saveHSP() {
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert(t("dialogs.project_system_not_initialized"));
+        alert(t("dialogs.project_not_initialized"));
         return;
     }
 
@@ -91,7 +91,7 @@ function saveHSP() {
 function saveHSPAs() {
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert(t("dialogs.project_system_not_initialized"));
+        alert(t("dialogs.project_not_initialized"));
         return;
     }
 
@@ -394,7 +394,7 @@ async function loadHSPFromFile(file) {
 
     const projectManager = window.projectManager;
     if (!projectManager) {
-        alert(t("dialogs.project_system_not_initialized"));
+        alert(t("dialogs.project_not_initialized"));
         return Promise.reject("ProjectManager non disponible");
     }
 

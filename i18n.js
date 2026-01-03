@@ -849,11 +849,11 @@ const i18nTranslations = {
             drag_to_move: "Drag to move the window",
             close_without_validate: "Close without validating",
             channel_colon: "Channel:",
-            comment: "Comment:"
+            comment: "Comment:",
 
             // Full instructions
             check_channels_display_full: "Check channels to display simultaneously in time and frequency domain",
-            rename_channels_full: "Rename channels in the "Name" column for clearer identification",
+            rename_channels_full: "Rename channels in the \"Name\" column for clearer identification",
             choose_color_full: "Choose a color for each channel by clicking the color button",
             set_minmax_full: "Set min/max manually or leave blank for automatic scaling",
             enable_fft_full: "Enable FFT to display the channel frequency spectrum",

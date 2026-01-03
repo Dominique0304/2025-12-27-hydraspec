@@ -1446,11 +1446,48 @@ window.onload = function() {
 // --- TRANSLATION ---
 function changeLanguage(lang) {
     appState.lang = lang;
+
+    // Support ancien système i18n (compatibilité)
     const texts = i18n[lang];
+
+    // Textes standards (data-i18n)
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (texts[key]) el.textContent = texts[key];
+        // Priorité au nouveau système i18nTranslations si disponible
+        if (typeof t === 'function') {
+            const translated = t(key);
+            if (translated !== key) {
+                el.textContent = translated;
+            } else if (texts && texts[key]) {
+                el.textContent = texts[key];
+            }
+        } else if (texts && texts[key]) {
+            el.textContent = texts[key];
+        }
     });
+
+    // Tooltips (data-i18n-title) - NOUVEAU
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        if (typeof t === 'function') {
+            const translated = t(key);
+            if (translated !== key) {
+                el.title = translated;
+            }
+        }
+    });
+
+    // Placeholders (data-i18n-placeholder) - NOUVEAU
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (typeof t === 'function') {
+            const translated = t(key);
+            if (translated !== key) {
+                el.placeholder = translated;
+            }
+        }
+    });
+
     // Désactivé - maintenant géré par help-loader.js qui intercepte changeLanguage
     // document.getElementById('help-content').innerHTML = texts.help_text;
 }

@@ -243,7 +243,7 @@ const helpContent = {
                     <p><kbd>Ctrl+3</kbd> - Basculer l'affichage du spectrogramme</p>
                 `
             },
-            measureTools: {
+            measurement: {
                 title: "📐 Outils de Mesure",
                 content: `
                     <h5>Outil Mesure (Δ Différence)</h5>
@@ -317,7 +317,7 @@ const helpContent = {
                     </ul>
                 `
             },
-            annotations: {
+            annotation: {
                 title: "🏷️ Outils d'Annotation",
                 content: `
                     <h5>Marqueurs (SnapPoints)</h5>
@@ -423,7 +423,7 @@ const helpContent = {
                     </ul>
                 `
             },
-            navigationZoom: {
+            navigation: {
                 title: "🧭 Navigation et Zoom",
                 content: `
                     <h5>Outil Pan (Navigation)</h5>
@@ -577,7 +577,7 @@ const helpContent = {
                     </ul>
                 `
             },
-            config: {
+            configuration: {
                 title: "⚙️ Configuration et Personnalisation",
                 content: `
                     <h5>Paramètres Généraux</h5>
@@ -1038,7 +1038,7 @@ const helpContent = {
                     <p><kbd>Ctrl+3</kbd> - Toggle spectrogram display</p>
                 `
             },
-            measureTools: {
+            measurement: {
                 title: "📐 Measurement Tools",
                 content: `
                     <h5>Measure Tool (Δ Difference)</h5>
@@ -1112,7 +1112,7 @@ const helpContent = {
                     </ul>
                 `
             },
-            annotations: {
+            annotation: {
                 title: "🏷️ Annotation Tools",
                 content: `
                     <h5>Markers (SnapPoints)</h5>
@@ -1218,7 +1218,7 @@ const helpContent = {
                     </ul>
                 `
             },
-            navigationZoom: {
+            navigation: {
                 title: "🧭 Navigation and Zoom",
                 content: `
                     <h5>Pan Tool (Navigation)</h5>
@@ -1372,7 +1372,7 @@ const helpContent = {
                     </ul>
                 `
             },
-            config: {
+            configuration: {
                 title: "⚙️ Configuration and Customization",
                 content: `
                     <h5>General Settings</h5>

@@ -37,6 +37,7 @@ const i18n = {
         language: "Langue",
         theme: "Thème",
         help_title: "Aide & Détails Techniques - HydraSpec Pro V1.4.0",
+        spectrogram_title: "SPECTROGRAMME STFT",
         help_text: `
             <nav class="help-nav" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
                 <strong>Navigation Rapide:</strong>
@@ -275,6 +276,7 @@ const i18n = {
         language: "Language",
         theme: "Theme",
         help_title: "Help & Technical Details - HydraSpec Pro V1.4.0",
+        spectrogram_title: "STFT SPECTROGRAM",
         help_text: `
             <nav class="help-nav" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
                 <strong>Quick Navigation:</strong>
@@ -513,6 +515,7 @@ const i18n = {
         language: "Sprache",
         theme: "Thema",
         help_title: "Hilfe & Technische Details - HydraSpec Pro V1.4.0",
+        spectrogram_title: "STFT-SPEKTROGRAMM",
         help_text: `
             <nav class="help-nav" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
                 <strong>Schnellnavigation:</strong>
@@ -538,15 +541,15 @@ const i18n = {
                     <li><strong>Gruppenbewegung:</strong> Shift + Klick zwischen Cursorn für gemeinsame Bewegung</li>
                 </ul>
 
-<h5>Zoom et Navigation</h5>
-<ul>
-    <li><strong>Molette souris :</strong> Zoom X et Y simultané</li>
-    <li><strong>Shift + Molette :</strong> Zoom vertical (Y) seulement</li>
-    <li><strong>Ctrl + Molette :</strong> Zoom horizontal (X) seulement</li>
-    <li><strong>Pan :</strong> Cliquer-glisser hors des curseurs pour naviguer</li>
-    <li><strong>Zoom manuel :</strong> Utiliser les champs "Min/Max (s)" pour un zoom horizontal précis</li>
-    <li><strong>Zoom vertical manuel :</strong> Utiliser les champs "Min Y/Max Y (Bar)" pour un zoom vertical précis</li>
-</ul>
+                <h5>Zoom und Navigation</h5>
+                <ul>
+                    <li><strong>Mausrad:</strong> Gleichzeitiges Zoomen von X und Y</li>
+                    <li><strong>Shift + Mausrad:</strong> Nur vertikaler Zoom (Y)</li>
+                    <li><strong>Ctrl + Mausrad:</strong> Nur horizontaler Zoom (X)</li>
+                    <li><strong>Verschieben:</strong> Klicken und Ziehen außerhalb der Cursor zum Navigieren</li>
+                    <li><strong>Manueller Zoom:</strong> Verwenden Sie die Felder "Min/Max (s)" für präzises horizontales Zoomen</li>
+                    <li><strong>Manueller vertikaler Zoom:</strong> Verwenden Sie die Felder "Min Y/Max Y (Bar)" für präzises vertikales Zoomen</li>
+                </ul>
                 <h5>Statistiken (Ausgewählter Bereich)</h5>
                 <ul>
                     <li><strong>Min/Max:</strong> Extremwerte des Signals</li>

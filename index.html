@@ -485,7 +485,7 @@
                             <div style="margin-bottom:8px;">
                                 <div style="display:flex; align-items:center; margin-bottom:4px;">
                                     <label style="font-size:0.9em;"<span data-i18n="labels.formula">Formule:</span></label>
-                                    <button onclick="toggleFormulaHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" title="Aide sur les formules">
+                                    <button onclick="toggleFormulaHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" data-i18n-title="tooltips.formula_help" title="Aide sur les formules">
                                         ?
                                     </button>
                                 </div>
@@ -830,7 +830,7 @@
                     <span class="toolbar-title"><i class="fas fa-stopwatch"></i> <span data-i18n="time_domain">DOMAINE
                             TEMPOREL</span></span>
                     <div class="toolbar-controls">
-                        <button onclick="resetZoomAndAutoGroup()" class="icon-btn" title="Reset Zoom + Auto Groupé" style="font-size:0.75rem; padding:3px 6px;">
+                        <button onclick="resetZoomAndAutoGroup()" class="icon-btn" data-i18n-title="tooltips.reset_zoom_auto_grouped" title="Reset Zoom + Auto Groupé" style="font-size:0.75rem; padding:3px 6px;">
                             <i class="fas fa-expand"></i>
                         </button>
                     </div>
@@ -850,7 +850,7 @@
                     <span class="toolbar-title"><i class="fas fa-wave-square"></i> <span data-i18n="freq_domain">DOMAINE
                             FRÉQUENTIEL</span> <span style="font-weight:normal; font-size:0.9em; opacity:0.8;"
                             data-i18n="dirac_spec">(Spectre de Dirac/FFT)</span></span>
-                    <button onclick="resetFreqZoom()" class="icon-btn" title="Reset Zoom" style="font-size:0.75rem; padding:3px 6px;"><i
+                    <button onclick="resetFreqZoom()" class="icon-btn" data-i18n-title="tooltips.reset_zoom" title="Reset Zoom" style="font-size:0.75rem; padding:3px 6px;"><i
                             class="fas fa-expand"></i></button>
                 </div>
                 <div style="flex:1; position:relative; min-height:0;">
@@ -912,13 +912,13 @@
                 </div>
             </div>
 
-            <!-- Halo de souris -->
+            <!-- <span data-i18n="labels.mouse_halo">Halo de souris</span> -->
             <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--border-color);">
                 <div style="display:flex; gap:15px; align-items:center; justify-content:space-between;">
                     <div>
-                        <label style="font-size:0.95em; font-weight:bold;">Halo de souris</label>
+                        <label style="font-size:0.95em; font-weight:bold;"><span data-i18n="labels.mouse_halo">Halo de souris</span></label>
                         <small style="display:block; color:var(--text-muted); font-size:0.8em; margin-top:3px;">
-                            Indicateur visuel de position dans la fenêtre temporelle
+                            <span data-i18n="labels.mouse_halo_description">Indicateur visuel de position dans la fenêtre temporelle</span>
                         </small>
                     </div>
                     <label class="switch" style="margin:0;">
@@ -1006,7 +1006,7 @@
 
                 <div style="margin-top: 20px; padding: 10px; background: var(--input-bg); border-radius: 5px;">
                     <i class="fas fa-lightbulb"></i> <strong><span data-i18n="labels.tip">Astuce</span> :</strong> Vous pouvez modifier
-                    le dossier de destination dans les paramètres de votre navigateur.
+                    <span data-i18n="labels.browser_destination_folder">le dossier de destination dans les paramètres de votre navigateur.</span>
                 </div>
             </div>
 
@@ -1530,15 +1530,15 @@
                         Vertical:
                     </label>
                     <div style="display: flex; gap: 4px; flex: 1;">
-                        <button onclick="setSnapPointVerticalAlign('top')" id="snap-valign-top" title="Aligner en haut"
+                        <button onclick="setSnapPointVerticalAlign('top')" id="snap-valign-top" data-i18n-title="tooltips.align_top" title="Aligner en haut"
                                 style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                             <i class="fas fa-arrow-up"></i> Haut
                         </button>
-                        <button onclick="setSnapPointVerticalAlign('middle')" id="snap-valign-middle" title="Centrer verticalement"
+                        <button onclick="setSnapPointVerticalAlign('middle')" id="snap-valign-middle" data-i18n-title="tooltips.align_middle" title="Centrer verticalement"
                                 style="flex: 1; padding: 5px 10px; background: var(--accent-green); color: white; border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                             <i class="fas fa-arrows-alt-v"></i> Milieu
                         </button>
-                        <button onclick="setSnapPointVerticalAlign('bottom')" id="snap-valign-bottom" title="Aligner en bas"
+                        <button onclick="setSnapPointVerticalAlign('bottom')" id="snap-valign-bottom" data-i18n-title="tooltips.align_bottom" title="Aligner en bas"
                                 style="flex: 1; padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                             <i class="fas fa-arrow-down"></i> Bas
                         </button>
@@ -1573,7 +1573,7 @@
                         <i class="fas fa-arrow-right"></i> <span data-i18n="labels.activate">Activer</span>
                     </button>
                     <span id="snap-arrow-info" style="flex: 1; font-size: 0.75em; color: var(--text-muted); font-style: italic;">
-                        Flèche libre pour pointer sans accrocher
+                        <span data-i18n="labels.free_arrow_description">Flèche libre pour pointer sans accrocher</span>
                     </span>
                 </div>
 
@@ -1584,7 +1584,7 @@
                     </label>
                     <!-- ANCIEN: <input type="color" id="snap-bg-color" value="#FFD93D" onchange="setSnapPointBackgroundColor(this.value)" style="flex: 0 0 60px; height: 32px; padding: 2px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;"> -->
                     <div id="snap-bg-color-btn" data-color-value="#FFD93D" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; setSnapPointBackgroundColor(color); }, this)" style="flex: 0 0 60px; height: 32px; background:#FFD93D; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;"></div>
-                    <button onclick="setSnapPointBackgroundColor('transparent')" title="Fond transparent"
+                    <button onclick="setSnapPointBackgroundColor('transparent')" data-i18n-title="tooltips.transparent_background" title="Fond transparent"
                             style="flex: 0 0 auto; padding: 5px 10px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
                         Transparent
                     </button>
@@ -1734,7 +1734,7 @@
 
                 <!-- Bouton Sauver -->
                 <button onclick="saveCustomColor()" class="color-picker-btn color-picker-btn-save" style="width:100%; margin-top:8px; font-size:0.75em; padding:6px;">
-                    <i class="fas fa-plus"></i> Sauver dans couleurs personnalisées
+                    <i class="fas fa-plus"></i> <span data-i18n="labels.save_custom_colors">Sauver dans couleurs personnalisées</span>
                 </button>
 
                 <!-- Option pour afficher les champs -->

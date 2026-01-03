@@ -50,7 +50,7 @@
 
         <div style="display:flex; gap:8px; align-items:center;">
             <!-- Bouton Toggle Sidebar -->
-            <button id="sidebar-toggle-btn-header" onclick="toggleSidebar()" class="header-btn" title="Afficher/Masquer Sidebar">
+            <button id="sidebar-toggle-btn-header" onclick="toggleSidebar()" class="header-btn" data-i18n-title="tooltips.toggle_sidebar" title="Afficher/Masquer Sidebar">
                 <i class="fas fa-bars"></i>
             </button>
 
@@ -62,32 +62,32 @@
                 <div class="dropdown-content">
                     <!-- Fichiers .HSP -->
                     <button onclick="openHSPWithPicker()">
-                        <i class="fas fa-folder-open" style="width:20px;"></i> <span>Ouvrir fichier .hsp</span>
+                        <i class="fas fa-folder-open" style="width:20px;"></i> <span data-i18n="menu.open_hsp">Ouvrir fichier .hsp</span>
                     </button>
                     <button id="btn-save-hsp" onclick="saveHSP()" disabled>
-                        <i class="fas fa-save" style="width:20px;"></i> <span>Enregistrer .hsp</span>
+                        <i class="fas fa-save" style="width:20px;"></i> <span data-i18n="menu.save_hsp">Enregistrer .hsp</span>
                     </button>
                     <button id="btn-save-hsp-as" onclick="saveHSPAs()" disabled>
-                        <i class="fas fa-save" style="width:20px;"></i> <span>Enregistrer .hsp sous</span>
+                        <i class="fas fa-save" style="width:20px;"></i> <span data-i18n="menu.save_hsp_as">Enregistrer .hsp sous</span>
                     </button>
 
                     <div style="border-top:1px solid var(--border-color); margin:5px 0;"></div>
 
                     <!-- Import/Export -->
                     <button onclick="document.getElementById('fileInput').click()">
-                        <i class="fas fa-file-import" style="width:20px;"></i> <span>Importer fichier .csv</span>
+                        <i class="fas fa-file-import" style="width:20px;"></i> <span data-i18n="menu.import_csv">Importer fichier .csv</span>
                     </button>
                     <button id="btn-export-to-hsp" onclick="exportToHSP()" disabled>
-                        <i class="fas fa-file-export" style="width:20px;"></i> <span>Exporter vers .hsp</span>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="menu.export_hsp">Exporter vers .hsp</span>
                     </button>
                     <button onclick="initExportData()">
-                        <i class="fas fa-file-export" style="width:20px;"></i> <span>Exporter fichier .csv</span>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="menu.export_csv">Exporter fichier .csv</span>
                     </button>
                     <button onclick="initCaptureScreenshot()">
-                        <i class="fas fa-image" style="width:20px;"></i> <span>Exporter PNG</span>
+                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="menu.export_png">Exporter PNG</span>
                     </button>
                     <button onclick="initCapturePDF()">
-                        <i class="fas fa-file-pdf" style="width:20px;"></i> <span>Exporter PDF</span>
+                        <i class="fas fa-file-pdf" style="width:20px;"></i> <span data-i18n="menu.export_pdf">Exporter PDF</span>
                     </button>
                 </div>
             </div>
@@ -95,31 +95,31 @@
             <!-- Menu Graphiques (Accordéon) -->
             <div class="dropdown">
                 <button class="header-btn" id="btn-graphs">
-                    <i class="fas fa-chart-line"></i> <span>Graphiques</span> <i class="fas fa-caret-down"></i>
+                    <i class="fas fa-chart-line"></i> <span data-i18n="menu.graphs">Graphiques</span> <i class="fas fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content">
                     <button id="toggle-time-btn" class="toggle-btn active" onclick="toggleTimeDomain()" style="width:100%; text-align:left;">
-                        <i class="fas fa-stopwatch" style="width:20px;"></i> <span>Temps</span>
+                        <i class="fas fa-stopwatch" style="width:20px;"></i> <span data-i18n="menu.time">Temps</span>
                     </button>
                     <button id="toggle-freq-btn" class="toggle-btn active" onclick="toggleFreqDomain()" style="width:100%; text-align:left;">
-                        <i class="fas fa-wave-square" style="width:20px;"></i> <span>Fréquence</span>
+                        <i class="fas fa-wave-square" style="width:20px;"></i> <span data-i18n="menu.frequency">Fréquence</span>
                     </button>
                     <button id="toggle-spectro-btn" class="toggle-btn active" onclick="toggleSpectrogram()" style="width:100%; text-align:left;">
-                        <i class="fas fa-chart-area" style="width:20px;"></i> <span>Spectro</span>
+                        <i class="fas fa-chart-area" style="width:20px;"></i> <span data-i18n="menu.spectro">Spectro</span>
                     </button>
                 </div>
             </div>
 
             <!-- Configurateur Multi-Canaux -->
-            <button onclick="openChannelConfig()" class="header-btn" title="Configuration Multi-Canaux" style="color:var(--accent-blue);">
+            <button onclick="openChannelConfig()" class="header-btn" data-i18n-title="tooltips.multi_channel_config" title="Configuration Multi-Canaux" style="color:var(--accent-blue);">
                 <i class="fas fa-layer-group"></i>
             </button>
 
-            <button onclick="openModal('settingsModal')" class="header-btn" title="Paramètres">
+            <button onclick="openModal('settingsModal')" class="header-btn" data-i18n-title="tooltips.settings" title="Paramètres">
                 <i class="fas fa-cog"></i> <span data-i18n="settings">Paramètres</span>
             </button>
 
-            <button onclick="openModal('helpModal')" class="header-btn" title="Aide">
+            <button onclick="openModal('helpModal')" class="header-btn" data-i18n-title="tooltips.help" title="Aide">
                 <i class="fas fa-question-circle"></i> <span data-i18n="help">Aide</span>
             </button>
         </div>

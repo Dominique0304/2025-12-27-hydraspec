@@ -281,12 +281,12 @@
                             <!-- Boutons Créer / Déplacer -->
                             <div style="display:flex; gap:8px; margin-bottom:10px;">
                                 <button id="snappoint-create-btn" onclick="setSnapPointMode('create')"
-                                        title="Mode Création : <span data-i18n="labels.click_create_marker">Cliquez sur le graphique pour créer un marqueur</span>"
+                                        data-i18n-title="tooltips.create_mode" title="Mode Création : Cliquez sur le graphique pour créer un marqueur"
                                         style="flex:1; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem;">
                                     <i class="fas fa-plus"></i> <span data-i18n="sidebar.create_btn">Créer</span>
                                 </button>
                                 <button id="snappoint-move-btn" onclick="setSnapPointMode('move')"
-                                        title="Mode Déplacement : <span data-i18n="labels.click_move_marker">Cliquez sur un marqueur pour le déplacer</span>"
+                                        data-i18n-title="tooltips.move_mode" title="Mode Déplacement : Cliquez sur un marqueur pour le déplacer"
                                         style="flex:1; padding:8px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.9rem;">
                                     <i class="fas fa-arrows-alt"></i> <span data-i18n="sidebar.move">Déplacer</span>
                                 </button>
@@ -341,7 +341,7 @@
                             <!-- Sélection du canal -->
                             <div style="margin-bottom:10px;">
                                 <label style="display:block; font-size:0.85rem; margin-bottom:4px; color:var(--text-muted);">
-                                    <i class="fas fa-layer-group"></i> Canal:
+                                    <i class="fas fa-layer-group"></i> <span data-i18n="labels.channel_colon">Canal:</span>
                                 </label>
                                 <select id="diff-canal-channel-select" onchange="onChannelSelect(event)"
                                         style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
@@ -426,7 +426,7 @@
 
                         <!-- Couleur -->
                         <div class="control-row" style="margin-bottom:8px;">
-                            <label style="font-size:0.9em;"<span data-i18n="labels.color">Couleur:</span></label>
+                            <label style="font-size:0.9em;"<span data-i18n="labels.color"<span data-i18n="labels.color">Couleur:</span></span></label>
                             <!-- ANCIEN: <input type="color" id="smooth-channel-color" value="#FF6B00" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;" oninput="updateSmoothingRealtime()"> -->
                             <div id="smooth-channel-color-btn" data-color-value="#FF6B00" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; updateSmoothingRealtime(); }, this)" style="width:50px; height:30px; background:#FF6B00; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
                         </div>
@@ -530,7 +530,7 @@
 
                             <!-- Couleur -->
                             <div class="control-row" style="margin-bottom:12px;">
-                                <label style="font-size:0.9em;"<span data-i18n="labels.color">Couleur:</span></label>
+                                <label style="font-size:0.9em;"<span data-i18n="labels.color"<span data-i18n="labels.color">Couleur:</span></span></label>
                                 <!-- ANCIEN: <input type="color" id="calculated-channel-color" value="#FF00FF" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;"> -->
                                 <div id="calculated-channel-color-btn" data-color-value="#FF00FF" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; }, this)" style="width:50px; height:30px; background:#FF00FF; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
                             </div>
@@ -1339,12 +1339,12 @@
             <button onclick="closeIntervalEditModal()" class="btn-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
                     onmouseover="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-main)';"
                     onmouseout="this.style.background='none'; this.style.color='var(--text-muted)';"
-                    title="Fermer sans valider">&times;</button>
+                    data-i18n-title="labels.close_without_validate" title="Fermer sans valider">&times;</button>
 
             <!-- Titre draggable -->
             <h2 id="interval-modal-header" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); font-size: 1.3em; cursor: move; user-select: none; padding-right: 35px;"
-                title="Glissez pour déplacer la fenêtre">
-                <i class="fas fa-arrows-alt-h"></i> <span id="interval-modal-title"<span data-i18n="modals.edit_interval"<span data-i18n="labels.edit">Modifier</span> l'intervalle</span></span>
+                data-i18n-title="labels.drag_to_move" title="Glissez pour déplacer la fenêtre">
+                <i class="fas fa-arrows-alt-h"></i> <span id="interval-modal-title" data-i18n="modals.edit_interval">Modifier l'intervalle</span>
             </h2>
 
             <!-- Couleur -->
@@ -1393,30 +1393,30 @@
                         Commentaire:
                     </label>
                     <div style="display: flex; gap: 4px;" id="interval-format-toolbar">
-                        <button onclick="toggleIntervalFormat('bold')" id="int-fmt-bold" title="Gras"
+                        <button onclick="toggleIntervalFormat('bold')" id="int-fmt-bold" data-i18n-title="labels.bold" title="Gras"
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-weight: bold;">
                             B
                         </button>
-                        <button onclick="toggleIntervalFormat('italic')" id="int-fmt-italic" title="Italique"
+                        <button onclick="toggleIntervalFormat('italic')" id="int-fmt-italic" data-i18n-title="labels.italic" title="Italique"
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-style: italic;">
                             I
                         </button>
-                        <button onclick="toggleIntervalFormat('underline')" id="int-fmt-underline" title="Souligné"
+                        <button onclick="toggleIntervalFormat('underline')" id="int-fmt-underline" data-i18n-title="labels.underline" title="Souligné"
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
                             U
                         </button>
-                        <select onchange="setIntervalFontSize(this.value)" id="int-fmt-size" title="Taille du texte"
+                        <select onchange="setIntervalFontSize(this.value)" id="int-fmt-size" data-i18n-title="labels.text_size" title="Taille du texte"
                                 style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                            <option value="10">Petit</option>
-                            <option value="11" selected>Normal</option>
-                            <option value="13">Grand</option>
-                            <option value="15">Très grand</option>
+                            <option value="10"<span data-i18n="labels.small">Petit</span></option>
+                            <option value="11" selected<span data-i18n="labels.normal">Normal</span></option>
+                            <option value="13"<span data-i18n="labels.large">Grand</span></option>
+                            <option value="15"<span data-i18n="labels.very_large">Très grand</span></option>
                         </select>
                     </div>
                 </div>
                 <textarea id="interval-comment-input" rows="3"
                        style="width: 100%; padding: 8px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit;"
-                       placeholder="Entrez un commentaire..."></textarea>
+                       data-i18n-placeholder="placeholders.enter_comment" placeholder="Entrez un commentaire..."></textarea>
             </div>
 
             <!-- Info intervalle -->
@@ -1447,12 +1447,12 @@
             <button onclick="closeSnapPointEditModal()" class="btn-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
                     onmouseover="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-main)';"
                     onmouseout="this.style.background='none'; this.style.color='var(--text-muted)';"
-                    title="Fermer sans valider">&times;</button>
+                    data-i18n-title="labels.close_without_validate" title="Fermer sans valider">&times;</button>
 
             <!-- Titre draggable -->
             <h2 id="snappoint-modal-header" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); font-size: 1.3em; cursor: move; user-select: none; padding-right: 35px;"
-                title="Glissez pour déplacer la fenêtre">
-                <i class="fas fa-map-marker-alt"></i> <span id="snappoint-modal-title"<span data-i18n="modals.edit_marker"<span data-i18n="labels.edit">Modifier</span> le marqueur</span></span>
+                data-i18n-title="labels.drag_to_move" title="Glissez pour déplacer la fenêtre">
+                <i class="fas fa-map-marker-alt"></i> <span id="snappoint-modal-title" data-i18n="modals.edit_marker">Modifier le marqueur</span>
             </h2>
 
             <!-- Commentaire avec formatage -->
@@ -1462,30 +1462,30 @@
                         Commentaire:
                     </label>
                     <div style="display: flex; gap: 4px;" id="snappoint-format-toolbar">
-                        <button onclick="toggleSnapPointFormat('bold')" id="snap-fmt-bold" title="Gras"
+                        <button onclick="toggleSnapPointFormat('bold')" id="snap-fmt-bold" data-i18n-title="labels.bold" title="Gras"
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-weight: bold;">
                             B
                         </button>
-                        <button onclick="toggleSnapPointFormat('italic')" id="snap-fmt-italic" title="Italique"
+                        <button onclick="toggleSnapPointFormat('italic')" id="snap-fmt-italic" data-i18n-title="labels.italic" title="Italique"
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-style: italic;">
                             I
                         </button>
-                        <button onclick="toggleSnapPointFormat('underline')" id="snap-fmt-underline" title="Souligné"
+                        <button onclick="toggleSnapPointFormat('underline')" id="snap-fmt-underline" data-i18n-title="labels.underline" title="Souligné"
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
                             U
                         </button>
-                        <select onchange="setSnapPointFontSize(this.value)" id="snap-fmt-size" title="Taille du texte"
+                        <select onchange="setSnapPointFontSize(this.value)" id="snap-fmt-size" data-i18n-title="labels.text_size" title="Taille du texte"
                                 style="padding: 5px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                            <option value="10" style="color: var(--text-main); background: var(--input-bg);">Petit</option>
-                            <option value="11" selected style="color: var(--text-main); background: var(--input-bg);">Normal</option>
-                            <option value="13" style="color: var(--text-main); background: var(--input-bg);">Grand</option>
-                            <option value="15" style="color: var(--text-main); background: var(--input-bg);">Très grand</option>
+                            <option value="10" style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.small">Petit</span></option>
+                            <option value="11" selected style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.normal">Normal</span></option>
+                            <option value="13" style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.large">Grand</span></option>
+                            <option value="15" style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.very_large">Très grand</span></option>
                         </select>
                     </div>
                 </div>
                 <textarea id="snappoint-comment-input" rows="3"
                        style="width: 100%; padding: 8px; background: var(--input-bg) !important; color: var(--text-main) !important; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; box-sizing: border-box; font-family: inherit;"
-                       placeholder="Entrez un commentaire..."></textarea>
+                       data-i18n-placeholder="placeholders.enter_comment" placeholder="Entrez un commentaire..."></textarea>
                 <div style="margin-top: 4px; padding: 6px 8px; background: var(--bg-secondary); border-radius: 3px; font-size: 0.75em; color: var(--text-muted); border-left: 3px solid var(--accent-blue);">
                     <i class="fas fa-info-circle"></i> <strong>Balises dynamiques:</strong>
                     <code style="background: var(--input-bg); padding: 2px 4px; border-radius: 2px; margin: 0 2px;">C$</code> = Canal,

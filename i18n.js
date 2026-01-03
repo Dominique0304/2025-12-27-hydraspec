@@ -364,7 +364,37 @@ const i18nTranslations = {
             other: "Autre",
             custom: "Personnalisé",
             default: "Par défaut",
-            example: "Exemple"
+            example: "Exemple",
+
+            // Nouveaux labels
+            no_project: "Aucun projet",
+            click_create_marker: "Cliquez sur le graphique pour créer un marqueur",
+            click_move_resize_marker: "Cliquez sur un marqueur pour le déplacer ou le redimensionner",
+            t_start: "T start (s):",
+            t_end: "T end (s):",
+            height_percent: "Hauteur (%):",
+            bold: "Gras",
+            italic: "Italique",
+            underline: "Souligné",
+            text_size: "Taille du texte",
+            small: "Petit",
+            normal: "Normal",
+            large: "Grand",
+            very_large: "Très grand",
+            duration: "Durée:",
+            drag_to_move: "Glissez pour déplacer la fenêtre",
+            close_without_validate: "Fermer sans valider",
+            channel_colon: "Canal:",
+            comment: "Commentaire:"
+        },
+
+        tooltips: {
+            create_mode: "Mode Création : Cliquez sur le graphique pour créer un marqueur",
+            move_mode: "Mode Déplacement : Cliquez sur un marqueur pour le déplacer"
+        },
+
+        placeholders: {
+            enter_comment: "Entrez un commentaire..."
         }
     },
 
@@ -710,7 +740,37 @@ const i18nTranslations = {
             other: "Other",
             custom: "Custom",
             default: "Default",
-            example: "Example"
+            example: "Example",
+
+            // New labels
+            no_project: "No project",
+            click_create_marker: "Click on the graph to create a marker",
+            click_move_resize_marker: "Click on a marker to move or resize it",
+            t_start: "T start (s):",
+            t_end: "T end (s):",
+            height_percent: "Height (%):",
+            bold: "Bold",
+            italic: "Italic",
+            underline: "Underline",
+            text_size: "Text size",
+            small: "Small",
+            normal: "Normal",
+            large: "Large",
+            very_large: "Very large",
+            duration: "Duration:",
+            drag_to_move: "Drag to move the window",
+            close_without_validate: "Close without validating",
+            channel_colon: "Channel:",
+            comment: "Comment:"
+        },
+
+        tooltips: {
+            create_mode: "Create mode: Click on the graph to create a marker",
+            move_mode: "Move mode: Click on a marker to move it"
+        },
+
+        placeholders: {
+            enter_comment: "Enter a comment..."
         }
     },
 
@@ -1056,7 +1116,37 @@ const i18nTranslations = {
             other: "Andere",
             custom: "Benutzerdefiniert",
             default: "Standard",
-            example: "Beispiel"
+            example: "Beispiel",
+
+            // Neue Labels
+            no_project: "Kein Projekt",
+            click_create_marker: "Klicken Sie auf das Diagramm, um eine Markierung zu erstellen",
+            click_move_resize_marker: "Klicken Sie auf eine Markierung, um sie zu verschieben oder die Größe zu ändern",
+            t_start: "T start (s):",
+            t_end: "T end (s):",
+            height_percent: "Höhe (%):",
+            bold: "Fett",
+            italic: "Kursiv",
+            underline: "Unterstrichen",
+            text_size: "Textgröße",
+            small: "Klein",
+            normal: "Normal",
+            large: "Groß",
+            very_large: "Sehr groß",
+            duration: "Dauer:",
+            drag_to_move: "Ziehen Sie, um das Fenster zu verschieben",
+            close_without_validate: "Schließen ohne Bestätigung",
+            channel_colon: "Kanal:",
+            comment: "Kommentar:"
+        },
+
+        tooltips: {
+            create_mode: "Erstellungsmodus: Klicken Sie auf das Diagramm, um eine Markierung zu erstellen",
+            move_mode: "Verschiebungsmodus: Klicken Sie auf eine Markierung, um sie zu verschieben"
+        },
+
+        placeholders: {
+            enter_comment: "Geben Sie einen Kommentar ein..."
         }
     }
 };

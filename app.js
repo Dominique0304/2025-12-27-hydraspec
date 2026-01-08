@@ -722,7 +722,7 @@ window.onload = function() {
     // Initialiser le système POO Multi-Projets
     if (typeof initPOOSystem === 'function') {
         initPOOSystem();
-        setStatus(t("status.ready_multi_projects"));
+        setStatus(t("status.ready_multi"));
     } else {
         setStatus(t("status.ready"));
     }

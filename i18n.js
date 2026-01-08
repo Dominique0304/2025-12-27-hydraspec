@@ -211,6 +211,10 @@ const i18nTranslations = {
         status: {
             ready: "Application prête",
             ready_multi: "Application prête (Système multi-projets activé)",
+            freq_domain_shown: "Domaine fréquentiel affiché",
+            freq_domain_hidden: "Domaine fréquentiel masqué",
+            spectrogram_shown: "Spectrogramme affiché",
+            spectrogram_hidden: "Spectrogramme masqué",
             zoom_applied: "Zoom appliqué",
             zoom_invalid: "Valeurs de zoom invalides",
             no_data: "Aucune donnée",
@@ -759,6 +763,10 @@ const i18nTranslations = {
         status: {
             ready: "Application ready",
             ready_multi: "Application ready (Multi-project system enabled)",
+            freq_domain_shown: "Frequency domain shown",
+            freq_domain_hidden: "Frequency domain hidden",
+            spectrogram_shown: "Spectrogram shown",
+            spectrogram_hidden: "Spectrogram hidden",
             zoom_applied: "Zoom applied",
             zoom_invalid: "Invalid zoom values",
             no_data: "No data",
@@ -1289,6 +1297,10 @@ const i18nTranslations = {
         status: {
             ready: "Anwendung bereit",
             ready_multi: "Anwendung bereit (Mehrprojektsystem aktiviert)",
+            freq_domain_shown: "Frequenzbereich angezeigt",
+            freq_domain_hidden: "Frequenzbereich ausgeblendet",
+            spectrogram_shown: "Spektrogramm angezeigt",
+            spectrogram_hidden: "Spektrogramm ausgeblendet",
             zoom_applied: "Zoom angewendet",
             zoom_invalid: "Ungültige Zoom-Werte",
             no_data: "Keine Daten",

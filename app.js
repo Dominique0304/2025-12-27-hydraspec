@@ -697,7 +697,6 @@ window.onload = function() {
     initCharts();
     setupResizers();
     setupCanvasInteractions();
-    changeLanguage('fr');
     updateColorScale();
 
 
@@ -716,6 +715,10 @@ window.onload = function() {
 
     console.timeEnd('Initialisation');
 
+    // Charger la langue sauvegardée ou utiliser 'fr' par défaut
+    const savedLanguage = localStorage.getItem('hydraspec_language') || 'fr';
+    changeLanguage(savedLanguage);
+
     // Initialiser le système POO Multi-Projets
     if (typeof initPOOSystem === 'function') {
         initPOOSystem();
@@ -727,6 +730,15 @@ window.onload = function() {
 // --- TRANSLATION ---
 function changeLanguage(lang) {
     appState.lang = lang;
+
+    // Sauvegarder la préférence de langue
+    localStorage.setItem('hydraspec_language', lang);
+
+    // Mettre à jour le select de langue
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+        langSelect.value = lang;
+    }
 
     // Vérifier que le système de traduction est chargé
     if (typeof t !== 'function') {

@@ -172,10 +172,21 @@ function updateSpectrogram() {
 
     if (!appState.fullDataPressure.length) return;
 
-    const windowSize = parseInt(document.getElementById('stft-window-size').value);
-    const overlap = parseFloat(document.getElementById('stft-overlap').value);
-    const scaleType = document.getElementById('stft-scale').value;
-    const freqMax = parseFloat(document.getElementById('stft-freq-max').value);
+    // Vérifier que les éléments existent avant d'accéder à leurs valeurs
+    const windowSizeEl = document.getElementById('stft-window-size');
+    const overlapEl = document.getElementById('stft-overlap');
+    const scaleTypeEl = document.getElementById('stft-scale');
+    const freqMaxEl = document.getElementById('stft-freq-max');
+
+    if (!windowSizeEl || !overlapEl || !scaleTypeEl || !freqMaxEl) {
+        console.warn("⚠️ Éléments STFT non trouvés dans le DOM, spectrogramme ignoré");
+        return;
+    }
+
+    const windowSize = parseInt(windowSizeEl.value);
+    const overlap = parseFloat(overlapEl.value);
+    const scaleType = scaleTypeEl.value;
+    const freqMax = parseFloat(freqMaxEl.value);
 
     //setStatus("Calcul du spectrogramme...");
 

@@ -115,10 +115,10 @@ function onProjectSwitched(project) {
 
     // Mettre à jour tous les graphiques et l'interface
     if (typeof updateAllInterface === 'function') {
-        updateAllInterface();
+        updateAllInterface(false); // Switch entre projets = ne pas fermer freq/spectro
     } else {
         // Fallback : mettre à jour manuellement
-        if (typeof updateTimeChart === 'function') updateTimeChart();
+        if (typeof updateTimeChart === 'function') updateTimeChart(false);
         if (typeof updateStats === 'function') updateStats();
         if (typeof performAnalysis === 'function') performAnalysis();
         if (typeof updateSpectrogram === 'function') updateSpectrogram();
@@ -264,8 +264,8 @@ function switchToProjectTab(projectId) {
     const project = projectManager.getActive();
     console.log(`🔄 Basculé vers : ${project.name}`);
 
-    // Mettre à jour l'interface
-    updateAllInterface();
+    // Mettre à jour l'interface (false = ne pas fermer freq/spectro lors du switch)
+    updateAllInterface(false);
 }
 
 /**
@@ -854,8 +854,9 @@ function isProjectManagerReady() {
 
 /**
  * Met à jour toute l'interface avec les données du projet actif
+ * @param {boolean} isInitialLoad - Si true, ferme les fenêtres freq/spectro (chargement initial)
  */
-function updateAllInterface() {
+function updateAllInterface(isInitialLoad = false) {
     const project = getActiveProject();
     if (!project) {
         console.warn("⚠️ Aucun projet actif");
@@ -932,7 +933,7 @@ function updateAllInterface() {
     console.log(`📊 Spectrogramme synchronisé : ${appState.spectroData ? appState.spectroData.length + ' points' : 'aucune donnée'}`);
 
     // Mettre à jour les graphiques
-    if (typeof updateTimeChart === 'function') updateTimeChart();
+    if (typeof updateTimeChart === 'function') updateTimeChart(isInitialLoad);
     if (typeof updateStats === 'function') updateStats();
     if (typeof performAnalysis === 'function') performAnalysis();
 
@@ -991,8 +992,9 @@ async function handleFileUpload_POO(input) {
         projectManager.switchTo(project.id);
         console.log(`🔄 Basculé vers le nouveau projet : ${project.name}`);
 
-        // Mettre à jour l'interface
-        updateAllInterface();
+        // Note: updateAllInterface() sera appelé par onProjectSwitched() via l'événement projectSwitched
+        // On doit quand même l'appeler ici avec true pour fermer freq/spectro au chargement initial
+        updateAllInterface(true);
 
         // Ouvrir le configurateur, appliquer auto-groupé, puis fermer (invisible pour l'utilisateur)
         setTimeout(() => {
@@ -1077,7 +1079,7 @@ function initPOOSystem() {
 
     // Charger les données du projet par défaut dans l'interface
     setTimeout(() => {
-        updateAllInterface();
+        updateAllInterface(false); // Initialisation sans données = ne pas fermer freq/spectro
         updateProjectTabs();
     }, 100);
 

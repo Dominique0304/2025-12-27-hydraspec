@@ -832,15 +832,16 @@ function handleFreqZoom(chart, e) {
 }
 
 // --- CHART DATA UPDATES ---
-function updateTimeChart() {
+function updateTimeChart(isInitialLoad = false) {
     // Afficher les containers de graphiques (masqués par défaut)
     const timeContainer = document.getElementById('time-container');
     const freqContainer = document.getElementById('freq-container');
     if (timeContainer) timeContainer.style.display = '';
     if (freqContainer) freqContainer.style.display = '';
 
-    // Masquer Fréquence et Spectro par défaut à l'ouverture d'un fichier
-    if (typeof uiState !== 'undefined') {
+    // Masquer Fréquence et Spectro par défaut UNIQUEMENT à l'ouverture initiale d'un fichier
+    // Ne pas fermer lors du changement de canal
+    if (isInitialLoad && typeof uiState !== 'undefined') {
         if (uiState.freqVisible && typeof toggleFreqDomain === 'function') {
             toggleFreqDomain();
         }

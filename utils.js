@@ -187,10 +187,10 @@ async function handleFileUpload_POO(input) {
 
         // Mettre à jour l'interface
         if (typeof updateAllInterface === 'function') {
-            updateAllInterface();
+            updateAllInterface(true); // Chargement initial CSV = fermer freq/spectro
         } else {
             // Fallback
-            updateTimeChart();
+            updateTimeChart(true); // Chargement initial CSV = fermer freq/spectro
             updateStats();
             performAnalysis();
             updateSpectrogram();

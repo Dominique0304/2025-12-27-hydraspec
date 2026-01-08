@@ -420,8 +420,8 @@ async function loadHSPFromFile(file) {
                 // Activer le projet
                 projectManager.switchTo(project.id);
 
-                // Mettre à jour l'interface
-                updateAllInterface();
+                // Mettre à jour l'interface (chargement initial .hsp = fermer freq/spectro)
+                updateAllInterface(true);
 
                 // Appliquer auto-config comme pour un CSV
                 setTimeout(() => {

@@ -904,11 +904,11 @@
                     </select>
                 </div>
                 <div>
-                    <label for="font-size-input">Taille Police (px)</label>
+                    <label for="font-size-input"><span data-i18n="labels.font_size_px">Taille Police (px)</span></label>
                     <input type="number" id="font-size-input" value="12" min="8" max="24" step="1"
                            onchange="updateChartFontSize(this.value)"
                            style="width:60px; margin-top:5px; padding:6px;">
-                    <small style="color: var(--text-muted); font-size: 0.8em;">Taille des textes dans les graphiques (8-24px)</small>
+                    <small style="color: var(--text-muted); font-size: 0.8em;"><span data-i18n="labels.font_size_description">Taille des textes dans les graphiques (8-24px)</span></small>
                 </div>
             </div>
 
@@ -934,7 +934,7 @@
                     <div>
                         <label style="font-size:0.95em; font-weight:bold;"><span data-i18n="labels.hover_info">Info au survol</span></label>
                         <small style="display:block; color:var(--text-muted); font-size:0.8em; margin-top:3px;">
-                            Afficher les valeurs en survolant les courbes
+                            <span data-i18n="labels.hover_info_description">Afficher les valeurs en survolant les courbes</span>
                         </small>
                     </div>
                     <label class="switch" style="margin:0;">

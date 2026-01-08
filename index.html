@@ -78,16 +78,16 @@
                         <i class="fas fa-file-import" style="width:20px;"></i> <span data-i18n="menu.import_csv">Importer fichier .csv</span>
                     </button>
                     <button id="btn-export-to-hsp" onclick="exportToHSP()" disabled>
-                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="menu.export_hsp"<span data-i18n="modals.export">Exporter</span> vers .hsp</span>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="menu.export_hsp"><span data-i18n="modals.export">Exporter</span> vers .hsp</span>
                     </button>
                     <button onclick="initExportData()">
-                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="menu.export_csv"<span data-i18n="modals.export">Exporter</span> fichier .csv</span>
+                        <i class="fas fa-file-export" style="width:20px;"></i> <span data-i18n="menu.export_csv"><span data-i18n="modals.export">Exporter</span> fichier .csv</span>
                     </button>
                     <button onclick="initCaptureScreenshot()">
-                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="menu.export_png"<span data-i18n="modals.export">Exporter</span> PNG</span>
+                        <i class="fas fa-image" style="width:20px;"></i> <span data-i18n="menu.export_png"><span data-i18n="modals.export">Exporter</span> PNG</span>
                     </button>
                     <button onclick="initCapturePDF()">
-                        <i class="fas fa-file-pdf" style="width:20px;"></i> <span data-i18n="menu.export_pdf"<span data-i18n="modals.export">Exporter</span> PDF</span>
+                        <i class="fas fa-file-pdf" style="width:20px;"></i> <span data-i18n="menu.export_pdf"><span data-i18n="modals.export">Exporter</span> PDF</span>
                     </button>
                 </div>
             </div>
@@ -345,7 +345,7 @@
                                 </label>
                                 <select id="diff-canal-channel-select" onchange="onChannelSelect(event)"
                                         style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
-                                    <option value=""<span data-i18n="labels.select_channel">-- Sélectionner un canal --</span></option>
+                                    <option value=""><span data-i18n="labels.select_channel">-- Sélectionner un canal --</span></option>
                                 </select>
                             </div>
 
@@ -355,12 +355,12 @@
                                     <i class="fas fa-keyboard"></i> Saisie manuelle:
                                 </div>
                                 <div style="margin-bottom:5px;">
-                                    <label style="font-size:0.8rem; color:var(--text-muted);"<span data-i18n="labels.time_start">Temps début (s):</span></label>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);"><span data-i18n="labels.time_start">Temps début (s):</span></label>
                                     <input type="number" id="diff-canal-time-start" step="0.001" data-i18n-placeholder="placeholders.zero" placeholder="0.000"
                                            style="width:100%; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
                                 </div>
                                 <div style="margin-bottom:5px;">
-                                    <label style="font-size:0.8rem; color:var(--text-muted);"<span data-i18n="labels.time_end">Temps fin (s):</span></label>
+                                    <label style="font-size:0.8rem; color:var(--text-muted);"><span data-i18n="labels.time_end">Temps fin (s):</span></label>
                                     <input type="number" id="diff-canal-time-end" step="0.001" data-i18n-placeholder="placeholders.zero" placeholder="0.000"
                                            style="width:100%; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85rem;">
                                 </div>
@@ -412,21 +412,21 @@
                         <div id="smoothing-content" style="display:none;">
                         <!-- Sélection du canal source -->
                         <div class="control-row" style="margin-bottom:8px;">
-                            <label style="font-size:0.9em;"<span data-i18n="labels.source_channel">Canal source:</span></label>
+                            <label style="font-size:0.9em;"><span data-i18n="labels.source_channel">Canal source:</span></label>
                             <select id="smooth-source-channel" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
-                                <option value=""<span data-i18n="labels.select">-- Sélectionner --</span></option>
+                                <option value=""><span data-i18n="labels.select">-- Sélectionner --</span></option>
                             </select>
                         </div>
 
                         <!-- Nom du nouveau canal -->
                         <div class="control-row" style="margin-bottom:8px;">
-                            <label style="font-size:0.9em;"<span data-i18n="labels.name">Nom:</span></label>
+                            <label style="font-size:0.9em;"><span data-i18n="labels.name">Nom:</span></label>
                             <input type="text" id="smooth-channel-name" data-i18n-placeholder="placeholders.smoothed_channel" placeholder="Canal lissé" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;" oninput="updateSmoothingRealtime()">
                         </div>
 
                         <!-- Couleur -->
                         <div class="control-row" style="margin-bottom:8px;">
-                            <label style="font-size:0.9em;"<span data-i18n="labels.color"<span data-i18n="labels.color">Couleur:</span></span></label>
+                            <label style="font-size:0.9em;"><span data-i18n="labels.color">Couleur:</span></label>
                             <!-- ANCIEN: <input type="color" id="smooth-channel-color" value="#FF6B00" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;" oninput="updateSmoothingRealtime()"> -->
                             <div id="smooth-channel-color-btn" data-color-value="#FF6B00" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; updateSmoothingRealtime(); }, this)" style="width:50px; height:30px; background:#FF6B00; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
                         </div>
@@ -434,7 +434,7 @@
                         <!-- Nombre de points (slider) -->
                         <div style="margin-bottom:8px;">
                             <div class="control-row" style="margin-bottom:4px;">
-                                <label style="font-size:0.9em;"<span data-i18n="labels.smoothing_points">Points de lissage:</span></label>
+                                <label style="font-size:0.9em;"><span data-i18n="labels.smoothing_points">Points de lissage:</span></label>
                                 <span id="smooth-points-value" style="color:var(--accent-blue); font-weight:bold; font-size:0.9em;">50</span>
                             </div>
                             <input type="range" id="smooth-points" min="3" max="500" value="50" step="1" style="width:100%;" oninput="document.getElementById('smooth-points-value').textContent = this.value; updateSmoothingRealtime()">
@@ -477,14 +477,14 @@
 
                             <!-- Nom du nouveau canal (DÉPLACÉ ICI) -->
                             <div class="control-row" style="margin-bottom:8px;">
-                                <label style="font-size:0.9em;"<span data-i18n="labels.name">Nom:</span></label>
+                                <label style="font-size:0.9em;"><span data-i18n="labels.name">Nom:</span></label>
                                 <input type="text" id="calculated-channel-name" data-i18n-placeholder="placeholders.optional" placeholder="Optionnel" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
                             </div>
 
                             <!-- Champ de formule avec bouton ? -->
                             <div style="margin-bottom:8px;">
                                 <div style="display:flex; align-items:center; margin-bottom:4px;">
-                                    <label style="font-size:0.9em;"<span data-i18n="labels.formula">Formule:</span></label>
+                                    <label style="font-size:0.9em;"><span data-i18n="labels.formula">Formule:</span></label>
                                     <button onclick="toggleFormulaHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" data-i18n-title="tooltips.formula_help" title="Aide sur les formules">
                                         ?
                                     </button>
@@ -494,11 +494,11 @@
 
                             <!-- Aide (accordéon) -->
                             <div id="formula-help" style="display:none; margin-bottom:12px; padding:10px; background:var(--bg-secondary); border-radius:4px; font-size:0.75rem; max-height:200px; overflow-y:auto; border:1px solid var(--border-color);">
-                                <p style="margin:0 0 8px 0; font-weight:bold;"<span data-i18n="labels.can_create_formula">Vous pouvez créer une formule mathématique</span> utilisant les canaux disponibles. La formule sera calculée point par point.</p>
+                                <p style="margin:0 0 8px 0; font-weight:bold;"><span data-i18n="labels.can_create_formula">Vous pouvez créer une formule mathématique</span> utilisant les canaux disponibles. La formule sera calculée point par point.</p>
 
-                                <p style="margin:8px 0 4px 0; font-weight:bold;"<span data-i18n="labels.example_formula">Exemple: S2 - S1</span></p>
+                                <p style="margin:8px 0 4px 0; font-weight:bold;"><span data-i18n="labels.example_formula">Exemple: S2 - S1</span></p>
 
-                                <p style="margin:8px 0 4px 0; font-weight:bold;"<span data-i18n="labels.usable_symbols">Symboles utilisables:</span></p>
+                                <p style="margin:8px 0 4px 0; font-weight:bold;"><span data-i18n="labels.usable_symbols">Symboles utilisables:</span></p>
                                 <table style="width:100%; font-size:0.75rem; margin-bottom:8px;">
                                     <tr><td style="padding:2px;"><strong<span data-i18n="labels.operators">Opérateurs:</span></strong></td><td></td></tr>
                                     <tr><td style="padding:2px 2px 2px 10px;">+</td><td style="padding:2px;"<span data-i18n="labels.addition">Addition</span></td></tr>
@@ -525,12 +525,12 @@
                                     <tr><td style="padding:2px 2px 2px 10px;">e</td><td style="padding:2px;">2,71828...</td></tr>
                                 </table>
 
-                                <p style="margin:8px 0 0 0; font-style:italic; color:var(--text-muted);"<span data-i18n="labels.formula_note">Note: Les fonctions racine</span> et logarithme retournent toujours des valeurs positives, même avec des entrées négatives (valeur absolue appliquée).</p>
+                                <p style="margin:8px 0 0 0; font-style:italic; color:var(--text-muted);"><span data-i18n="labels.formula_note">Note: Les fonctions racine</span> et logarithme retournent toujours des valeurs positives, même avec des entrées négatives (valeur absolue appliquée).</p>
                             </div>
 
                             <!-- Couleur -->
                             <div class="control-row" style="margin-bottom:12px;">
-                                <label style="font-size:0.9em;"<span data-i18n="labels.color"<span data-i18n="labels.color">Couleur:</span></span></label>
+                                <label style="font-size:0.9em;"><span data-i18n="labels.color">Couleur:</span></label>
                                 <!-- ANCIEN: <input type="color" id="calculated-channel-color" value="#FF00FF" style="width:50px; height:30px; border:2px solid var(--border-color); border-radius:4px; cursor:pointer; padding:2px;"> -->
                                 <div id="calculated-channel-color-btn" data-color-value="#FF00FF" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; }, this)" style="width:50px; height:30px; background:#FF00FF; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
                             </div>
@@ -676,10 +676,10 @@
                         <div class="control-row">
                             <label data-i18n="window">Fenêtre:</label>
                             <select id="window-func" onchange="performAnalysis()">
-                                <option value="rect"<span data-i18n="labels.rectangular">Rectangulaire</span></option>
+                                <option value="rect"><span data-i18n="labels.rectangular">Rectangulaire</span></option>
                                 <option value="hanning" selected<span data-i18n="labels.hanning">Hanning</span></option>
-                                <option value="hamming"<span data-i18n="labels.hamming">Hamming</span></option>
-                                <option value="blackman"<span data-i18n="labels.blackman">Blackman</span></option>
+                                <option value="hamming"><span data-i18n="labels.hamming">Hamming</span></option>
+                                <option value="blackman"><span data-i18n="labels.blackman">Blackman</span></option>
                             </select>
                         </div>
                         <div class="control-row">
@@ -716,22 +716,22 @@
                 <div class="control-group" id="spectro-params-panel">
                     <h3 id="spectro-params-header" onclick="toggleSpectroParams()" style="cursor:pointer;">
                         <i class="fas fa-chart-area"></i> <span data-i18n="spectrogram">Spectrogramme STFT</span>
-                        <i id="spectro-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        <i id="spectro-toggle-icon" class="fas fa-chevron-up" style="float:right; font-size:0.8em;"></i>
                     </h3>
 
-                    <div id="spectro-params-content" style="display:none;">
+                    <div id="spectro-params-content" style="display:block;">
                         <!-- Sélecteur de canal -->
                         <div class="control-row" id="column-selector-row" style="display: none;">
-                            <label data-i18n="channel"<span data-i18n="labels.channel">Canal:</span></label>
+                            <label><span data-i18n="labels.channel">Canal:</span></label>
                             <select id="column-selector" onchange="changeCurrentColumn(parseInt(this.value))"
                                 style="width: 150px;">
-                                <option value="0"<span data-i18n="labels.loading">Chargement...</span></option>
+                                <option value="0"><span data-i18n="labels.loading">Chargement...</span></option>
                             </select>
                         </div>
 
                         <div class="spectrogram-controls">
                             <div>
-                                <label<span data-i18n="labels.stft_window">Fenêtre STFT:</span></label>
+                                <label><span data-i18n="labels.stft_window">Fenêtre STFT:</span></label>
                                 <select id="stft-window-size" onchange="updateSpectrogram()">
                                     <option value="256">256</option>
                                     <option value="512" selected>512</option>
@@ -740,7 +740,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label<span data-i18n="labels.overlap">Recouvrement:</span></label>
+                                <label><span data-i18n="labels.overlap">Recouvrement:</span></label>
                                 <select id="stft-overlap" onchange="updateSpectrogram()">
                                     <option value="0.25">25%</option>
                                     <option value="0.50" selected>50%</option>
@@ -749,15 +749,15 @@
                                 </select>
                             </div>
                             <div>
-                                <label<span data-i18n="labels.scale">Échelle:</span></label>
+                                <label><span data-i18n="labels.scale">Échelle:</span></label>
                                 <select id="stft-scale" onchange="updateSpectrogram()">
-                                    <option value="linear"<span data-i18n="labels.linear">Linéaire</span></option>
-                                    <option value="log" selected<span data-i18n="labels.logarithmic">Logarithmique</span></option>
+                                    <option value="linear"><span data-i18n="labels.linear">Linéaire</span></option>
+                                    <option value="log" selected><span data-i18n="labels.logarithmic">Logarithmique</span></option>
                                     <option value="db">dB</option>
                                 </select>
                             </div>
                             <div>
-                                <label<span data-i18n="labels.freq_max_hz">Freq Max (Hz):</span></label>
+                                <label><span data-i18n="labels.freq_max_hz">Freq Max (Hz):</span></label>
                                 <input type="number" id="stft-freq-max" value="500" step="10" onchange="updateSpectrogram()"
                                     style="width:100%">
                             </div>
@@ -800,7 +800,7 @@
                         </div>
 
                         <div style="margin-top:8px;">
-                            <label<span data-i18n="labels.color_range">Plage Couleurs:</span></label>
+                            <label><span data-i18n="labels.color_range">Plage Couleurs:</span></label>
                             <div class="color-scale" id="color-scale"></div>
                         </div>
                     </div>
@@ -932,7 +932,7 @@
             <div style="margin-top:15px;">
                 <div style="display:flex; gap:15px; align-items:center; justify-content:space-between;">
                     <div>
-                        <label style="font-size:0.95em; font-weight:bold;"<span data-i18n="labels.hover_info">Info au survol</span></label>
+                        <label style="font-size:0.95em; font-weight:bold;"><span data-i18n="labels.hover_info">Info au survol</span></label>
                         <small style="display:block; color:var(--text-muted); font-size:0.8em; margin-top:3px;">
                             Afficher les valeurs en survolant les courbes
                         </small>
@@ -956,10 +956,10 @@
         <div class="modal-content" style="width:600px;">
             <button class="btn-close" onclick="closeModal('filenameModal')">&times;</button>
             <h3 style="margin-top:0;">
-                <i class="fas fa-download"></i> <span data-i18n="modals.export_file"<span data-i18n="modals.export">Exporter</span> le fichier</span>
+                <i class="fas fa-download"></i> <span data-i18n="modals.export_file"><span data-i18n="modals.export">Exporter</span> le fichier</span>
             </h3>
 
-            <label for="export-filename"<span data-i18n="modals.filename">Nom du fichier :</span></label>
+            <label for="export-filename"><span data-i18n="modals.filename">Nom du fichier :</span></label>
             <input type="text" id="export-filename" style="width:85%; margin: 10px 0 15px 0;"
                 data-i18n-placeholder="placeholders.enter_name" placeholder="Entrez le nom...">
 
@@ -1198,11 +1198,11 @@
                         <i class="fas fa-cog"></i> Paramètres Globaux
                     </h4>
                     <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
-                        <label style="font-size:0.9em; font-weight:bold;"<span data-i18n="labels.line_thickness">Épaisseur de trait :</span></label>
+                        <label style="font-size:0.9em; font-weight:bold;"><span data-i18n="labels.line_thickness">Épaisseur de trait :</span></label>
                         <input type="number" id="global-line-width" value="0.5" min="0.1" max="5" step="0.1"
                                style="width:80px; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px;"
                                onchange="updateGlobalLineWidth()">
-                        <span style="font-size:0.8em; color:var(--text-muted);"<span data-i18n="labels.applied_all_curves">(Appliqué à toutes les courbes: temporel et FFT)</span></span>
+                        <span style="font-size:0.8em; color:var(--text-muted);"><span data-i18n="labels.applied_all_curves">(Appliqué à toutes les courbes: temporel et FFT)</span></span>
                     </div>
 
                     <!-- Paramètres du fichier -->
@@ -1212,7 +1212,7 @@
                         </h5>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <label style="font-size:0.85em;"<span data-i18n="labels.step_ms">Pas (ms):</span></label>
+                                <label style="font-size:0.85em;"><span data-i18n="labels.step_ms">Pas (ms):</span></label>
                                 <input type="number" id="manual-step-config" value="1" step="0.01" onchange="updateFsFromStep()"
                                        style="width:80px; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px;">
                             </div>
@@ -1221,11 +1221,11 @@
                                 <span id="display-fs-config" style="color:var(--accent-blue); font-weight:bold;">1000 Hz</span>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <label style="font-size:0.85em;"<span data-i18n="labels.points_n">Points (N):</span></label>
+                                <label style="font-size:0.85em;"><span data-i18n="labels.points_n">Points (N):</span></label>
                                 <span id="display-n-config" style="color:var(--accent-blue); font-weight:bold;">--</span>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <label style="font-size:0.85em;"<span data-i18n="labels.increment_ms">Incrément (ms):</span></label>
+                                <label style="font-size:0.85em;"><span data-i18n="labels.increment_ms">Incrément (ms):</span></label>
                                 <span id="display-increment-config" style="color:var(--accent-green); font-weight:bold;">--</span>
                             </div>
                         </div>
@@ -1407,10 +1407,10 @@
                         </button>
                         <select onchange="setIntervalFontSize(this.value)" id="int-fmt-size" data-i18n-title="labels.text_size" title="Taille du texte"
                                 style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                            <option value="10"<span data-i18n="labels.small">Petit</span></option>
+                            <option value="10"><span data-i18n="labels.small">Petit</span></option>
                             <option value="11" selected<span data-i18n="labels.normal">Normal</span></option>
-                            <option value="13"<span data-i18n="labels.large">Grand</span></option>
-                            <option value="15"<span data-i18n="labels.very_large">Très grand</span></option>
+                            <option value="13"><span data-i18n="labels.large">Grand</span></option>
+                            <option value="15"><span data-i18n="labels.very_large">Très grand</span></option>
                         </select>
                     </div>
                 </div>
@@ -1559,7 +1559,7 @@
                     </label>
                     <select id="snap-anchor-channel" onchange="setSnapPointAnchorChannel(this.value)"
                             style="flex: 1; padding: 5px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                        <option value="-1"<span data-i18n="labels.none_floating">Aucun (boîte flottante)</span></option>
+                        <option value="-1"><span data-i18n="labels.none_floating">Aucun (boîte flottante)</span></option>
                     </select>
                 </div>
 
@@ -1627,26 +1627,26 @@
              onmouseover="this.style.background='var(--bg-secondary)'"
              onmouseout="this.style.background='transparent'">
             <i class="fas fa-edit" style="width:16px; color:var(--accent-blue);"></i>
-            <span<span data-i18n="labels.edit">Éditer</span></span>
+            <span><span data-i18n="labels.edit">Éditer</span></span>
         </div>
         <div onclick="contextMenuToggleVisibility()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
              onmouseover="this.style.background='var(--bg-secondary)'"
              onmouseout="this.style.background='transparent'">
             <i id="context-menu-eye-icon" class="fas fa-eye" style="width:16px; color:var(--accent-green);"></i>
-            <span id="context-menu-visibility-text"<span data-i18n="labels.hide">Masquer</span></span>
+            <span id="context-menu-visibility-text"><span data-i18n="labels.hide">Masquer</span></span>
         </div>
         <div onclick="contextMenuDuplicate()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
              onmouseover="this.style.background='var(--bg-secondary)'"
              onmouseout="this.style.background='transparent'">
             <i class="fas fa-copy" style="width:16px; color:var(--accent-blue);"></i>
-            <span<span data-i18n="labels.duplicate">Dupliquer</span></span>
+            <span><span data-i18n="labels.duplicate">Dupliquer</span></span>
         </div>
         <hr style="margin:4px 0; border:none; border-top:1px solid var(--border-color);">
         <div onclick="contextMenuDelete()" class="context-menu-item" style="padding:8px 12px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; gap:8px;"
              onmouseover="this.style.background='var(--bg-secondary)'"
              onmouseout="this.style.background='transparent'">
             <i class="fas fa-trash" style="width:16px; color:var(--accent-red);"></i>
-            <span style="color:var(--accent-red);"<span data-i18n="labels.delete">Supprimer</span></span>
+            <span style="color:var(--accent-red);"><span data-i18n="labels.delete">Supprimer</span></span>
         </div>
     </div>
 

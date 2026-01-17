@@ -908,15 +908,15 @@ function openModal(id) {
     // Initialiser draggable si la modale a la classe
     const modalContent = modal.querySelector('.draggable-modal');
     console.log('🔍 modalContent:', modalContent);
-    console.log('🔍 typeof makeDraggable:', typeof makeDraggable);
+    console.log('🔍 typeof makeModalDraggable:', typeof makeModalDraggable);
 
-    if (modalContent && typeof makeDraggable === 'function') {
-        console.log('✅ Appel de makeDraggable...');
-        makeDraggable(modalContent);
+    if (modalContent && typeof makeModalDraggable === 'function') {
+        console.log('✅ Appel de makeModalDraggable...');
+        makeModalDraggable(modalContent);
     } else {
-        console.error('❌ Ne peut pas appeler makeDraggable:', {
+        console.error('❌ Ne peut pas appeler makeModalDraggable:', {
             modalContent: !!modalContent,
-            makeDraggableExists: typeof makeDraggable === 'function'
+            makeModalDraggableExists: typeof makeModalDraggable === 'function'
         });
     }
 }
@@ -1248,8 +1248,8 @@ window.toggleSidebar = toggleSidebar;
 // MODALES DRAGGABLES
 // =====================================
 
-function makeDraggable(modalElement) {
-    console.log('🔧 makeDraggable appelé pour:', modalElement);
+function makeModalDraggable(modalElement) {
+    console.log('🔧 makeModalDraggable appelé pour:', modalElement);
 
     // Vérifier si déjà initialisé pour éviter les doublons
     if (modalElement.dataset.draggableInitialized === 'true') {
@@ -1340,6 +1340,6 @@ function makeDraggable(modalElement) {
 // Initialiser les modales draggables au chargement
 document.addEventListener('DOMContentLoaded', () => {
     const draggableModals = document.querySelectorAll('.draggable-modal');
-    draggableModals.forEach(modal => makeDraggable(modal));
+    draggableModals.forEach(modal => makeModalDraggable(modal));
     console.log('✅ Modales draggables initialisées:', draggableModals.length);
 });

@@ -819,26 +819,33 @@ function applyTimeZoom() {
     const maxX = parseFloat(document.getElementById('zoom-max').value);
     const minY = parseFloat(document.getElementById('zoom-y-min').value);
     const maxY = parseFloat(document.getElementById('zoom-y-max').value);
-    
+
     const chart = appState.charts.time;
+    if (!chart) {
+        console.warn('applyTimeZoom: Chart non disponible');
+        return;
+    }
+
     let zoomApplied = false;
-    
+
     // Appliquer le zoom horizontal si les valeurs sont valides
     if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
         chart.options.scales.x.min = minX * 1000; // Convertir en ms
         chart.options.scales.x.max = maxX * 1000; // Convertir en ms
         zoomApplied = true;
+        console.log(`Zoom X appliqué: ${minX}s à ${maxX}s (${minX * 1000}ms à ${maxX * 1000}ms)`);
     }
-    
+
     // Appliquer le zoom vertical si les valeurs sont valides
     if (!isNaN(minY) && !isNaN(maxY) && minY < maxY) {
         chart.options.scales.y.min = minY;
         chart.options.scales.y.max = maxY;
         zoomApplied = true;
+        console.log(`Zoom Y appliqué: ${minY} à ${maxY}`);
     }
-    
+
     if (zoomApplied) {
-        chart.update('none');
+        chart.update(); // Forcer le rafraîchissement complet
         setStatus(t("status.zoom_applied"));
     } else {
         setStatus(t("status.invalid_zoom_values"));

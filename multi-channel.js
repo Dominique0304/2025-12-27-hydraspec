@@ -1114,10 +1114,11 @@ function setupModalDrag() {
             // Limiter le déplacement pour garder la modale visible
             const maxX = window.innerWidth - 100; // Au moins 100px visible
             const maxY = window.innerHeight - 50; // Au moins 50px visible
+            const minY = -50; // Permettre de monter jusqu'à -50px (garder le header visible)
 
             if (currentX < -modalContent.offsetWidth + 100) currentX = -modalContent.offsetWidth + 100;
             if (currentX > maxX) currentX = maxX;
-            if (currentY < 0) currentY = 0;
+            if (currentY < minY) currentY = minY;
             if (currentY > maxY) currentY = maxY;
 
             setTranslate(currentX, currentY, modalContent);

@@ -74,9 +74,22 @@ let uiState = {
 
 // Ajouter ces fonctions dans la section INIT (après window.onload)
 function initToggleButtons() {
+    // Initialiser l'état visuel des conteneurs selon uiState
+    const timeContainer = document.getElementById('time-container');
+    const freqContainer = document.getElementById('freq-container');
+    const spectroContainer = document.getElementById('spectro-container');
+    const fftParamsPanel = document.getElementById('fft-params-panel');
+    const spectroParamsPanel = document.getElementById('spectro-params-panel');
+
+    if (timeContainer) timeContainer.classList.toggle('hidden', !uiState.timeVisible);
+    if (freqContainer) freqContainer.classList.toggle('hidden', !uiState.freqVisible);
+    if (spectroContainer) spectroContainer.classList.toggle('hidden', !uiState.spectroVisible);
+    if (fftParamsPanel) fftParamsPanel.classList.toggle('hidden', !uiState.freqVisible);
+    if (spectroParamsPanel) spectroParamsPanel.classList.toggle('hidden', !uiState.spectroVisible);
+
     // Initialiser l'état des boutons
     updateToggleButtons();
-    
+
     // Ajouter un raccourci clavier pour basculer tous les graphiques
     document.addEventListener('keydown', function(e) {
         // Ctrl+Alt+T : Basculer temps
@@ -709,6 +722,9 @@ window.onload = function() {
 
     // Initialiser les boutons toggle
     initToggleButtons();
+
+    // Ajuster la disposition des graphiques selon leur visibilité
+    adjustPlotLayout();
 
     // Charger la préférence des tooltips
     loadTooltipPreference();

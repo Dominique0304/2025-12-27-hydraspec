@@ -815,10 +815,10 @@ function updateZoomInputs() {
 }
 
 function applyTimeZoom() {
-    const minX = parseFloat(document.getElementById('zoom-min').value);
-    const maxX = parseFloat(document.getElementById('zoom-max').value);
-    const minY = parseFloat(document.getElementById('zoom-y-min').value);
-    const maxY = parseFloat(document.getElementById('zoom-y-max').value);
+    const minXInput = document.getElementById('zoom-min');
+    const maxXInput = document.getElementById('zoom-max');
+    const minYInput = document.getElementById('zoom-y-min');
+    const maxYInput = document.getElementById('zoom-y-max');
 
     const chart = appState.charts.time;
     if (!chart) {
@@ -828,20 +828,30 @@ function applyTimeZoom() {
 
     let zoomApplied = false;
 
-    // Appliquer le zoom horizontal si les valeurs sont valides
-    if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
-        chart.options.scales.x.min = minX * 1000; // Convertir en ms
-        chart.options.scales.x.max = maxX * 1000; // Convertir en ms
-        zoomApplied = true;
-        console.log(`Zoom X appliqué: ${minX}s à ${maxX}s (${minX * 1000}ms à ${maxX * 1000}ms)`);
+    // Appliquer le zoom horizontal si les éléments et valeurs sont valides
+    if (minXInput && maxXInput) {
+        const minX = parseFloat(minXInput.value);
+        const maxX = parseFloat(maxXInput.value);
+
+        if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
+            chart.options.scales.x.min = minX * 1000; // Convertir en ms
+            chart.options.scales.x.max = maxX * 1000; // Convertir en ms
+            zoomApplied = true;
+            console.log(`✅ Zoom X appliqué: ${minX}s à ${maxX}s (${minX * 1000}ms à ${maxX * 1000}ms)`);
+        }
     }
 
-    // Appliquer le zoom vertical si les valeurs sont valides
-    if (!isNaN(minY) && !isNaN(maxY) && minY < maxY) {
-        chart.options.scales.y.min = minY;
-        chart.options.scales.y.max = maxY;
-        zoomApplied = true;
-        console.log(`Zoom Y appliqué: ${minY} à ${maxY}`);
+    // Appliquer le zoom vertical si les éléments et valeurs sont valides
+    if (minYInput && maxYInput) {
+        const minY = parseFloat(minYInput.value);
+        const maxY = parseFloat(maxYInput.value);
+
+        if (!isNaN(minY) && !isNaN(maxY) && minY < maxY) {
+            chart.options.scales.y.min = minY;
+            chart.options.scales.y.max = maxY;
+            zoomApplied = true;
+            console.log(`✅ Zoom Y appliqué: ${minY} à ${maxY}`);
+        }
     }
 
     if (zoomApplied) {
@@ -849,7 +859,9 @@ function applyTimeZoom() {
         setStatus(t("status.zoom_applied"));
     } else {
         setStatus(t("status.invalid_zoom_values"));
-        updateZoomInputs(); // Réaffiche les valeurs actuelles
+        if (minXInput && maxXInput) {
+            updateZoomInputs(); // Réaffiche les valeurs actuelles
+        }
     }
 }
 // --- THEMES ---

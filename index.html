@@ -122,10 +122,6 @@
             <button onclick="openModal('helpModal')" class="header-btn" data-i18n-title="tooltips.help" title="Aide">
                 <i class="fas fa-question-circle"></i> <span data-i18n="help">Aide</span>
             </button>
-
-            <button onclick="openModal('helpNewModal')" class="header-btn" data-i18n-title="tooltips.help_new" title="Aide Complète" style="background: var(--accent-green);">
-                <i class="fas fa-book"></i> <span data-i18n="help_new">Aide new</span>
-            </button>
         </div>
     </header>
 
@@ -1297,26 +1293,6 @@
             <div style="margin-top:15px; text-align:right;">
                 <button onclick="closeModal('helpModal')" class="primary"
                     style="width:80px; margin-left:auto;"<span data-i18n="labels.close">Fermer</span></button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Aide Complète (New) -->
-    <div id="helpNewModal" class="modal">
-        <div class="modal-content draggable-modal" style="width: 900px; max-width: 95vw; max-height: 90vh;">
-            <button class="btn-close" onclick="closeModal('helpNewModal')">&times;</button>
-            <h2 style="margin-top:0; color:var(--accent-green);" id="help-new-top">
-                <i class="fas fa-book"></i> <span data-i18n="help_new_title">Guide Complet - HydraSpec Pro</span>
-            </h2>
-
-            <div id="help-new-content" class="help-body" style="max-height:70vh; overflow-y:auto; padding-right:10px;">
-                <!-- Content will be injected by loadHelpNewContent() function -->
-            </div>
-
-            <div style="margin-top:15px; text-align:right;">
-                <button onclick="closeModal('helpNewModal')" class="primary" style="width:100px; margin-left:auto;">
-                    <span data-i18n="labels.close">Fermer</span>
-                </button>
             </div>
         </div>
     </div>

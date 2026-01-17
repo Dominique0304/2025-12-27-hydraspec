@@ -67,8 +67,8 @@ let appState = {
 
 let uiState = {
     timeVisible: true,
-    freqVisible: true,
-    spectroVisible: true,
+    freqVisible: false,
+    spectroVisible: false,
     tooltipsEnabled: true  // Activer/désactiver les infos au survol
 };
 

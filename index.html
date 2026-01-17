@@ -645,7 +645,7 @@
                 </div>
 
                 <!-- Analysis Settings -->
-                <div class="control-group" id="fft-params-panel">
+                <div class="control-group hidden" id="fft-params-panel">
                     <h3 id="fft-params-header" onclick="toggleFFTParams()" style="cursor:pointer;">
                         <i class="fas fa-sliders-h"></i> <span data-i18n="fft_params">Paramètres FFT</span>
                         <i id="fft-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
@@ -713,7 +713,7 @@
                 </div>
 
                 <!-- Spectrogram Settings -->
-                <div class="control-group" id="spectro-params-panel">
+                <div class="control-group hidden" id="spectro-params-panel">
                     <h3 id="spectro-params-header" onclick="toggleSpectroParams()" style="cursor:pointer;">
                         <i class="fas fa-chart-area"></i> <span data-i18n="spectrogram">Spectrogramme STFT</span>
                         <i id="spectro-toggle-icon" class="fas fa-chevron-up" style="float:right; font-size:0.8em;"></i>
@@ -845,7 +845,7 @@
             <div class="gutter-v" id="resizer1"></div>
 
             <!-- Frequency Plot -->
-            <div class="plot-container" id="freq-container" style="height: 30%; display: none;">
+            <div class="plot-container hidden" id="freq-container" style="height: 30%;">
                 <div class="plot-toolbar">
                     <span class="toolbar-title"><i class="fas fa-wave-square"></i> <span data-i18n="freq_domain">DOMAINE
                             FRÉQUENTIEL</span> <span style="font-weight:normal; font-size:0.9em; opacity:0.8;"
@@ -862,7 +862,7 @@
             <div class="gutter-v" id="resizer2"></div>
 
             <!-- Spectrogram Plot -->
-            <div class="plot-container" id="spectro-container" style="flex: 1;">
+            <div class="plot-container hidden" id="spectro-container" style="flex: 1;">
                 <div class="plot-toolbar">
                     <span class="toolbar-title">
                         <i class="fas fa-chart-area"></i> <span data-i18n="spectrogram_title">SPECTROGRAMME STFT</span>

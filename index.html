@@ -623,6 +623,26 @@
                                 </div>
                             </div>
 
+                            <!-- Subdivision Historique -->
+                            <div style="margin-top:15px;">
+                                <div style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:4px;">
+                                    <i class="fas fa-history"></i> <span data-i18n="sidebar.history">Historique</span>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                                    <button id="undo-zoom-btn" onclick="undoZoom()" disabled
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-undo"></i><br><span data-i18n="sidebar.undo">Annuler</span>
+                                    </button>
+                                    <button id="redo-zoom-btn" onclick="redoZoom()" disabled
+                                            style="padding:6px; background:var(--bg-secondary); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:0.8rem; transition: all 0.2s;">
+                                        <i class="fas fa-redo"></i><br><span data-i18n="sidebar.redo">Rétablir</span>
+                                    </button>
+                                </div>
+                                <div id="zoom-history-info" style="margin-top:5px; font-size:0.7rem; color:var(--text-muted); text-align:center;">
+                                    0/20
+                                </div>
+                            </div>
+
                             <!-- Subdivision Vues sauvegardées -->
                             <div style="margin-top:15px;">
                                 <div style="font-size:0.75rem; font-weight:bold; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:4px;">
@@ -1809,6 +1829,7 @@
 <script src="diff-canal-tool.js"></script>
 <script src="snappoint-tool.js"></script>
 <script src="pan-tool.js"></script>
+<script src="zoom-history.js"></script>
 <script src="views-manager.js"></script>
 <script src="ruler-tool.js"></script>
 <script src="track-tool.js"></script>

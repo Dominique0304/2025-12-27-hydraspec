@@ -120,6 +120,9 @@ const i18nTranslations = {
             comments: "Commentaires",
             notes_placeholder: "Notes...",
             color_range: "Plage Couleurs:",
+            history: "Historique",
+            undo: "Annuler",
+            redo: "Rétablir",
 
             // Nouvelles clés ajoutées
             diff_canal: "Diff/Canal",
@@ -675,6 +678,9 @@ const i18nTranslations = {
             comments: "Comments",
             notes_placeholder: "Notes...",
             color_range: "Color Range:",
+            history: "History",
+            undo: "Undo",
+            redo: "Redo",
 
             // New keys added
             diff_canal: "Diff/Channel",
@@ -1212,6 +1218,9 @@ const i18nTranslations = {
             comments: "Kommentare",
             notes_placeholder: "Notizen...",
             color_range: "Farbbereich:",
+            history: "Verlauf",
+            undo: "Rückgängig",
+            redo: "Wiederherstellen",
 
             // Neue Schlüssel hinzugefügt
             diff_canal: "Diff/Kanal",

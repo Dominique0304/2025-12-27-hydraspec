@@ -889,6 +889,11 @@ function applyTimeZoom() {
     if (zoomApplied) {
         chart.update(); // Forcer le rafraîchissement complet
         setStatus(t("status.zoom_applied"));
+
+        // Sauvegarder l'état après le zoom dans le configurateur
+        if (typeof saveZoomState === 'function') {
+            saveZoomState();
+        }
     } else {
         setStatus(t("status.invalid_zoom_values"));
         if (minXInput && maxXInput) {
@@ -992,6 +997,11 @@ function resetTimeZoom() {
     setTimeout(updateZoomInputs, 10);
 
     setStatus(t("status.zoom_reset"));
+
+    // Sauvegarder l'état après le reset
+    if (typeof saveZoomState === 'function') {
+        saveZoomState();
+    }
 }
 
 function resetFreqZoom() { 

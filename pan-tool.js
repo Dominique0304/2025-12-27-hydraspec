@@ -170,6 +170,12 @@ function handlePanDrag(event, chart, canvas) {
 function handlePanMouseUp() {
     if (panState.dragging) {
         panState.dragging = false;
+
+        // Sauvegarder l'état après le déplacement
+        if (typeof saveZoomState === 'function') {
+            saveZoomState();
+        }
+
         return true;
     }
     return false;
@@ -653,4 +659,9 @@ function applyPanToolZoom() {
 
     chart.update('none');
     setStatus(`Zoom appliqué: ${minX}s - ${maxX}s`, 'success');
+
+    // Sauvegarder l'état après le zoom manuel
+    if (typeof saveZoomState === 'function') {
+        saveZoomState();
+    }
 }

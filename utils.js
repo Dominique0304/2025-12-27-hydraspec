@@ -707,6 +707,7 @@ function closeAllMainAccordions(exceptTool) {
             // Sous-accordéons de Canal
             subAccordions: [
                 { contentId: 'smoothing-content', iconId: 'smoothing-toggle-icon' },
+                { contentId: 'derivative-content', iconId: 'derivative-toggle-icon' },
                 { contentId: 'calculated-channel-content', iconId: 'calculated-channel-toggle-icon' }
             ]
         },

@@ -126,7 +126,8 @@ const i18nTranslations = {
 
             // Nouvelles clés ajoutées
             diff_canal: "Diff/Canal",
-            smoothing: "Lissage de Canal"
+            smoothing: "Lissage de Canal",
+            derivative: "Dérivée de Canal"
         },
 
         // ===== TOOLTIPS =====
@@ -200,6 +201,7 @@ const i18nTranslations = {
         placeholders: {
             zero: "0.000",
             smoothed_channel: "Canal lissé",
+            derivative_channel: "Dérivée canal",
             optional: "Optionnel",
             formula_example: "Ex: S2-S1 ou sqrt(S1^2+S2^2)",
             notes: "Notes...",
@@ -531,6 +533,8 @@ const i18nTranslations = {
             source_channel: "Canal source:",
             step_ms: "Pas (ms):",
             subtraction: "Soustraction",
+            derivative_smoothing: "Lissage:",
+            derivative_smoothing_info: "0 = pas de lissage, >0 = moyenne glissante",
             time_end: "Temps fin (s):",
             time_start: "Temps début (s):",
             tip: "Astuce",
@@ -684,7 +688,8 @@ const i18nTranslations = {
 
             // New keys added
             diff_canal: "Diff/Channel",
-            smoothing: "Channel Smoothing"
+            smoothing: "Channel Smoothing",
+            derivative: "Channel Derivative"
         },
 
         // TOOLTIPS
@@ -758,6 +763,7 @@ const i18nTranslations = {
         placeholders: {
             zero: "0.000",
             smoothed_channel: "Smoothed channel",
+            derivative_channel: "Channel derivative",
             optional: "Optional",
             formula_example: "Ex: S2-S1 or sqrt(S1^2+S2^2)",
             notes: "Notes...",
@@ -1071,6 +1077,8 @@ const i18nTranslations = {
             source_channel: "Source channel:",
             step_ms: "Step (ms):",
             subtraction: "Subtraction",
+            derivative_smoothing: "Smoothing:",
+            derivative_smoothing_info: "0 = no smoothing, >0 = moving average",
             time_end: "End time (s):",
             time_start: "Start time (s):",
             tip: "Tip",
@@ -1224,7 +1232,8 @@ const i18nTranslations = {
 
             // Neue Schlüssel hinzugefügt
             diff_canal: "Diff/Kanal",
-            smoothing: "Kanal-Glättung"
+            smoothing: "Kanal-Glättung",
+            derivative: "Kanalableitung"
         },
 
         // TOOLTIPS
@@ -1298,6 +1307,7 @@ const i18nTranslations = {
         placeholders: {
             zero: "0.000",
             smoothed_channel: "Geglätteter Kanal",
+            derivative_channel: "Kanalableitung",
             optional: "Optional",
             formula_example: "Bsp: S2-S1 oder sqrt(S1^2+S2^2)",
             notes: "Notizen...",
@@ -1611,6 +1621,8 @@ const i18nTranslations = {
             source_channel: "Quellkanal:",
             step_ms: "Schritt (ms):",
             subtraction: "Subtraktion",
+            derivative_smoothing: "Glättung:",
+            derivative_smoothing_info: "0 = keine Glättung, >0 = gleitender Durchschnitt",
             time_end: "Endzeit (s):",
             time_start: "Startzeit (s):",
             tip: "Tipp",

@@ -457,6 +457,63 @@
                         </div> <!-- Fin smoothing-content -->
                     </div>
 
+                    <!-- Dérivée de Canal -->
+                    <div style="margin-bottom:15px;">
+                        <button onclick="toggleDerivative()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
+                            <i class="fas fa-chart-line"></i> <span data-i18n="sidebar.derivative">Dérivée de Canal</span>
+                            <i id="derivative-toggle-icon" class="fas fa-chevron-down" style="float:right; font-size:0.8em;"></i>
+                        </button>
+
+                        <div id="derivative-content" style="display:none;">
+                        <!-- Sélection du canal source -->
+                        <div class="control-row" style="margin-bottom:8px;">
+                            <label style="font-size:0.9em;"><span data-i18n="labels.source_channel">Canal source:</span></label>
+                            <select id="derivative-source-channel" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                                <option value=""><span data-i18n="labels.select">-- Sélectionner --</span></option>
+                            </select>
+                        </div>
+
+                        <!-- Nom du nouveau canal -->
+                        <div class="control-row" style="margin-bottom:8px;">
+                            <label style="font-size:0.9em;"><span data-i18n="labels.name">Nom:</span></label>
+                            <input type="text" id="derivative-channel-name" data-i18n-placeholder="placeholders.derivative_channel" placeholder="Dérivée canal" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;" oninput="updateDerivativeRealtime()">
+                        </div>
+
+                        <!-- Couleur -->
+                        <div class="control-row" style="margin-bottom:8px;">
+                            <label style="font-size:0.9em;"><span data-i18n="labels.color">Couleur:</span></label>
+                            <div id="derivative-channel-color-btn" data-color-value="#FF6B35" onclick="openAdvancedColorPicker(this.dataset.colorValue, (color) => { this.dataset.colorValue = color; this.style.background = color; updateDerivativeRealtime(); }, this)" style="width:50px; height:30px; background:#FF6B35; border:2px solid var(--border-color); border-radius:4px; cursor:pointer;"></div>
+                        </div>
+
+                        <!-- Lissage (slider) -->
+                        <div style="margin-bottom:8px;">
+                            <div class="control-row" style="margin-bottom:4px;">
+                                <label style="font-size:0.9em;"><span data-i18n="labels.derivative_smoothing">Lissage:</span></label>
+                                <span id="derivative-smoothing-value" style="color:var(--accent-blue); font-weight:bold; font-size:0.9em;">0</span>
+                            </div>
+                            <input type="range" id="derivative-smoothing" min="0" max="200" value="0" step="1" style="width:100%;" oninput="document.getElementById('derivative-smoothing-value').textContent = this.value; updateDerivativeRealtime()">
+                            <div style="font-size:0.7em; color:var(--text-muted); margin-top:2px;">
+                                <span data-i18n="labels.derivative_smoothing_info">0 = pas de lissage, >0 = moyenne glissante</span>
+                            </div>
+                        </div>
+
+                        <!-- Bouton créer -->
+                        <button onclick="createDerivativeChannel()" style="width:100%; padding:8px; background:var(--accent-green); color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem; margin-bottom:10px;">
+                            <i class="fas fa-plus-circle"></i> <span data-i18n="labels.create">Créer</span>
+                        </button>
+
+                        <!-- Liste des canaux dérivés -->
+                        <div id="derivative-channels-list" style="display:none; margin-top:10px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color);">
+                            <div style="font-size:0.85rem; margin-bottom:8px; color:var(--text-muted); font-weight:bold;">
+                                <i class="fas fa-list"></i> <span data-i18n="modals.channels">Canaux</span> dérivés:
+                            </div>
+                            <div id="derivative-channels-items">
+                                <!-- Les canaux dérivés seront listés ici -->
+                            </div>
+                        </div>
+                        </div> <!-- Fin derivative-content -->
+                    </div>
+
                     <!-- Canal Calculé -->
                     <div style="margin-bottom:15px;">
                         <button onclick="toggleCalculatedChannel()" style="width:100%; margin:0 0 10px 0; padding:8px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; text-align:left; font-size:0.95rem; font-weight:bold;">
@@ -1834,6 +1891,7 @@
 <script src="ruler-tool.js"></script>
 <script src="track-tool.js"></script>
 <script src="smoothing.js"></script>
+<script src="derivative-channel.js"></script>
 <script src="calculated-channel.js"></script>
 <script src="canal-quick-view.js"></script>
 <script src="section-reorder.js"></script>

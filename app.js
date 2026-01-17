@@ -69,7 +69,7 @@ let uiState = {
     timeVisible: true,
     freqVisible: false,
     spectroVisible: false,
-    tooltipsEnabled: true  // Activer/désactiver les infos au survol
+    tooltipsEnabled: false  // Activer/désactiver les infos au survol
 };
 
 // Ajouter ces fonctions dans la section INIT (après window.onload)
@@ -398,10 +398,26 @@ function loadTooltipPreference() {
     const saved = localStorage.getItem('tooltipsEnabled');
     if (saved !== null) {
         uiState.tooltipsEnabled = saved === 'true';
-        const toggle = document.getElementById('tooltip-enabled-toggle');
-        if (toggle) {
-            toggle.checked = uiState.tooltipsEnabled;
-        }
+    }
+
+    // Toujours initialiser la checkbox avec la valeur actuelle de uiState
+    const toggle = document.getElementById('tooltip-enabled-toggle');
+    if (toggle) {
+        toggle.checked = uiState.tooltipsEnabled;
+    }
+
+    // Appliquer l'état aux graphiques existants
+    if (appState.charts && appState.charts.time) {
+        appState.charts.time.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.time.update('none');
+    }
+    if (appState.charts && appState.charts.freq) {
+        appState.charts.freq.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.freq.update('none');
+    }
+    if (appState.charts && appState.charts.spectro) {
+        appState.charts.spectro.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.spectro.update('none');
     }
 }
 

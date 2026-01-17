@@ -21,8 +21,8 @@ function initCharts() {
         plugins: {
             legend: { display: false },
             tooltip: {
-                // Tooltips activés/désactivés via le paramètre utilisateur
-                enabled: typeof uiState !== 'undefined' ? uiState.tooltipsEnabled : true
+                // Tooltips désactivés par défaut, activés/désactivés via le paramètre utilisateur
+                enabled: typeof uiState !== 'undefined' ? uiState.tooltipsEnabled : false
             }
         },
         scales: {

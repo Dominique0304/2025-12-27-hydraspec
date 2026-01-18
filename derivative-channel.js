@@ -401,26 +401,24 @@ function populateDerivativeSourceChannels() {
     // Vider la liste
     select.innerHTML = '<option value="">-- Sélectionner --</option>';
 
-    // Ajouter les canaux disponibles
-    if (appState.channelConfig && appState.channelConfig.length > 0) {
-        appState.channelConfig.forEach(config => {
+    // Ajouter les canaux disponibles (même structure que smoothing.js)
+    if (appState.availableColumns && appState.availableColumns.length > 0) {
+        appState.availableColumns.forEach(col => {
             // Ne pas inclure les canaux dérivés ou lissés dans la liste source
-            if (!config.isDerivative && !config.isSmoothed) {
+            if (!col.isDerivative && !col.isSmoothed) {
                 const option = document.createElement('option');
-                option.value = config.index;
-                option.textContent = config.label || config.name || `Canal ${config.index}`;
+                option.value = col.index;
+                option.textContent = col.label || col.name;
                 select.appendChild(option);
             }
         });
     }
 }
 
-// Initialiser le module au chargement d'un fichier
-if (typeof addFileLoadCallback === 'function') {
-    addFileLoadCallback(() => {
-        populateDerivativeSourceChannels();
-        updateDerivativeChannelsList();
-    });
+// Initialiser le système de dérivée (appelé après le chargement d'un fichier)
+function initDerivativeSystem() {
+    populateDerivativeSourceChannels();
+    updateDerivativeChannelsList();
 }
 
 console.log('✅ Module derivative-channel.js chargé');

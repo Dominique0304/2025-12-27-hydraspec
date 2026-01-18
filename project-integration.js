@@ -907,6 +907,11 @@ function updateAllInterface(isInitialLoad = false) {
             initSmoothingSystem();
         }
 
+        // CRITIQUE : Initialiser le système de dérivée après chargement des canaux
+        if (typeof initDerivativeSystem === 'function') {
+            initDerivativeSystem();
+        }
+
         // CRITIQUE : Peupler le sélecteur de canal pour les annotations
         if (typeof populateChannelSelector === 'function') {
             populateChannelSelector(-1); // -1 = annotation libre par défaut

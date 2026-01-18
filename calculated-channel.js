@@ -1189,30 +1189,57 @@ function recreateCalculatedChannel(channel) {
     console.log(`🔄 Recréation du canal calculé: ${channel.name}`);
 
     try {
-        // Préparer les données des canaux pour le parser (uniquement les canaux non calculés)
-        const channelData = {};
-        let channelIndex = 1;
+        let calculatedData;
 
-        appState.channelConfig.forEach((config) => {
-            // Exclure les canaux calculés pour éviter les dépendances circulaires
-            if (!config.isCalculated) {
-                const columnData = appState.allColumnData[config.index];
-                if (columnData && columnData.length > 0) {
-                    const channelKey = 'S' + channelIndex;
-                    channelData[channelKey] = columnData;
-                    channelIndex++;
-                }
+        // CANAL VÉRIN
+        if (channel.type === 'cylinder') {
+            // Récupérer les données de vitesse
+            const velocityData = appState.allColumnData[channel.sourceChannelIndex];
+            if (!velocityData || velocityData.length === 0) {
+                console.error('⚠️ Données de vitesse introuvables pour:', channel.name);
+                return;
             }
-        });
 
-        if (Object.keys(channelData).length === 0) {
-            console.error('⚠️ Aucun canal disponible pour recalculer:', channel.name);
-            return;
+            // Calculer les débits
+            const {pistonFlow, rodFlow} = calculateCylinderFlows(
+                velocityData,
+                channel.pistonDiameter,
+                channel.rodDiameter,
+                channel.velocityUnit
+            );
+
+            // Déterminer quel débit utiliser selon le côté
+            calculatedData = channel.cylinderSide === 'piston'
+                ? new Float32Array(pistonFlow)
+                : new Float32Array(rodFlow);
+
+        } else {
+            // CANAL FORMULE CLASSIQUE
+            // Préparer les données des canaux pour le parser (uniquement les canaux non calculés)
+            const channelData = {};
+            let channelIndex = 1;
+
+            appState.channelConfig.forEach((config) => {
+                // Exclure les canaux calculés pour éviter les dépendances circulaires
+                if (!config.isCalculated && !config.isCylinder) {
+                    const columnData = appState.allColumnData[config.index];
+                    if (columnData && columnData.length > 0) {
+                        const channelKey = 'S' + channelIndex;
+                        channelData[channelKey] = columnData;
+                        channelIndex++;
+                    }
+                }
+            });
+
+            if (Object.keys(channelData).length === 0) {
+                console.error('⚠️ Aucun canal disponible pour recalculer:', channel.name);
+                return;
+            }
+
+            // Parser et recalculer
+            const parser = new FormulaParser(channelData);
+            calculatedData = parser.evaluate(channel.formula);
         }
-
-        // Parser et recalculer
-        const parser = new FormulaParser(channelData);
-        const calculatedData = parser.evaluate(channel.formula);
 
         // Trouver le prochain index d'axe Y disponible
         let yAxisIndex = 0;
@@ -1222,6 +1249,18 @@ function recreateCalculatedChannel(channel) {
         });
         if (existingIndices.length > 0) {
             yAxisIndex = Math.max(...existingIndices) + 1;
+        }
+
+        // Pour les canaux vérin, partager le même axe Y pour le groupe
+        if (channel.type === 'cylinder' && channel.cylinderGroupId) {
+            // Chercher si l'autre canal du groupe existe déjà
+            const otherChannelConfig = appState.channelConfig.find(cfg =>
+                cfg.cylinderGroupId === channel.cylinderGroupId && cfg.calculatedId !== channel.id
+            );
+            if (otherChannelConfig) {
+                // Utiliser le même axe Y
+                yAxisIndex = parseInt(otherChannelConfig.yAxisID.replace('y', ''));
+            }
         }
 
         // Trouver le prochain index disponible dans allColumnData
@@ -1235,8 +1274,9 @@ function recreateCalculatedChannel(channel) {
             index: nextDataIndex,
             name: channel.name,
             label: channel.name,
-            unit: "",
-            isCalculated: true,
+            unit: channel.type === 'cylinder' ? "L/min" : "",
+            isCalculated: channel.type !== 'cylinder',
+            isCylinder: channel.type === 'cylinder',
             calculatedId: channel.id
         });
 
@@ -1245,8 +1285,8 @@ function recreateCalculatedChannel(channel) {
             index: nextDataIndex,
             name: channel.name,
             label: channel.name,
-            unit: "",
-            visible: true,
+            unit: channel.type === 'cylinder' ? "L/min" : "",
+            visible: channel.visible !== false,
             color: channel.color,
             lineWidth: 1.5,
             yAxisPosition: 'right',
@@ -1254,8 +1294,10 @@ function recreateCalculatedChannel(channel) {
             yMax: null,
             yAxisID: `y${yAxisIndex}`,
             showFFT: false,
-            isCalculated: true,
-            calculatedId: channel.id
+            isCalculated: channel.type !== 'cylinder',
+            isCylinder: channel.type === 'cylinder',
+            calculatedId: channel.id,
+            cylinderGroupId: channel.cylinderGroupId
         });
 
         // Mettre à jour dataIndex dans le canal

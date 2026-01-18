@@ -208,16 +208,39 @@ function createDerivativeChannel() {
         derivativeData = movingAverageDerivative(derivativeData, smoothing);
     }
 
+    // Extraire l'unité du canal source
+    const sourceColumn = appState.availableColumns.find(col => col.index === sourceChannelIndex);
+    let sourceUnit = '';
+    if (sourceColumn && sourceColumn.label) {
+        // Extraire l'unité entre parenthèses : "S1: P1 (bar)" → "bar"
+        const unitMatch = sourceColumn.label.match(/\(([^)]+)\)/);
+        sourceUnit = unitMatch ? unitMatch[1] : '';
+    }
+
+    // Déterminer l'unité de l'axe X (temps ou autre canal)
+    let xUnit = 's'; // Par défaut : secondes
+    if (appState.xAxisChannel && appState.xAxisChannel > 0) {
+        const xColumn = appState.availableColumns[appState.xAxisChannel - 1];
+        if (xColumn && xColumn.label) {
+            const xUnitMatch = xColumn.label.match(/\(([^)]+)\)/);
+            xUnit = xUnitMatch ? xUnitMatch[1] : '';
+        }
+    }
+
+    // Calculer l'unité dérivée : unité_Y/unité_X
+    const derivativeUnit = sourceUnit ? `${sourceUnit}/${xUnit}` : `1/${xUnit}`;
+
     // Créer un nouveau canal
     const newChannel = {
         id: Date.now(),
         name: name,
         label: name,
         sourceIndex: sourceChannelIndex,
-        sourceName: appState.availableColumns.find(col => col.index === sourceChannelIndex)?.label || 'Unknown',
+        sourceName: sourceColumn?.label || 'Unknown',
         smoothing: smoothing,
         color: color,
-        data: derivativeData
+        data: derivativeData,
+        unit: derivativeUnit
     };
 
     // Ajouter aux canaux dérivés
@@ -231,7 +254,7 @@ function createDerivativeChannel() {
     appState.availableColumns.push({
         index: newDataIndex,
         label: name,
-        unit: '1/s', // Unité de la dérivée
+        unit: derivativeUnit,
         isDerivative: true,
         derivativeId: newChannel.id
     });
@@ -242,6 +265,7 @@ function createDerivativeChannel() {
         index: newDataIndex,
         name: name,
         label: name,
+        unit: derivativeUnit,
         color: color,
         visible: true,
         yAxisID: `y${yAxisIndex}`,
@@ -458,6 +482,30 @@ function recreateDerivativeChannel(channel) {
         derivativeData = movingAverageDerivative(derivativeData, channel.smoothing);
     }
 
+    // Déterminer l'unité dérivée
+    let derivativeUnit = channel.unit; // Utiliser l'unité sauvegardée si disponible
+
+    // Si pas d'unité sauvegardée (anciens fichiers), la recalculer
+    if (!derivativeUnit) {
+        const sourceColumn = appState.availableColumns.find(col => col.index === channel.sourceIndex);
+        let sourceUnit = '';
+        if (sourceColumn && sourceColumn.label) {
+            const unitMatch = sourceColumn.label.match(/\(([^)]+)\)/);
+            sourceUnit = unitMatch ? unitMatch[1] : '';
+        }
+
+        let xUnit = 's'; // Par défaut : secondes
+        if (appState.xAxisChannel && appState.xAxisChannel > 0) {
+            const xColumn = appState.availableColumns[appState.xAxisChannel - 1];
+            if (xColumn && xColumn.label) {
+                const xUnitMatch = xColumn.label.match(/\(([^)]+)\)/);
+                xUnit = xUnitMatch ? xUnitMatch[1] : '';
+            }
+        }
+
+        derivativeUnit = sourceUnit ? `${sourceUnit}/${xUnit}` : `1/${xUnit}`;
+    }
+
     // Ajouter à allColumnData
     const newDataIndex = appState.allColumnData.length;
     appState.allColumnData.push(new Float32Array(derivativeData));
@@ -467,7 +515,7 @@ function recreateDerivativeChannel(channel) {
         index: newDataIndex,
         label: channel.label,
         name: channel.name,
-        unit: '1/s',
+        unit: derivativeUnit,
         isDerivative: true,
         derivativeId: channel.id
     });
@@ -478,6 +526,7 @@ function recreateDerivativeChannel(channel) {
         index: newDataIndex,
         name: channel.name,
         label: channel.label,
+        unit: derivativeUnit,
         color: channel.color,
         visible: true,
         yAxisID: `y${yAxisIndex}`,

@@ -833,29 +833,12 @@ function restoreAllToolsState(project) {
 
     // Restaurer et recréer les canaux lissés, calculés et dérivés
     if (typeof appState !== 'undefined') {
-        // IMPORTANT: Restaurer dans l'ordre car les canaux dérivés peuvent dépendre des canaux lissés
+        // IMPORTANT: Restaurer dans l'ordre de dépendance :
+        // 1. Calculés (dépendent uniquement des données brutes)
+        // 2. Lissés (peuvent dépendre des canaux calculés)
+        // 3. Dérivés (peuvent dépendre des canaux calculés ET lissés)
 
-        // 1. Restaurer les canaux lissés
-        if (project.toolsState.smoothedChannels && project.toolsState.smoothedChannels.length > 0) {
-            appState.smoothedChannels = [];
-            console.log(`🔧 Recréation de ${project.toolsState.smoothedChannels.length} canal(aux) lissé(s)...`);
-
-            project.toolsState.smoothedChannels.forEach(channel => {
-                const channelCopy = JSON.parse(JSON.stringify(channel));
-                appState.smoothedChannels.push(channelCopy);
-
-                if (typeof recreateSmoothedChannel === 'function') {
-                    recreateSmoothedChannel(channelCopy);
-                }
-            });
-
-            // Rafraîchir la liste d'affichage
-            if (typeof updateSmoothedChannelsList === 'function') {
-                updateSmoothedChannelsList();
-            }
-        }
-
-        // 2. Restaurer les canaux calculés
+        // 1. Restaurer les canaux calculés EN PREMIER
         if (project.toolsState.calculatedChannels && project.toolsState.calculatedChannels.length > 0) {
             appState.calculatedChannels = [];
             console.log(`🔧 Recréation de ${project.toolsState.calculatedChannels.length} canal(aux) calculé(s)...`);
@@ -875,7 +858,27 @@ function restoreAllToolsState(project) {
             }
         }
 
-        // 3. Restaurer les canaux dérivés (en dernier car peuvent dépendre des lissés)
+        // 2. Restaurer les canaux lissés (peuvent utiliser les canaux calculés)
+        if (project.toolsState.smoothedChannels && project.toolsState.smoothedChannels.length > 0) {
+            appState.smoothedChannels = [];
+            console.log(`🔧 Recréation de ${project.toolsState.smoothedChannels.length} canal(aux) lissé(s)...`);
+
+            project.toolsState.smoothedChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.smoothedChannels.push(channelCopy);
+
+                if (typeof recreateSmoothedChannel === 'function') {
+                    recreateSmoothedChannel(channelCopy);
+                }
+            });
+
+            // Rafraîchir la liste d'affichage
+            if (typeof updateSmoothedChannelsList === 'function') {
+                updateSmoothedChannelsList();
+            }
+        }
+
+        // 3. Restaurer les canaux dérivés EN DERNIER (peuvent dépendre des calculés et lissés)
         if (project.toolsState.derivativeChannels && project.toolsState.derivativeChannels.length > 0) {
             appState.derivativeChannels = [];
             console.log(`🔧 Recréation de ${project.toolsState.derivativeChannels.length} canal(aux) dérivé(s)...`);

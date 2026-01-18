@@ -785,8 +785,10 @@ function handleZoom(chart, e) {
     const rangeX = chart.scales.x.max - chart.scales.x.min;
     const centerX = (chart.scales.x.min + chart.scales.x.max) / 2;
 
-    const zoomX = !e.ctrlKey;
-    const zoomY = !e.shiftKey;
+    // Détection des modificateurs
+    const zoomYTopOnly = e.altKey;           // Alt : zoom Y vers le haut uniquement (yMin fixe)
+    const zoomX = !e.ctrlKey && !e.altKey;  // Zoom X si ni Ctrl ni Alt
+    const zoomY = !e.shiftKey && !e.altKey; // Zoom Y normal si ni Shift ni Alt
 
     if (zoomX) {
         const newRangeX = direction > 0 ? rangeX * zoomFactor : rangeX / zoomFactor;
@@ -797,7 +799,7 @@ function handleZoom(chart, e) {
     }
 
     if (zoomY) {
-        // Zoomer sur TOUTES les échelles Y (y, y0, y1, y2...)
+        // Zoom Y centré (mode normal)
         Object.keys(chart.scales).forEach(scaleKey => {
             if (scaleKey.startsWith('y')) {
                 const scale = chart.scales[scaleKey];
@@ -808,6 +810,28 @@ function handleZoom(chart, e) {
                 if(newRangeY > 0.000001) {
                     chart.options.scales[scaleKey].min = centerY - newRangeY / 2;
                     chart.options.scales[scaleKey].max = centerY + newRangeY / 2;
+                }
+            }
+        });
+    }
+
+    if (zoomYTopOnly) {
+        // Zoom Y asymétrique : yMin reste fixe, seul yMax change
+        // Utilisé pour garder la base (ex: 0 ou valeur minimale) et zoomer vers le haut
+        Object.keys(chart.scales).forEach(scaleKey => {
+            if (scaleKey.startsWith('y')) {
+                const scale = chart.scales[scaleKey];
+                const yMin = scale.min;  // Valeur minimale actuelle (fixe)
+                const yMax = scale.max;  // Valeur maximale actuelle (variable)
+                const rangeY = yMax - yMin;
+
+                // Calculer le nouveau yMax (yMin reste inchangé)
+                const newRangeY = direction > 0 ? rangeY * zoomFactor : rangeY / zoomFactor;
+                const newYMax = yMin + newRangeY;
+
+                if(newRangeY > 0.000001) {
+                    chart.options.scales[scaleKey].min = yMin;  // yMin reste fixe
+                    chart.options.scales[scaleKey].max = newYMax;  // Seul yMax change
                 }
             }
         });

@@ -411,17 +411,16 @@ function populateDerivativeSourceChannels() {
     // Vider la liste
     select.innerHTML = '<option value="">-- Sélectionner --</option>';
 
-    // Ajouter les canaux disponibles (sauf les canaux dérivés)
+    // Ajouter TOUS les canaux disponibles (y compris les canaux dérivés)
+    // Cela permet de calculer des dérivées secondes, tierces, etc.
     if (appState.availableColumns && appState.availableColumns.length > 0) {
         appState.availableColumns.forEach(col => {
-            // Permettre tous les canaux sauf les canaux dérivés
-            // On peut calculer la dérivée d'un canal lissé ou calculé
-            if (!col.isDerivative) {
-                const option = document.createElement('option');
-                option.value = col.index;
-                option.textContent = col.label || col.name;
-                select.appendChild(option);
-            }
+            // Permettre TOUS les canaux : bruts, lissés, calculés ET dérivés
+            // Dérivée d'une dérivée = dérivée seconde (ex: accélération)
+            const option = document.createElement('option');
+            option.value = col.index;
+            option.textContent = col.label || col.name;
+            select.appendChild(option);
         });
     }
 }

@@ -49,7 +49,7 @@ function toggleCalculatedChannel() {
     }
 }
 
-// Toggle aide
+// Toggle aide formule
 function toggleFormulaHelp() {
     const help = document.getElementById('formula-help');
 
@@ -57,6 +57,127 @@ function toggleFormulaHelp() {
         const isVisible = help.style.display !== 'none';
         help.style.display = isVisible ? 'none' : 'block';
     }
+}
+
+// Toggle aide vérin
+function toggleCylinderHelp() {
+    const help = document.getElementById('cylinder-help');
+
+    if (help) {
+        const isVisible = help.style.display !== 'none';
+        help.style.display = isVisible ? 'none' : 'block';
+    }
+}
+
+// Basculer entre formule et vérin
+function toggleCalculatedType() {
+    const typeSelect = document.getElementById('calculated-type');
+    const formulaFields = document.getElementById('formula-fields');
+    const cylinderFields = document.getElementById('cylinder-fields');
+
+    if (!typeSelect || !formulaFields || !cylinderFields) return;
+
+    const type = typeSelect.value;
+
+    if (type === 'formula') {
+        formulaFields.style.display = 'block';
+        cylinderFields.style.display = 'none';
+    } else if (type === 'cylinder') {
+        formulaFields.style.display = 'none';
+        cylinderFields.style.display = 'block';
+
+        // Peupler la liste des canaux de vitesse
+        populateCylinderVelocityChannel();
+    }
+}
+
+// Peupler la liste des canaux de vitesse pour le calcul vérin
+function populateCylinderVelocityChannel() {
+    const select = document.getElementById('cylinder-velocity-channel');
+    if (!select) return;
+
+    // Vider la liste
+    select.innerHTML = '<option value="">-- Sélectionner --</option>';
+
+    // Ajouter tous les canaux disponibles
+    if (appState.availableColumns && appState.availableColumns.length > 0) {
+        appState.availableColumns.forEach(col => {
+            const option = document.createElement('option');
+            option.value = col.index;
+            option.textContent = col.label || col.name;
+            select.appendChild(option);
+        });
+    }
+}
+
+// =====================================
+// CALCULS HYDRAULIQUES VÉRIN
+// =====================================
+
+// Convertir l'unité de vitesse en mm/s
+function convertVelocityToMmPerSec(value, unit) {
+    const unitLower = unit.toLowerCase().trim();
+
+    // Détection des unités courantes
+    if (unitLower === 'mm/s' || unitLower === 'mm/sec') {
+        return value;
+    } else if (unitLower === 'cm/s' || unitLower === 'cm/sec') {
+        return value * 10;
+    } else if (unitLower === 'm/s' || unitLower === 'm/sec') {
+        return value * 1000;
+    } else if (unitLower === 'dm/s' || unitLower === 'dm/sec') {
+        return value * 100;
+    } else if (unitLower.includes('mm')) {
+        return value; // Par défaut mm/s
+    } else if (unitLower.includes('cm')) {
+        return value * 10;
+    } else if (unitLower.includes('m') && !unitLower.includes('mm')) {
+        return value * 1000;
+    } else {
+        // Unité inconnue, on suppose mm/s
+        console.warn(`Unité "${unit}" non reconnue, utilisation de mm/s par défaut`);
+        return value;
+    }
+}
+
+// Calculer les débits vérin
+function calculateCylinderFlows(velocityData, pistonDiameter, rodDiameter, velocityUnit) {
+    const Dp = pistonDiameter; // mm
+    const Dt = rodDiameter;    // mm
+
+    // Surfaces en mm²
+    const Sp = Math.PI * Math.pow(Dp, 2) / 4;           // Surface piston
+    const Sa = Math.PI * (Math.pow(Dp, 2) - Math.pow(Dt, 2)) / 4; // Surface annulaire
+
+    // Tableaux de résultat
+    const pistonFlow = [];
+    const rodFlow = [];
+
+    // Calcul pour chaque point
+    for (let i = 0; i < velocityData.length; i++) {
+        const velocity = velocityData[i];
+
+        // Convertir la vitesse en mm/s
+        const velocityMmPerSec = convertVelocityToMmPerSec(velocity, velocityUnit);
+
+        // Débit en mm³/s
+        const Qp_mm3s = Sp * velocityMmPerSec;
+        const Qt_mm3s = Sa * velocityMmPerSec;
+
+        // Conversion mm³/s → L/min
+        // 1 L = 1 000 000 mm³, 1 min = 60 s
+        // Donc : L/min = mm³/s × 60 / 1 000 000
+        const Qp_Lmin = Qp_mm3s * 60 / 1000000;
+        const Qt_Lmin = Qt_mm3s * 60 / 1000000;
+
+        pistonFlow.push(Qp_Lmin);
+        rodFlow.push(Qt_Lmin);
+    }
+
+    return {
+        pistonFlow: pistonFlow,
+        rodFlow: rodFlow
+    };
 }
 
 // =====================================
@@ -154,11 +275,225 @@ class FormulaParser {
 }
 
 // =====================================
+// CRÉATION DE CANAUX VÉRIN
+// =====================================
+
+function createCylinderChannels() {
+    try {
+        // Récupérer les paramètres
+        const velocityChannelIndex = parseInt(document.getElementById('cylinder-velocity-channel').value);
+        let name = document.getElementById('calculated-channel-name').value.trim();
+        const pistonDiameter = parseFloat(document.getElementById('cylinder-piston-diameter').value);
+        const rodDiameter = parseFloat(document.getElementById('cylinder-rod-diameter').value);
+        const velocityUnit = document.getElementById('cylinder-velocity-unit').value.trim();
+        const showPiston = document.getElementById('cylinder-show-piston').checked;
+        const showRod = document.getElementById('cylinder-show-rod').checked;
+        const color = getCalculatedChannelColor();
+
+        // Validation
+        if (isNaN(velocityChannelIndex) || velocityChannelIndex < 0) {
+            alert('Veuillez sélectionner un canal de vitesse');
+            return;
+        }
+
+        if (isNaN(pistonDiameter) || pistonDiameter <= 0) {
+            alert('Veuillez entrer un diamètre de piston valide (> 0)');
+            return;
+        }
+
+        if (isNaN(rodDiameter) || rodDiameter < 0) {
+            alert('Veuillez entrer un diamètre de tige valide (>= 0)');
+            return;
+        }
+
+        if (rodDiameter >= pistonDiameter) {
+            alert('Le diamètre de la tige doit être inférieur au diamètre du piston');
+            return;
+        }
+
+        if (!velocityUnit) {
+            alert('Veuillez spécifier l\'unité de vitesse');
+            return;
+        }
+
+        // Générer un nom automatique si nécessaire
+        if (!name) {
+            name = 'Vérin';
+        }
+
+        // Récupérer les données de vitesse
+        const velocityData = appState.allColumnData[velocityChannelIndex];
+        if (!velocityData || velocityData.length === 0) {
+            alert('Données de vitesse introuvables');
+            return;
+        }
+
+        // Calculer les débits
+        const {pistonFlow, rodFlow} = calculateCylinderFlows(
+            velocityData,
+            pistonDiameter,
+            rodDiameter,
+            velocityUnit
+        );
+
+        // Créer un ID unique pour le groupe de canaux vérin
+        const cylinderGroupId = Date.now();
+
+        // Trouver le prochain index d'axe Y disponible
+        let yAxisIndex = 0;
+        const existingIndices = appState.channelConfig.map(cfg => {
+            const match = cfg.yAxisID.match(/y(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        });
+        if (existingIndices.length > 0) {
+            yAxisIndex = Math.max(...existingIndices) + 1;
+        }
+
+        // Créer les 2 canaux avec le MÊME axe Y
+        const pistonIndex = appState.allColumnData.length;
+        const rodIndex = appState.allColumnData.length + 1;
+
+        // Ajouter les données
+        appState.allColumnData.push(new Float32Array(pistonFlow));
+        appState.allColumnData.push(new Float32Array(rodFlow));
+
+        // Créer les objets de canal calculé
+        const pistonChannel = {
+            id: cylinderGroupId + '_piston',
+            type: 'cylinder',
+            cylinderGroupId: cylinderGroupId,
+            name: `${name} - Piston`,
+            color: color,
+            dataIndex: pistonIndex,
+            pistonDiameter: pistonDiameter,
+            rodDiameter: rodDiameter,
+            velocityUnit: velocityUnit,
+            velocityChannelIndex: velocityChannelIndex
+        };
+
+        const rodChannel = {
+            id: cylinderGroupId + '_rod',
+            type: 'cylinder',
+            cylinderGroupId: cylinderGroupId,
+            name: `${name} - Annulaire`,
+            color: color,
+            dataIndex: rodIndex,
+            pistonDiameter: pistonDiameter,
+            rodDiameter: rodDiameter,
+            velocityUnit: velocityUnit,
+            velocityChannelIndex: velocityChannelIndex
+        };
+
+        appState.calculatedChannels.push(pistonChannel);
+        appState.calculatedChannels.push(rodChannel);
+
+        // Ajouter à availableColumns
+        appState.availableColumns.push({
+            index: pistonIndex,
+            name: pistonChannel.name,
+            label: pistonChannel.name,
+            unit: "L/min",
+            isCylinder: true,
+            calculatedId: pistonChannel.id
+        });
+
+        appState.availableColumns.push({
+            index: rodIndex,
+            name: rodChannel.name,
+            label: rodChannel.name,
+            unit: "L/min",
+            isCylinder: true,
+            calculatedId: rodChannel.id
+        });
+
+        // Ajouter à channelConfig (MÊME axe Y)
+        appState.channelConfig.push({
+            index: pistonIndex,
+            name: pistonChannel.name,
+            label: pistonChannel.name,
+            unit: "L/min",
+            visible: showPiston,
+            color: color,
+            lineWidth: 1.5,
+            yAxisPosition: 'right',
+            yMin: null,
+            yMax: null,
+            yAxisID: `y${yAxisIndex}`, // Même axe Y
+            showFFT: false,
+            isCylinder: true,
+            calculatedId: pistonChannel.id,
+            cylinderGroupId: cylinderGroupId
+        });
+
+        appState.channelConfig.push({
+            index: rodIndex,
+            name: rodChannel.name,
+            label: rodChannel.name,
+            unit: "L/min",
+            visible: showRod,
+            color: color,
+            lineWidth: 1.5,
+            yAxisPosition: 'right',
+            yMin: null,
+            yMax: null,
+            yAxisID: `y${yAxisIndex}`, // Même axe Y
+            showFFT: false,
+            isCylinder: true,
+            calculatedId: rodChannel.id,
+            cylinderGroupId: cylinderGroupId
+        });
+
+        // Réinitialiser le formulaire
+        document.getElementById('cylinder-velocity-channel').value = '';
+        document.getElementById('calculated-channel-name').value = '';
+        document.getElementById('cylinder-piston-diameter').value = '';
+        document.getElementById('cylinder-rod-diameter').value = '';
+        document.getElementById('cylinder-velocity-unit').value = 'mm/s';
+        document.getElementById('cylinder-show-piston').checked = true;
+        document.getElementById('cylinder-show-rod').checked = true;
+
+        // Mettre à jour les graphiques et listes
+        updateCalculatedChannelsList();
+        updateTimeChart();
+        updateChannelConfigUI();
+
+        // Rafraîchir les listes des autres outils
+        if (typeof updateCanalQuickView === 'function') {
+            updateCanalQuickView();
+        }
+        if (typeof populateSmoothedChannelSelector === 'function') {
+            populateSmoothedChannelSelector();
+        }
+        if (typeof populateDerivativeSourceChannels === 'function') {
+            populateDerivativeSourceChannels();
+        }
+
+        console.log(`✅ Canaux vérin créés: ${name} - Piston et ${name} - Annulaire`);
+        setStatus(`Canaux vérin "${name}" créés avec succès`);
+
+    } catch (error) {
+        console.error('Erreur lors de la création des canaux vérin:', error);
+        alert(`Erreur: ${error.message}`);
+    }
+}
+
+// =====================================
 // CRÉATION DE CANAL CALCULÉ
 // =====================================
 
 function createCalculatedChannel() {
     try {
+        // Détecter le type de calcul
+        const typeSelect = document.getElementById('calculated-type');
+        const type = typeSelect ? typeSelect.value : 'formula';
+
+        // Si type vérin, déléguer à la fonction spécialisée
+        if (type === 'cylinder') {
+            createCylinderChannels();
+            return;
+        }
+
+        // Sinon, traitement formule classique
         const formula = document.getElementById('calculated-formula').value.trim();
         let name = document.getElementById('calculated-channel-name').value.trim();
         const color = getCalculatedChannelColor();

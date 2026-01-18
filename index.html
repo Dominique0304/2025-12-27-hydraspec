@@ -538,15 +538,91 @@
                                 <input type="text" id="calculated-channel-name" data-i18n-placeholder="placeholders.optional" placeholder="Optionnel" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
                             </div>
 
-                            <!-- Champ de formule avec bouton ? -->
-                            <div style="margin-bottom:8px;">
-                                <div style="display:flex; align-items:center; margin-bottom:4px;">
-                                    <label style="font-size:0.9em;"><span data-i18n="labels.formula">Formule:</span></label>
-                                    <button onclick="toggleFormulaHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" data-i18n-title="tooltips.formula_help" title="Aide sur les formules">
-                                        ?
-                                    </button>
+                            <!-- Type de calcul -->
+                            <div class="control-row" style="margin-bottom:12px;">
+                                <label style="font-size:0.9em;"><span data-i18n="labels.calc_type">Type:</span></label>
+                                <select id="calculated-type" onchange="toggleCalculatedType()" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                                    <option value="formula" data-i18n="labels.formula_calc">Formule classique</option>
+                                    <option value="cylinder" data-i18n="labels.cylinder_calc">Débit vérin</option>
+                                </select>
+                            </div>
+
+                            <!-- ========== CHAMPS FORMULE (affichés par défaut) ========== -->
+                            <div id="formula-fields">
+                                <!-- Champ de formule avec bouton ? -->
+                                <div style="margin-bottom:8px;">
+                                    <div style="display:flex; align-items:center; margin-bottom:4px;">
+                                        <label style="font-size:0.9em;"><span data-i18n="labels.formula">Formule:</span></label>
+                                        <button onclick="toggleFormulaHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" data-i18n-title="tooltips.formula_help" title="Aide sur les formules">
+                                            ?
+                                        </button>
+                                    </div>
+                                    <input type="text" id="calculated-formula" data-i18n-placeholder="placeholders.formula_example" placeholder="Ex: S2-S1 ou sqrt(S1^2+S2^2)" style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em; font-family:monospace;">
                                 </div>
-                                <input type="text" id="calculated-formula" data-i18n-placeholder="placeholders.formula_example" placeholder="Ex: S2-S1 ou sqrt(S1^2+S2^2)" style="width:100%; padding:6px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em; font-family:monospace;">
+                            </div>
+
+                            <!-- ========== CHAMPS VÉRIN (masqués par défaut) ========== -->
+                            <div id="cylinder-fields" style="display:none;">
+                                <!-- Canal de vitesse avec bouton ? -->
+                                <div style="margin-bottom:8px;">
+                                    <div style="display:flex; align-items:center; margin-bottom:4px;">
+                                        <label style="font-size:0.9em;"><span data-i18n="labels.velocity_channel">Canal vitesse:</span></label>
+                                        <button onclick="toggleCylinderHelp()" style="margin-left:6px; width:20px; height:20px; padding:0; background:var(--accent-blue); color:white; border:none; border-radius:50%; cursor:pointer; font-size:0.75rem; font-weight:bold; display:flex; align-items:center; justify-content:center;" data-i18n-title="tooltips.cylinder_help" title="Aide calcul débit vérin">
+                                            ?
+                                        </button>
+                                    </div>
+                                    <select id="cylinder-velocity-channel" style="width:100%; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                                        <option value="">-- Sélectionner --</option>
+                                    </select>
+                                </div>
+
+                                <!-- Aide vérin (accordéon) -->
+                                <div id="cylinder-help" style="display:none; margin-bottom:12px; padding:10px; background:var(--bg-secondary); border-radius:4px; font-size:0.75rem; max-height:200px; overflow-y:auto; border:1px solid var(--border-color);">
+                                    <div data-i18n-html="cylinder_help_content">
+                                        <p style="margin:0 0 8px 0; font-weight:bold;">Calcul de débit vérin</p>
+                                        <p style="margin:4px 0;">Calcule automatiquement les débits côté piston et annulaire (tige).</p>
+                                        <p style="margin:8px 0 4px 0; font-weight:bold;">Formules :</p>
+                                        <p style="margin:2px 0 2px 10px;">• Surface piston : π × Dp²/4</p>
+                                        <p style="margin:2px 0 2px 10px;">• Surface annulaire : π × (Dp² - Dt²)/4</p>
+                                        <p style="margin:2px 0 2px 10px;">• Débit = Surface × Vitesse × 60 ÷ 1 000 000</p>
+                                        <p style="margin:8px 0 0 0; font-style:italic; color:var(--text-muted);">Unités : Vitesse convertie en L/min selon l'unité saisie.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Unité de vitesse -->
+                                <div class="control-row" style="margin-bottom:8px;">
+                                    <label style="font-size:0.9em;"><span data-i18n="labels.velocity_unit">Unité vitesse:</span></label>
+                                    <input type="text" id="cylinder-velocity-unit" value="mm/s" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em; width:80px;">
+                                </div>
+
+                                <!-- Diamètre piston -->
+                                <div class="control-row" style="margin-bottom:8px;">
+                                    <label style="font-size:0.9em;"><span data-i18n="labels.piston_diameter">Diam. piston (mm):</span></label>
+                                    <input type="number" id="cylinder-piston-diameter" step="0.1" min="0" placeholder="50" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                                </div>
+
+                                <!-- Diamètre tige -->
+                                <div class="control-row" style="margin-bottom:8px;">
+                                    <label style="font-size:0.9em;"><span data-i18n="labels.rod_diameter">Diam. tige (mm):</span></label>
+                                    <input type="number" id="cylinder-rod-diameter" step="0.1" min="0" placeholder="25" style="flex:1; padding:4px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-size:0.85em;">
+                                </div>
+
+                                <!-- Cases à cocher visibilité -->
+                                <div style="margin-bottom:12px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color);">
+                                    <label style="font-size:0.85em; font-weight:bold; display:block; margin-bottom:6px;">
+                                        <span data-i18n="labels.display">Afficher:</span>
+                                    </label>
+                                    <div style="display:flex; flex-direction:column; gap:4px;">
+                                        <label style="font-size:0.85em; display:flex; align-items:center; cursor:pointer;">
+                                            <input type="checkbox" id="cylinder-show-piston" checked style="margin-right:6px; cursor:pointer;">
+                                            <span data-i18n="labels.piston_side">Côté fond (piston)</span>
+                                        </label>
+                                        <label style="font-size:0.85em; display:flex; align-items:center; cursor:pointer;">
+                                            <input type="checkbox" id="cylinder-show-rod" checked style="margin-right:6px; cursor:pointer;">
+                                            <span data-i18n="labels.rod_side">Côté tige (annulaire)</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Aide (accordéon) -->

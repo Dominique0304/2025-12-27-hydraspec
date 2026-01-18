@@ -411,11 +411,12 @@ function populateDerivativeSourceChannels() {
     // Vider la liste
     select.innerHTML = '<option value="">-- Sélectionner --</option>';
 
-    // Ajouter les canaux disponibles (même structure que smoothing.js)
+    // Ajouter les canaux disponibles (sauf les canaux dérivés)
     if (appState.availableColumns && appState.availableColumns.length > 0) {
         appState.availableColumns.forEach(col => {
-            // Ne pas inclure les canaux dérivés ou lissés dans la liste source
-            if (!col.isDerivative && !col.isSmoothed) {
+            // Permettre tous les canaux sauf les canaux dérivés
+            // On peut calculer la dérivée d'un canal lissé ou calculé
+            if (!col.isDerivative) {
                 const option = document.createElement('option');
                 option.value = col.index;
                 option.textContent = col.label || col.name;

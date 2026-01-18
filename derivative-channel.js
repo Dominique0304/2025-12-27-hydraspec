@@ -432,4 +432,68 @@ function initDerivativeSystem() {
     updateDerivativeChannelsList();
 }
 
+// Recréer un canal dérivé à partir de ses paramètres sauvegardés
+function recreateDerivativeChannel(channel) {
+    console.log(`🔄 Recréation du canal dérivé: ${channel.name}`);
+
+    // Vérifier que le canal source existe
+    if (!appState.allColumnData || !appState.allColumnData[channel.sourceIndex]) {
+        console.error(`⚠️ Canal source ${channel.sourceIndex} introuvable pour ${channel.name}`);
+        return;
+    }
+
+    // Obtenir les données du canal source
+    const sourceData = appState.allColumnData[channel.sourceIndex];
+    const xData = appState.allColumnData[0]; // Temps
+
+    if (!sourceData || !xData) {
+        console.error(`⚠️ Données source introuvables pour ${channel.name}`);
+        return;
+    }
+
+    // Étape 1 : Calculer la dérivée brute
+    let derivativeData = calculateDerivative(Array.from(sourceData), Array.from(xData));
+
+    // Étape 2 : Appliquer le lissage si smoothing > 0
+    if (channel.smoothing > 0) {
+        derivativeData = movingAverageDerivative(derivativeData, channel.smoothing);
+    }
+
+    // Ajouter à allColumnData
+    const newDataIndex = appState.allColumnData.length;
+    appState.allColumnData.push(new Float32Array(derivativeData));
+
+    // Ajouter à availableColumns
+    appState.availableColumns.push({
+        index: newDataIndex,
+        label: channel.label,
+        name: channel.name,
+        unit: '1/s',
+        isDerivative: true,
+        derivativeId: channel.id
+    });
+
+    // Ajouter à channelConfig pour l'affichage
+    const yAxisIndex = appState.channelConfig.length;
+    appState.channelConfig.push({
+        index: newDataIndex,
+        name: channel.name,
+        label: channel.label,
+        color: channel.color,
+        visible: true,
+        yAxisID: `y${yAxisIndex}`,
+        yAxisPosition: 'right',
+        yMin: null,
+        yMax: null,
+        showFFT: false,
+        isDerivative: true,
+        derivativeId: channel.id
+    });
+
+    // Mettre à jour les données du canal dans appState.derivativeChannels
+    channel.data = derivativeData;
+
+    console.log(`✅ Canal dérivé recréé: ${channel.name}`);
+}
+
 console.log('✅ Module derivative-channel.js chargé');

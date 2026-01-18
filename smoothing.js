@@ -409,3 +409,67 @@ function initSmoothingSystem() {
     populateSmoothedChannelSelector();
     updateSmoothedChannelsList();
 }
+
+// Recréer un canal lissé à partir de ses paramètres sauvegardés
+function recreateSmoothedChannel(channel) {
+    console.log(`🔄 Recréation du canal lissé: ${channel.name}`);
+
+    // Vérifier que le canal source existe
+    if (!appState.allColumnData || !appState.allColumnData[channel.sourceIndex]) {
+        console.error(`⚠️ Canal source ${channel.sourceIndex} introuvable pour ${channel.name}`);
+        return;
+    }
+
+    // Obtenir les données du canal source
+    const sourceData = appState.allColumnData[channel.sourceIndex];
+    const sourceColumn = appState.availableColumns.find(col => col.index === channel.sourceIndex);
+
+    if (!sourceColumn) {
+        console.error(`⚠️ Informations du canal source introuvables pour ${channel.name}`);
+        return;
+    }
+
+    // Recalculer les données lissées
+    const smoothedData = movingAverage(Array.from(sourceData), channel.windowSize);
+
+    // Ajouter aux données de colonnes
+    const newIndex = appState.allColumnData.length;
+    appState.allColumnData.push(new Float32Array(smoothedData));
+    appState.availableColumns.push({
+        index: newIndex,
+        name: channel.name,
+        label: channel.label,
+        unit: sourceColumn.unit || '',
+        isSmoothed: true,
+        smoothedId: channel.id
+    });
+
+    // Trouver la config du canal source pour copier ses valeurs Y min/max
+    const sourceConfig = appState.channelConfig.find(cfg => cfg.index === channel.sourceIndex);
+    const sourceYMin = sourceConfig ? sourceConfig.yMin : null;
+    const sourceYMax = sourceConfig ? sourceConfig.yMax : null;
+
+    // Ajouter à la configuration des canaux
+    const yAxisIndex = appState.channelConfig.length;
+    appState.channelConfig.push({
+        index: newIndex,
+        name: channel.name,
+        label: channel.label,
+        unit: sourceColumn.unit || '',
+        color: channel.color,
+        visible: channel.visible !== undefined ? channel.visible : true,
+        lineWidth: 1.5,
+        yAxisPosition: 'right',
+        yMin: sourceYMin,
+        yMax: sourceYMax,
+        yAxisID: `y${yAxisIndex}`,
+        showFFT: false,
+        isSmoothed: true,
+        smoothedId: channel.id
+    });
+
+    // Mettre à jour les données du canal dans appState.smoothedChannels
+    channel.data = smoothedData;
+
+    console.log(`✅ Canal lissé recréé: ${channel.name}`);
+}

@@ -831,30 +831,63 @@ function restoreAllToolsState(project) {
         console.log(`📝 Notes utilisateur restaurées (${project.toolsState.notes.length} caractères)`);
     }
 
-    // Restaurer les canaux lissés, calculés et dérivés
+    // Restaurer et recréer les canaux lissés, calculés et dérivés
     if (typeof appState !== 'undefined') {
-        // Restaurer dans appState pour que les outils puissent les utiliser
-        if (project.toolsState.smoothedChannels) {
-            appState.smoothedChannels = JSON.parse(JSON.stringify(project.toolsState.smoothedChannels));
-            console.log(`🔧 Canaux lissés restaurés dans appState : ${appState.smoothedChannels.length} canal(aux)`);
+        // IMPORTANT: Restaurer dans l'ordre car les canaux dérivés peuvent dépendre des canaux lissés
+
+        // 1. Restaurer les canaux lissés
+        if (project.toolsState.smoothedChannels && project.toolsState.smoothedChannels.length > 0) {
+            appState.smoothedChannels = [];
+            console.log(`🔧 Recréation de ${project.toolsState.smoothedChannels.length} canal(aux) lissé(s)...`);
+
+            project.toolsState.smoothedChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.smoothedChannels.push(channelCopy);
+
+                if (typeof recreateSmoothedChannel === 'function') {
+                    recreateSmoothedChannel(channelCopy);
+                }
+            });
 
             // Rafraîchir la liste d'affichage
             if (typeof updateSmoothedChannelsList === 'function') {
                 updateSmoothedChannelsList();
             }
         }
-        if (project.toolsState.calculatedChannels) {
-            appState.calculatedChannels = JSON.parse(JSON.stringify(project.toolsState.calculatedChannels));
-            console.log(`🔧 Canaux calculés restaurés dans appState : ${appState.calculatedChannels.length} canal(aux)`);
+
+        // 2. Restaurer les canaux calculés
+        if (project.toolsState.calculatedChannels && project.toolsState.calculatedChannels.length > 0) {
+            appState.calculatedChannels = [];
+            console.log(`🔧 Recréation de ${project.toolsState.calculatedChannels.length} canal(aux) calculé(s)...`);
+
+            project.toolsState.calculatedChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.calculatedChannels.push(channelCopy);
+
+                if (typeof recreateCalculatedChannel === 'function') {
+                    recreateCalculatedChannel(channelCopy);
+                }
+            });
 
             // Rafraîchir la liste d'affichage
             if (typeof updateCalculatedChannelsList === 'function') {
                 updateCalculatedChannelsList();
             }
         }
-        if (project.toolsState.derivativeChannels) {
-            appState.derivativeChannels = JSON.parse(JSON.stringify(project.toolsState.derivativeChannels));
-            console.log(`🔧 Canaux dérivés restaurés dans appState : ${appState.derivativeChannels.length} canal(aux)`);
+
+        // 3. Restaurer les canaux dérivés (en dernier car peuvent dépendre des lissés)
+        if (project.toolsState.derivativeChannels && project.toolsState.derivativeChannels.length > 0) {
+            appState.derivativeChannels = [];
+            console.log(`🔧 Recréation de ${project.toolsState.derivativeChannels.length} canal(aux) dérivé(s)...`);
+
+            project.toolsState.derivativeChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.derivativeChannels.push(channelCopy);
+
+                if (typeof recreateDerivativeChannel === 'function') {
+                    recreateDerivativeChannel(channelCopy);
+                }
+            });
 
             // Rafraîchir la liste d'affichage
             if (typeof updateDerivativeChannelsList === 'function') {

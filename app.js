@@ -805,6 +805,15 @@ function changeLanguage(lang) {
         }
     });
 
+    // Options de select (data-i18n dans les <option>)
+    document.querySelectorAll('option[data-i18n]').forEach(option => {
+        const key = option.getAttribute('data-i18n');
+        const translated = t(key);
+        if (translated !== key) {
+            option.textContent = translated;
+        }
+    });
+
     console.log(`✅ Langue changée: ${lang}`);
 }
 

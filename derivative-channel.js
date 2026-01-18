@@ -379,14 +379,18 @@ function editDerivativeChannel(index) {
 
 // Supprimer un canal dérivé
 function deleteDerivativeChannel(channelId) {
+    console.log(`🔍 Début suppression canal dérivé, ID: ${channelId}`);
+
     const channelIndex = appState.derivativeChannels.findIndex(ch => ch.id === channelId);
     if (channelIndex === -1) {
-        console.error('Canal dérivé introuvable');
+        console.error('❌ Canal dérivé introuvable dans derivativeChannels');
         return;
     }
 
     const channel = appState.derivativeChannels[channelIndex];
     const channelName = channel.name;
+
+    console.log(`📋 Canal trouvé: "${channelName}", index: ${channelIndex}`);
 
     if (!confirm(`Supprimer le canal dérivé "${channelName}" ?`)) {
         return;
@@ -394,22 +398,67 @@ function deleteDerivativeChannel(channelId) {
 
     // Supprimer du tableau des canaux dérivés
     appState.derivativeChannels.splice(channelIndex, 1);
+    console.log(`✅ Supprimé de derivativeChannels, reste ${appState.derivativeChannels.length} canaux`);
+
+    // DEBUG: Afficher tous les channelConfig avec leurs derivativeId
+    console.log('🔍 Recherche dans channelConfig:', appState.channelConfig.map(cfg => ({
+        name: cfg.name,
+        derivativeId: cfg.derivativeId,
+        isDerivative: cfg.isDerivative
+    })));
 
     // Trouver et supprimer de channelConfig (recherche via derivativeId)
     const configIndex = appState.channelConfig.findIndex(cfg => cfg.derivativeId === channelId);
-    if (configIndex !== -1) {
+
+    console.log(`🔍 configIndex trouvé: ${configIndex}`);
+
+    if (configIndex === -1) {
+        console.error(`❌ Canal introuvable dans channelConfig avec derivativeId=${channelId}`);
+        console.log('⚠️ Tentative de suppression via isDerivative et nom...');
+
+        // Plan B : chercher par nom et isDerivative
+        const configIndexByName = appState.channelConfig.findIndex(cfg =>
+            cfg.isDerivative && cfg.name === channelName
+        );
+
+        if (configIndexByName !== -1) {
+            console.log(`✅ Trouvé via nom à l'index ${configIndexByName}`);
+            const dataIndex = appState.channelConfig[configIndexByName].index;
+
+            // Suppression
+            appState.channelConfig.splice(configIndexByName, 1);
+            appState.allColumnData.splice(dataIndex, 1);
+
+            // Réindexation
+            appState.channelConfig.forEach(cfg => {
+                if (cfg.index > dataIndex) cfg.index--;
+            });
+            appState.availableColumns.forEach(col => {
+                if (col.index > dataIndex) col.index--;
+            });
+
+            console.log(`✅ Suppression réussie via plan B`);
+        } else {
+            console.error('❌ ÉCHEC TOTAL : Canal introuvable par derivativeId ET par nom');
+            return;
+        }
+    } else {
         const dataIndex = appState.channelConfig[configIndex].index;
+        console.log(`✅ dataIndex: ${dataIndex}`);
 
         // Supprimer de channelConfig
         appState.channelConfig.splice(configIndex, 1);
+        console.log(`✅ Supprimé de channelConfig`);
 
         // Supprimer de allColumnData
         appState.allColumnData.splice(dataIndex, 1);
+        console.log(`✅ Supprimé de allColumnData`);
 
         // Supprimer de availableColumns (si existe)
         const availableColIndex = appState.availableColumns.findIndex(col => col.derivativeId === channelId);
         if (availableColIndex !== -1) {
             appState.availableColumns.splice(availableColIndex, 1);
+            console.log(`✅ Supprimé de availableColumns`);
         }
 
         // Mettre à jour les indices des autres canaux dans channelConfig
@@ -434,9 +483,12 @@ function deleteDerivativeChannel(channelId) {
                 }
             });
         }
+
+        console.log(`✅ Réindexation terminée`);
     }
 
     // Mettre à jour l'interface
+    console.log(`🔄 Mise à jour interface...`);
     updateDerivativeChannelsList();
     updateChannelConfigUI();
     updateTimeChart();

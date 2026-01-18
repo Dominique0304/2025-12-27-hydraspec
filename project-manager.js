@@ -145,7 +145,7 @@ class ProjectManager {
      * @param {string} projectId - ID du projet
      * @returns {boolean} True si succès, False sinon
      */
-    switchTo(projectId) {
+    switchTo(projectId, skipRestore = false) {
         const project = this.projects.get(projectId);
 
         if (!project) {
@@ -184,8 +184,8 @@ class ProjectManager {
             restoreChartZoomLimits(project);
         }
 
-        // Restaurer tous les états d'outils
-        if (typeof restoreAllToolsState === 'function') {
+        // Restaurer tous les états d'outils (sauf si skipRestore=true pour chargement HSP)
+        if (!skipRestore && typeof restoreAllToolsState === 'function') {
             restoreAllToolsState(project);
         }
 

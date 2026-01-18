@@ -418,11 +418,22 @@ async function loadHSPFromFile(file) {
                 // Restaurer l'état COMPLET
                 await restoreProjectFromHSP(project, hspData);
 
-                // Activer le projet
-                projectManager.switchTo(project.id);
+                // Activer le projet (skipRestore=true car on restaure après updateAllInterface)
+                projectManager.switchTo(project.id, true);
 
                 // Mettre à jour l'interface (chargement initial .hsp = fermer freq/spectro)
                 updateAllInterface(true);
+
+                // CRITIQUE : Restaurer les canaux lissés/calculés/dérivés APRÈS updateAllInterface
+                // pour qu'ils ne soient pas écrasés par la synchronisation project.state → appState
+                if (typeof restoreAllToolsState === 'function') {
+                    restoreAllToolsState(project);
+                }
+
+                // Rafraîchir l'affichage de la liste CANAL après restauration des canaux
+                if (typeof updateChannelConfigUI === 'function') {
+                    updateChannelConfigUI();
+                }
 
                 // Appliquer auto-config comme pour un CSV
                 setTimeout(() => {

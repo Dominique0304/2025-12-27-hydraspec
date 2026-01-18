@@ -379,32 +379,38 @@ function editDerivativeChannel(index) {
 
 // Supprimer un canal dérivé
 function deleteDerivativeChannel(channelId) {
-    const channel = appState.derivativeChannels.find(ch => ch.id === channelId);
-    if (!channel) return;
-
-    if (!confirm(`Supprimer le canal dérivé "${channel.name}" ?`)) {
+    const channelIndex = appState.derivativeChannels.findIndex(ch => ch.id === channelId);
+    if (channelIndex === -1) {
+        console.error('Canal dérivé introuvable');
         return;
     }
 
-    // Trouver l'index dans availableColumns
-    const availableCol = appState.availableColumns.find(col => col.derivativeId === channelId);
-    if (availableCol) {
-        const dataIndex = availableCol.index;
+    const channel = appState.derivativeChannels[channelIndex];
+    const channelName = channel.name;
+
+    if (!confirm(`Supprimer le canal dérivé "${channelName}" ?`)) {
+        return;
+    }
+
+    // Supprimer du tableau des canaux dérivés
+    appState.derivativeChannels.splice(channelIndex, 1);
+
+    // Trouver et supprimer de channelConfig (recherche via derivativeId)
+    const configIndex = appState.channelConfig.findIndex(cfg => cfg.derivativeId === channelId);
+    if (configIndex !== -1) {
+        const dataIndex = appState.channelConfig[configIndex].index;
 
         // Supprimer de channelConfig
-        const configIndex = appState.channelConfig.findIndex(cfg => cfg.index === dataIndex);
-        if (configIndex !== -1) {
-            appState.channelConfig.splice(configIndex, 1);
-        }
+        appState.channelConfig.splice(configIndex, 1);
 
-        // Supprimer de availableColumns
-        const colIndex = appState.availableColumns.findIndex(col => col.index === dataIndex);
-        if (colIndex !== -1) {
-            appState.availableColumns.splice(colIndex, 1);
-        }
-
-        // Supprimer réellement de allColumnData (pas juste mettre à null)
+        // Supprimer de allColumnData
         appState.allColumnData.splice(dataIndex, 1);
+
+        // Supprimer de availableColumns (si existe)
+        const availableColIndex = appState.availableColumns.findIndex(col => col.derivativeId === channelId);
+        if (availableColIndex !== -1) {
+            appState.availableColumns.splice(availableColIndex, 1);
+        }
 
         // Mettre à jour les indices des autres canaux dans channelConfig
         appState.channelConfig.forEach(cfg => {
@@ -420,19 +426,6 @@ function deleteDerivativeChannel(channelId) {
             }
         });
 
-        // Mettre à jour les indices dans derivativeChannels
-        appState.derivativeChannels.forEach(ch => {
-            // Les canaux dérivés n'ont pas de dataIndex stocké directement
-            // mais on peut le recalculer via availableColumns si nécessaire
-        });
-
-        // Mettre à jour les indices dans smoothedChannels
-        if (appState.smoothedChannels) {
-            appState.smoothedChannels.forEach(ch => {
-                // Idem, pas de dataIndex direct
-            });
-        }
-
         // Mettre à jour les indices dans calculatedChannels
         if (appState.calculatedChannels) {
             appState.calculatedChannels.forEach(ch => {
@@ -443,28 +436,20 @@ function deleteDerivativeChannel(channelId) {
         }
     }
 
-    // Supprimer de derivativeChannels
-    const index = appState.derivativeChannels.findIndex(ch => ch.id === channelId);
-    if (index !== -1) {
-        appState.derivativeChannels.splice(index, 1);
-    }
-
-    // Mettre à jour l'affichage
+    // Mettre à jour l'interface
     updateDerivativeChannelsList();
-    updateTimeChart();
     updateChannelConfigUI();
+    updateTimeChart();
 
-    // Mettre à jour la liste disponible des canaux (important!)
-    if (typeof updateAvailableChannelsList === 'function') {
-        updateAvailableChannelsList();
-    }
-
-    // Rafraîchir la liste des canaux sources dans l'outil Lissage
+    // Rafraîchir les listes des canaux sources dans les autres outils
     if (typeof populateSmoothedChannelSelector === 'function') {
         populateSmoothedChannelSelector();
     }
+    if (typeof populateDerivativeSourceChannels === 'function') {
+        populateDerivativeSourceChannels();
+    }
 
-    console.log(`🗑️ Canal dérivé supprimé: ${channel.name}`);
+    console.log(`🗑️ Canal dérivé supprimé: ${channelName}`);
 }
 
 // Peupler la liste des canaux sources

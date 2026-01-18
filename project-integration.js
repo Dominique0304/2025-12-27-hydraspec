@@ -849,6 +849,11 @@ function restoreAllToolsState(project) {
                 }
             });
 
+            // CRITIQUE : Sauvegarder dans project.state pour survivre à updateAllInterface()
+            project.state.allColumnData = appState.allColumnData;
+            project.state.availableColumns = appState.availableColumns;
+            project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
+
             // Rafraîchir la liste d'affichage
             if (typeof updateSmoothedChannelsList === 'function') {
                 updateSmoothedChannelsList();
@@ -869,6 +874,11 @@ function restoreAllToolsState(project) {
                 }
             });
 
+            // CRITIQUE : Sauvegarder dans project.state
+            project.state.allColumnData = appState.allColumnData;
+            project.state.availableColumns = appState.availableColumns;
+            project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
+
             // Rafraîchir la liste d'affichage
             if (typeof updateCalculatedChannelsList === 'function') {
                 updateCalculatedChannelsList();
@@ -888,6 +898,12 @@ function restoreAllToolsState(project) {
                     recreateDerivativeChannel(channelCopy);
                 }
             });
+
+            // CRITIQUE : Sauvegarder dans project.state pour survivre à updateAllInterface()
+            project.state.allColumnData = appState.allColumnData;
+            project.state.availableColumns = appState.availableColumns;
+            project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
+            console.log(`✅ project.state.channelConfig mis à jour avec ${project.state.channelConfig.length} canaux`);
 
             // Rafraîchir la liste d'affichage
             if (typeof updateDerivativeChannelsList === 'function') {

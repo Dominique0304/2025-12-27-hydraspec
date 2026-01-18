@@ -991,6 +991,30 @@ textarea {
     color: #666;
 }
 
+/* Style des en-têtes de section pour le thème light */
+[data-theme="light"] .control-group h3 {
+    background: linear-gradient(to bottom, #fafafa, #f0f0f0);
+    padding: 10px 14px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    margin-bottom: 12px;
+    position: relative;
+}
+
+/* Effet hover subtil pour les en-têtes cliquables */
+[data-theme="light"] .control-group h3[onclick]:hover {
+    background: linear-gradient(to bottom, #ffffff, #f5f5f5);
+    border-color: #c0c0c0;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
 [data-theme="steampunk"] .toggle-btn.active {
     background-image: linear-gradient(to bottom, #0277bd, #01579b);
     border-color: #0288d1;

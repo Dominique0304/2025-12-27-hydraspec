@@ -525,7 +525,7 @@
                             <!-- Liste des canaux disponibles (pour référence) -->
                             <div style="margin-bottom:12px; padding:8px; background:var(--input-bg); border-radius:4px; border:1px solid var(--border-color);">
                                 <div style="font-size:0.85rem; margin-bottom:6px; color:var(--text-muted); font-weight:bold;">
-                                    <i class="fas fa-info-circle"></i> Canaux disponibles:
+                                    <i class="fas fa-info-circle"></i> <span data-i18n="labels.available_channels">Canaux disponibles:</span>
                                 </div>
                                 <div id="available-channels-list" style="font-size:0.8rem; color:var(--text-main); max-height:100px; overflow-y:auto;">
                                     <!-- Les canaux seront listés ici sous forme S1, S2, etc. -->
@@ -1992,6 +1992,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof initIntervals === 'function') initIntervals();
 
     console.log('✅ Modules UX initialisés');
+
+    // Appliquer les traductions après l'initialisation du DOM
+    setTimeout(() => {
+        const savedLanguage = localStorage.getItem('hydraspec_language') || 'fr';
+        if (typeof changeLanguage === 'function') {
+            changeLanguage(savedLanguage);
+        }
+    }, 100);
 });
 </script>
 

@@ -747,10 +747,6 @@ window.onload = function() {
 
     console.timeEnd('Initialisation');
 
-    // Charger la langue sauvegardée ou utiliser 'fr' par défaut
-    const savedLanguage = localStorage.getItem('hydraspec_language') || 'fr';
-    changeLanguage(savedLanguage);
-
     // Initialiser le système POO Multi-Projets
     if (typeof initPOOSystem === 'function') {
         initPOOSystem();
@@ -758,6 +754,13 @@ window.onload = function() {
     } else {
         setStatus(t("status.ready"));
     }
+
+    // Charger la langue sauvegardée et appliquer les traductions
+    // Utiliser setTimeout pour s'assurer que tous les éléments dynamiques sont créés
+    setTimeout(() => {
+        const savedLanguage = localStorage.getItem('hydraspec_language') || 'fr';
+        changeLanguage(savedLanguage);
+    }, 200);
 };
 // --- TRANSLATION ---
 function changeLanguage(lang) {

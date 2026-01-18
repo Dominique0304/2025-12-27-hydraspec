@@ -1992,14 +1992,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof initIntervals === 'function') initIntervals();
 
     console.log('✅ Modules UX initialisés');
-
-    // Appliquer les traductions après l'initialisation du DOM
-    setTimeout(() => {
-        const savedLanguage = localStorage.getItem('hydraspec_language') || 'fr';
-        if (typeof changeLanguage === 'function') {
-            changeLanguage(savedLanguage);
-        }
-    }, 100);
 });
 </script>
 

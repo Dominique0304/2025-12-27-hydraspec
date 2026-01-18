@@ -513,6 +513,14 @@ function deleteDerivativeChannel(channelId) {
     updateChannelConfigUI();
     updateTimeChart();
 
+    // Rafraîchir la liste des canaux sous l'accordéon "Canal"
+    if (typeof updateCanalQuickView === 'function') {
+        updateCanalQuickView();
+    }
+    if (typeof updateFFTCanalQuickView === 'function') {
+        updateFFTCanalQuickView();
+    }
+
     // Rafraîchir les listes des canaux sources dans les autres outils
     if (typeof populateSmoothedChannelSelector === 'function') {
         populateSmoothedChannelSelector();

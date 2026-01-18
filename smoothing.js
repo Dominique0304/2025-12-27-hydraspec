@@ -374,6 +374,14 @@ function deleteSmoothedChannel(channelId, silent = false) {
     updateTimeChart();
     updateChannelConfigUI();
 
+    // Rafraîchir la liste des canaux sous l'accordéon "Canal"
+    if (typeof updateCanalQuickView === 'function') {
+        updateCanalQuickView();
+    }
+    if (typeof updateFFTCanalQuickView === 'function') {
+        updateFFTCanalQuickView();
+    }
+
     // Mettre à jour la liste disponible des canaux (important!)
     if (typeof updateAvailableChannelsList === 'function') {
         updateAvailableChannelsList();

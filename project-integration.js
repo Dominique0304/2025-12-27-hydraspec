@@ -604,6 +604,22 @@ function saveAllToolsState(project) {
         console.log(`📝 Notes utilisateur sauvegardées (${notesTextarea.value.length} caractères)`);
     }
 
+    // CRITIQUE : Sauvegarder les canaux lissés, calculés et dérivés
+    if (typeof appState !== 'undefined') {
+        if (appState.smoothedChannels) {
+            project.toolsState.smoothedChannels = JSON.parse(JSON.stringify(appState.smoothedChannels));
+            console.log(`🔧 Canaux lissés sauvegardés : ${appState.smoothedChannels.length} canal(aux)`);
+        }
+        if (appState.calculatedChannels) {
+            project.toolsState.calculatedChannels = JSON.parse(JSON.stringify(appState.calculatedChannels));
+            console.log(`🔧 Canaux calculés sauvegardés : ${appState.calculatedChannels.length} canal(aux)`);
+        }
+        if (appState.derivativeChannels) {
+            project.toolsState.derivativeChannels = JSON.parse(JSON.stringify(appState.derivativeChannels));
+            console.log(`🔧 Canaux dérivés sauvegardés : ${appState.derivativeChannels.length} canal(aux)`);
+        }
+    }
+
     // Marquer le projet comme modifié
     project.markModified();
 
@@ -813,6 +829,46 @@ function restoreAllToolsState(project) {
     if (notesTextarea && project.toolsState.notes !== undefined) {
         notesTextarea.value = project.toolsState.notes;
         console.log(`📝 Notes utilisateur restaurées (${project.toolsState.notes.length} caractères)`);
+    }
+
+    // Restaurer les canaux lissés, calculés et dérivés
+    if (typeof appState !== 'undefined') {
+        // Restaurer dans appState pour que les outils puissent les utiliser
+        if (project.toolsState.smoothedChannels) {
+            appState.smoothedChannels = JSON.parse(JSON.stringify(project.toolsState.smoothedChannels));
+            console.log(`🔧 Canaux lissés restaurés dans appState : ${appState.smoothedChannels.length} canal(aux)`);
+
+            // Rafraîchir la liste d'affichage
+            if (typeof updateSmoothedChannelsList === 'function') {
+                updateSmoothedChannelsList();
+            }
+        }
+        if (project.toolsState.calculatedChannels) {
+            appState.calculatedChannels = JSON.parse(JSON.stringify(project.toolsState.calculatedChannels));
+            console.log(`🔧 Canaux calculés restaurés dans appState : ${appState.calculatedChannels.length} canal(aux)`);
+
+            // Rafraîchir la liste d'affichage
+            if (typeof updateCalculatedChannelsList === 'function') {
+                updateCalculatedChannelsList();
+            }
+        }
+        if (project.toolsState.derivativeChannels) {
+            appState.derivativeChannels = JSON.parse(JSON.stringify(project.toolsState.derivativeChannels));
+            console.log(`🔧 Canaux dérivés restaurés dans appState : ${appState.derivativeChannels.length} canal(aux)`);
+
+            // Rafraîchir la liste d'affichage
+            if (typeof updateDerivativeChannelsList === 'function') {
+                updateDerivativeChannelsList();
+            }
+        }
+
+        // Rafraîchir les sélecteurs de canaux sources
+        if (typeof populateSmoothedChannelSelector === 'function') {
+            populateSmoothedChannelSelector();
+        }
+        if (typeof populateDerivativeSourceChannels === 'function') {
+            populateDerivativeSourceChannels();
+        }
     }
 
     // Forcer le rafraîchissement des graphiques

@@ -240,9 +240,10 @@ async function performHSPSave(project, fileName, isNewFile) {
         // Marqueurs (SnapPoints)
         snapPoints: project.toolsState.snapPoints || [],
 
-        // Canaux calculés/lissés (paramètres seulement, pas les données)
+        // Canaux calculés/lissés/dérivés (paramètres seulement, pas les données)
         calculatedChannels: project.toolsState.calculatedChannels || [],
         smoothedChannels: project.toolsState.smoothedChannels || [],
+        derivativeChannels: project.toolsState.derivativeChannels || [],
 
         // Notes utilisateur (depuis project.toolsState pour cohérence multi-projets)
         notes: project.toolsState.notes || "",
@@ -536,6 +537,20 @@ async function restoreProjectFromHSP(project, hspData) {
     if (hspData.snapPoints) {
         project.toolsState.snapPoints = hspData.snapPoints;
         console.log(`✅ Marqueurs restaurés (${hspData.snapPoints.length} marqueurs)`);
+    }
+
+    // Restaurer Canaux lissés, calculés et dérivés
+    if (hspData.smoothedChannels) {
+        project.toolsState.smoothedChannels = hspData.smoothedChannels;
+        console.log(`✅ Canaux lissés restaurés (${hspData.smoothedChannels.length} canal(aux))`);
+    }
+    if (hspData.calculatedChannels) {
+        project.toolsState.calculatedChannels = hspData.calculatedChannels;
+        console.log(`✅ Canaux calculés restaurés (${hspData.calculatedChannels.length} canal(aux))`);
+    }
+    if (hspData.derivativeChannels) {
+        project.toolsState.derivativeChannels = hspData.derivativeChannels;
+        console.log(`✅ Canaux dérivés restaurés (${hspData.derivativeChannels.length} canal(aux))`);
     }
 
     // Restaurer Vues sauvegardées

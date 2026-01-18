@@ -392,10 +392,6 @@ function deleteDerivativeChannel(channelId) {
 
     console.log(`📋 Canal trouvé: "${channelName}", index: ${channelIndex}`);
 
-    if (!confirm(`Supprimer le canal dérivé "${channelName}" ?`)) {
-        return;
-    }
-
     // Supprimer du tableau des canaux dérivés
     appState.derivativeChannels.splice(channelIndex, 1);
     console.log(`✅ Supprimé de derivativeChannels, reste ${appState.derivativeChannels.length} canaux`);

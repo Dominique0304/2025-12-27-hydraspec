@@ -372,6 +372,12 @@ function deleteSmoothedChannel(channelId, silent = false) {
     // Mettre à jour l'interface
     updateSmoothedChannelsList();
     updateTimeChart();
+    updateChannelConfigUI();
+
+    // Mettre à jour la liste disponible des canaux (important!)
+    if (typeof updateAvailableChannelsList === 'function') {
+        updateAvailableChannelsList();
+    }
 
     // Rafraîchir la liste des canaux sources dans l'outil Dérivée
     if (typeof populateDerivativeSourceChannels === 'function') {

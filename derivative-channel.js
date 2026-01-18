@@ -403,9 +403,44 @@ function deleteDerivativeChannel(channelId) {
             appState.availableColumns.splice(colIndex, 1);
         }
 
-        // Ne pas supprimer de allColumnData (pour garder les index cohérents)
-        // Mais on peut le marquer comme null
-        appState.allColumnData[dataIndex] = null;
+        // Supprimer réellement de allColumnData (pas juste mettre à null)
+        appState.allColumnData.splice(dataIndex, 1);
+
+        // Mettre à jour les indices des autres canaux dans channelConfig
+        appState.channelConfig.forEach(cfg => {
+            if (cfg.index > dataIndex) {
+                cfg.index--;
+            }
+        });
+
+        // Mettre à jour les indices dans availableColumns
+        appState.availableColumns.forEach(col => {
+            if (col.index > dataIndex) {
+                col.index--;
+            }
+        });
+
+        // Mettre à jour les indices dans derivativeChannels
+        appState.derivativeChannels.forEach(ch => {
+            // Les canaux dérivés n'ont pas de dataIndex stocké directement
+            // mais on peut le recalculer via availableColumns si nécessaire
+        });
+
+        // Mettre à jour les indices dans smoothedChannels
+        if (appState.smoothedChannels) {
+            appState.smoothedChannels.forEach(ch => {
+                // Idem, pas de dataIndex direct
+            });
+        }
+
+        // Mettre à jour les indices dans calculatedChannels
+        if (appState.calculatedChannels) {
+            appState.calculatedChannels.forEach(ch => {
+                if (ch.dataIndex > dataIndex) {
+                    ch.dataIndex--;
+                }
+            });
+        }
     }
 
     // Supprimer de derivativeChannels
@@ -418,6 +453,11 @@ function deleteDerivativeChannel(channelId) {
     updateDerivativeChannelsList();
     updateTimeChart();
     updateChannelConfigUI();
+
+    // Mettre à jour la liste disponible des canaux (important!)
+    if (typeof updateAvailableChannelsList === 'function') {
+        updateAvailableChannelsList();
+    }
 
     // Rafraîchir la liste des canaux sources dans l'outil Lissage
     if (typeof populateSmoothedChannelSelector === 'function') {

@@ -791,10 +791,25 @@ function handleZoom(chart, e) {
     const zoomY = !e.shiftKey && !e.altKey; // Zoom Y normal si ni Shift ni Alt
 
     if (zoomX) {
+        // Récupérer la position de la souris sur le canvas
+        const rect = chart.canvas.getBoundingClientRect();
+        const mouseXPixel = e.clientX - rect.left;
+
+        // Convertir la position pixel en valeur de données X
+        const xScale = chart.scales.x;
+        const mouseXValue = xScale.getValueForPixel(mouseXPixel);
+
+        // Calculer la position relative de la souris dans la plage actuelle (0 = gauche, 1 = droite)
+        const ratio = (mouseXValue - xScale.min) / rangeX;
+
+        // Calculer la nouvelle plage
         const newRangeX = direction > 0 ? rangeX * zoomFactor : rangeX / zoomFactor;
+
         if(newRangeX > 0.000001) {
-            chart.options.scales.x.min = centerX - newRangeX / 2;
-            chart.options.scales.x.max = centerX + newRangeX / 2;
+            // Zoomer en gardant la position de la souris fixe
+            // Le point sous la souris reste au même endroit
+            chart.options.scales.x.min = mouseXValue - newRangeX * ratio;
+            chart.options.scales.x.max = mouseXValue + newRangeX * (1 - ratio);
         }
     }
 

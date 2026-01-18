@@ -239,6 +239,11 @@ function createSmoothedChannel() {
     updateSmoothedChannelsList();
     updateTimeChart();
 
+    // Rafraîchir la liste des canaux sources dans l'outil Dérivée
+    if (typeof populateDerivativeSourceChannels === 'function') {
+        populateDerivativeSourceChannels();
+    }
+
     // Réinitialiser le formulaire
     document.getElementById('smooth-channel-name').value = '';
     document.getElementById('smooth-points').value = '50';
@@ -367,6 +372,11 @@ function deleteSmoothedChannel(channelId, silent = false) {
     // Mettre à jour l'interface
     updateSmoothedChannelsList();
     updateTimeChart();
+
+    // Rafraîchir la liste des canaux sources dans l'outil Dérivée
+    if (typeof populateDerivativeSourceChannels === 'function') {
+        populateDerivativeSourceChannels();
+    }
 
     if (!silent) {
         setStatus(`🗑️ Canal lissé "${channelName}" supprimé`);

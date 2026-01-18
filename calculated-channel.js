@@ -290,6 +290,14 @@ function createCalculatedChannel() {
         // Mettre à jour la liste des canaux calculés
         updateCalculatedChannelsList();
 
+        // Rafraîchir les listes des canaux sources dans les autres outils
+        if (typeof populateSmoothedChannelSelector === 'function') {
+            populateSmoothedChannelSelector();
+        }
+        if (typeof populateDerivativeSourceChannels === 'function') {
+            populateDerivativeSourceChannels();
+        }
+
         setStatus(t("status.calculated_channel_created", {name}));
         console.log('✅ Canal calculé créé:', name);
     } catch (error) {
@@ -515,6 +523,14 @@ function deleteCalculatedChannel(channelId, silent = false) {
     updateChannelConfigUI();
     updateTimeChart();
     updateAvailableChannelsList();
+
+    // Rafraîchir les listes des canaux sources dans les autres outils
+    if (typeof populateSmoothedChannelSelector === 'function') {
+        populateSmoothedChannelSelector();
+    }
+    if (typeof populateDerivativeSourceChannels === 'function') {
+        populateDerivativeSourceChannels();
+    }
 
     if (!silent) setStatus(t("status.calculated_channel_deleted", {name: channelName}));
 }

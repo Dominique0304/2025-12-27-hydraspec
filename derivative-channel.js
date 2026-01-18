@@ -260,6 +260,11 @@ function createDerivativeChannel() {
     updateTimeChart();
     updateChannelConfigUI();
 
+    // Rafraîchir la liste des canaux sources dans l'outil Lissage
+    if (typeof populateSmoothedChannelSelector === 'function') {
+        populateSmoothedChannelSelector();
+    }
+
     console.log(`✅ Canal dérivé créé: ${name} (lissage: ${smoothing} points)`);
 }
 
@@ -389,6 +394,11 @@ function deleteDerivativeChannel(channelId) {
     updateDerivativeChannelsList();
     updateTimeChart();
     updateChannelConfigUI();
+
+    // Rafraîchir la liste des canaux sources dans l'outil Lissage
+    if (typeof populateSmoothedChannelSelector === 'function') {
+        populateSmoothedChannelSelector();
+    }
 
     console.log(`🗑️ Canal dérivé supprimé: ${channel.name}`);
 }

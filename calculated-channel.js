@@ -43,6 +43,13 @@ function toggleCalculatedChannel() {
             if (typeof closeOtherToolAccordions === 'function') {
                 closeOtherToolAccordions('calculated');
             }
+
+            // Appliquer les traductions aux éléments de cet accordéon
+            setTimeout(() => {
+                if (typeof changeLanguage === 'function' && typeof appState !== 'undefined' && appState.lang) {
+                    changeLanguage(appState.lang);
+                }
+            }, 50);
         }
 
         content.style.display = isVisible ? 'none' : 'block';

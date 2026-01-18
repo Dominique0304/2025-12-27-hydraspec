@@ -425,17 +425,37 @@ function deleteDerivativeChannel(channelId) {
             console.log(`✅ Trouvé via nom à l'index ${configIndexByName}`);
             const dataIndex = appState.channelConfig[configIndexByName].index;
 
-            // Suppression
+            // Suppression de channelConfig
             appState.channelConfig.splice(configIndexByName, 1);
+
+            // Suppression de allColumnData
             appState.allColumnData.splice(dataIndex, 1);
 
-            // Réindexation
+            // Suppression de availableColumns (AJOUTÉ - c'était manquant !)
+            const availableColIndex = appState.availableColumns.findIndex(col =>
+                col.isDerivative && (col.label === channelName || col.name === channelName)
+            );
+            if (availableColIndex !== -1) {
+                appState.availableColumns.splice(availableColIndex, 1);
+                console.log(`✅ Supprimé de availableColumns (plan B)`);
+            }
+
+            // Réindexation de channelConfig
             appState.channelConfig.forEach(cfg => {
                 if (cfg.index > dataIndex) cfg.index--;
             });
+
+            // Réindexation de availableColumns
             appState.availableColumns.forEach(col => {
                 if (col.index > dataIndex) col.index--;
             });
+
+            // Réindexation de calculatedChannels
+            if (appState.calculatedChannels) {
+                appState.calculatedChannels.forEach(ch => {
+                    if (ch.dataIndex > dataIndex) ch.dataIndex--;
+                });
+            }
 
             console.log(`✅ Suppression réussie via plan B`);
         } else {

@@ -249,6 +249,16 @@ function createCalculatedChannel() {
         };
         appState.calculatedChannels.push(calculatedChannel);
 
+        // Ajouter à availableColumns (IMPORTANT pour les sélecteurs)
+        appState.availableColumns.push({
+            index: nextDataIndex,
+            name: name,
+            label: name,
+            unit: "",
+            isCalculated: true,
+            calculatedId: calculatedChannel.id
+        });
+
         // Ajouter à la configuration multi-canaux
         appState.channelConfig.push({
             index: nextDataIndex, // Index dans allColumnData
@@ -608,6 +618,16 @@ function recreateCalculatedChannel(channel) {
 
         // Stocker les données calculées dans allColumnData
         appState.allColumnData.push(calculatedData);
+
+        // Ajouter à availableColumns (IMPORTANT pour les sélecteurs)
+        appState.availableColumns.push({
+            index: nextDataIndex,
+            name: channel.name,
+            label: channel.name,
+            unit: "",
+            isCalculated: true,
+            calculatedId: channel.id
+        });
 
         // Ajouter à la configuration multi-canaux
         appState.channelConfig.push({

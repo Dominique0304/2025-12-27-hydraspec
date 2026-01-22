@@ -526,12 +526,12 @@ function drawSnapPoints(chart) {
             // Obtenir l'opacité
             const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5;
 
-            // Dessiner le point d'accroche avec transparence
-            ctx.fillStyle = hexToRgba(anchorColor, backgroundOpacity);
+            // Dessiner le point d'accroche à 100% d'opacité pour une meilleure visibilité
+            ctx.fillStyle = hexToRgba(anchorColor, 1.0);
             ctx.beginPath();
             ctx.arc(pointPos.x, pointPos.y, 6, 0, 2 * Math.PI);
             ctx.fill();
-            ctx.strokeStyle = hexToRgba('#FFF', backgroundOpacity);
+            ctx.strokeStyle = hexToRgba('#FFF', 1.0);
             ctx.lineWidth = 2;
             ctx.stroke();
 
@@ -616,8 +616,8 @@ function drawSnapPoints(chart) {
                     }
                 }
 
-                // Dessiner la ligne pointillée de connexion avec la couleur du canal d'accrochage et transparence
-                ctx.strokeStyle = hexToRgba(anchorColor, backgroundOpacity);
+                // Dessiner la ligne pointillée de connexion avec la couleur du canal d'accrochage à 100% d'opacité
+                ctx.strokeStyle = hexToRgba(anchorColor, 1.0);
                 ctx.lineWidth = 1;
                 ctx.setLineDash([5, 3]);
                 ctx.beginPath();

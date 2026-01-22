@@ -33,7 +33,7 @@ class SnapPoint {
         this.channelIndex = channelIndex; // Index du canal dans channelConfig
         this.time = time; // Temps en secondes
         this.value = value; // Valeur Y
-        this.comment = 'C$ X$ Y$'; // Commentaire avec balises par défaut (sans point-virgule)
+        this.comment = 'C$ Y$'; // Commentaire avec balises par défaut (sans point-virgule)
         this.offsetX = 80; // Offset de la boîte par rapport au point (en pixels)
         this.offsetY = -40;
         this.visible = true;
@@ -49,7 +49,7 @@ class SnapPoint {
 
         // Apparence de la boîte
         this.backgroundColor = '#FFD93D'; // Couleur de fond (jaune par défaut)
-        this.backgroundOpacity = 0.9; // Opacité du fond (0-1)
+        this.backgroundOpacity = 0.5; // Opacité du fond (0-1) - 50% de transparence
         this.boxPaddingScale = 1.0; // Facteur d'agrandissement de la boîte (1.0 = normal)
         this.boxWidth = null; // Largeur personnalisée de la boîte (null = auto)
         this.boxHeight = null; // Hauteur personnalisée de la boîte (null = auto)
@@ -522,7 +522,7 @@ function drawSnapPoints(chart) {
             const anchorColor = anchorConfig?.color || color;
 
             // Obtenir l'opacité
-            const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9;
+            const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5;
 
             // Dessiner le point d'accroche avec transparence
             ctx.fillStyle = hexToRgba(anchorColor, backgroundOpacity);
@@ -664,8 +664,8 @@ function drawSnapPoints(chart) {
 
         // Dessiner la boîte avec coins arrondis
         const radius = 6;
-        const backgroundColor = snapPoint.backgroundColor || '#FFD93D';
-        const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9;
+        const backgroundColor = snapPoint.backgroundColor || color; // Utiliser la couleur du canal
+        const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5; // 50% de transparence par défaut
 
         // Convertir la couleur en rgba avec l'opacité
         const bgColor = hexToRgba(backgroundColor, backgroundOpacity);
@@ -738,7 +738,7 @@ function drawSnapPoints(chart) {
         // Dessiner la flèche libre si activée (seulement si pas de canal d'accrochage)
         if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
             const arrowColor = snapPoint.backgroundColor || '#FFD93D';
-            const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9;
+            const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5;
 
             // Point d'arrivée : position définie par arrowEndX/Y (offsets)
             const arrowEndX = boxPos.x + snapPoint.arrowEndX;
@@ -977,7 +977,7 @@ function openSnapPointEditModal(id) {
     // Régler l'opacité
     const opacitySlider = document.getElementById('snap-opacity');
     const opacityValue = document.getElementById('snap-opacity-value');
-    const opacity = (snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.9) * 100;
+    const opacity = (snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5) * 100;
     if (opacitySlider) opacitySlider.value = opacity;
     if (opacityValue) opacityValue.textContent = `${Math.round(opacity)}%`;
 
@@ -1506,7 +1506,7 @@ function loadSnapPoints() {
             snapPoint.textAlign = item.textAlign || 'center';
             snapPoint.textVerticalAlign = item.textVerticalAlign || 'middle';
             snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
-            snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
+            snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.5;
             snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
             snapPoint.boxWidth = item.boxWidth || null;
             snapPoint.boxHeight = item.boxHeight || null;
@@ -1554,7 +1554,7 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         snapPoint.textAlign = item.textAlign || 'center';
         snapPoint.textVerticalAlign = item.textVerticalAlign || 'middle';
         snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
-        snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.9;
+        snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.5;
         snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
         snapPoint.boxWidth = item.boxWidth || null;
         snapPoint.boxHeight = item.boxHeight || null;

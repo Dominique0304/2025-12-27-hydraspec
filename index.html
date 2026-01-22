@@ -1942,9 +1942,15 @@
     <script src="utils.js"></script>
     <script src="i18n.js"></script>
 
+    <!-- Managers POO - Encapsulation des outils (AVANT project.js car utilisés dans constructeur) -->
+    <script src="snappoint-manager.js"></script>
+    <script src="interval-manager.js"></script>
+    <script src="diffcanal-manager.js"></script>
+
     <!-- Architecture POO Multi-Projets - DOIT être chargé AVANT app.js -->
     <script src="project.js"></script>
     <script src="project-manager.js"></script>
+    <script src="tool-adapters.js"></script>
     <script src="project-integration.js"></script>
 
     <script src="app.js"></script>

@@ -40,6 +40,11 @@ function initProjectManager() {
     projectManager.on('projectDeleted', onProjectDeleted);
     projectManager.on('projectSwitched', onProjectSwitched);
 
+    // CRITIQUE : Synchroniser les variables globales avec le projet par défaut
+    if (typeof syncGlobalVariablesWithManagers === 'function') {
+        syncGlobalVariablesWithManagers();
+    }
+
     return projectManager;
 }
 
@@ -112,6 +117,11 @@ function onProjectDeleted(data) {
  */
 function onProjectSwitched(project) {
     console.log(`🔄 Basculé vers : ${project.name}`);
+
+    // CRITIQUE : Synchroniser les variables globales avec les managers du nouveau projet
+    if (typeof syncGlobalVariablesWithManagers === 'function') {
+        syncGlobalVariablesWithManagers();
+    }
 
     // Mettre à jour tous les graphiques et l'interface
     if (typeof updateAllInterface === 'function') {
@@ -512,12 +522,43 @@ function saveAllToolsState(project) {
 
     console.log(`💾 Sauvegarde des états d'outils pour : ${project.name}`);
 
-    // Sauvegarder Intervals
-    if (typeof intervals !== 'undefined') {
-        project.toolsState.intervals = JSON.parse(JSON.stringify(intervals));
-        project.toolsState.isCreatingInterval = isCreatingInterval;
-        project.toolsState.nextIntervalId = nextIntervalId;
+    // CRITIQUE : Synchroniser les managers depuis les variables globales
+    // (au cas où du code aurait modifié les variables globales directement)
+    if (typeof syncManagersFromGlobalVariables === 'function') {
+        syncManagersFromGlobalVariables();
     }
+
+    // ========================================
+    // SAUVEGARDER DEPUIS LES MANAGERS (POO)
+    // ========================================
+
+    // Sauvegarder Intervals depuis le manager
+    if (project.intervalManager) {
+        const intervalData = project.intervalManager.save();
+        project.toolsState.intervals = intervalData.intervals;
+        project.toolsState.isCreatingInterval = intervalData.isCreating;
+        project.toolsState.nextIntervalId = intervalData.nextIntervalId;
+        project.toolsState.pendingIntervalData = intervalData.pendingIntervalData;
+    }
+
+    // Sauvegarder SnapPoints depuis le manager
+    if (project.snapPointManager) {
+        const snapPointData = project.snapPointManager.save();
+        project.toolsState.snapPoints = snapPointData.snapPoints;
+        project.toolsState.nextSnapPointId = snapPointData.nextSnapPointId;
+        project.toolsState.isCreatingSnapPoint = snapPointData.isCreating;
+    }
+
+    // Sauvegarder Diff Canal depuis le manager
+    if (project.diffCanalManager) {
+        const diffCanalData = project.diffCanalManager.save();
+        project.toolsState.diffCanal.intervals = diffCanalData.intervals;
+        project.toolsState.diffCanal.nextId = diffCanalData.nextId;
+    }
+
+    // ========================================
+    // OUTILS NON ENCORE ENCAPSULÉS (ancien système)
+    // ========================================
 
     // Sauvegarder Measure Tool
     if (typeof measureState !== 'undefined') {
@@ -562,19 +603,6 @@ function saveAllToolsState(project) {
             values: {...trackState.values},
             locked: trackState.locked
         };
-    }
-
-    // Sauvegarder Diff Canal
-    if (typeof diffCanalIntervals !== 'undefined') {
-        project.toolsState.diffCanal.intervals = JSON.parse(JSON.stringify(diffCanalIntervals));
-        project.toolsState.diffCanal.nextId = nextDiffCanalId;
-    }
-
-    // Sauvegarder Marqueurs (SnapPoints)
-    if (typeof snapPoints !== 'undefined') {
-        project.toolsState.snapPoints = JSON.parse(JSON.stringify(snapPoints));
-        project.toolsState.nextSnapPointId = nextSnapPointId;
-        project.toolsState.isCreatingSnapPoint = isCreatingSnapPoint;
     }
 
     // Sauvegarder Vues sauvegardées
@@ -638,12 +666,22 @@ function restoreAllToolsState(project) {
 
     console.log(`🔄 Restauration des états d'outils pour : ${project.name}`);
 
-    // Restaurer Intervals
-    if (typeof intervals !== 'undefined' && typeof Interval !== 'undefined' && project.toolsState.intervals) {
-        intervals.length = 0; // Vider le tableau
+    // ========================================
+    // RESTAURER DEPUIS LES MANAGERS (POO)
+    // ========================================
+
+    // Restaurer Intervals depuis le manager
+    if (project.intervalManager && project.toolsState.intervals) {
+        // Charger dans le manager
+        project.intervalManager.load({
+            intervals: project.toolsState.intervals,
+            nextIntervalId: project.toolsState.nextIntervalId,
+            isCreating: project.toolsState.isCreatingInterval,
+            pendingIntervalData: project.toolsState.pendingIntervalData
+        });
 
         // Recréer les instances de la classe Interval
-        project.toolsState.intervals.forEach(data => {
+        project.intervalManager.intervals = project.toolsState.intervals.map(data => {
             const interval = new Interval(data.id, data.startTime, data.endTime, data.comment, data.yPosition);
             interval.color = data.color;
             interval.visible = data.visible;
@@ -651,16 +689,50 @@ function restoreAllToolsState(project) {
             interval.fontWeight = data.fontWeight;
             interval.fontStyle = data.fontStyle;
             interval.textDecoration = data.textDecoration;
-            intervals.push(interval);
+            return interval;
         });
-
-        isCreatingInterval = project.toolsState.isCreatingInterval;
-        nextIntervalId = project.toolsState.nextIntervalId;
 
         // Mettre à jour l'affichage
         if (typeof updateIntervalsList === 'function') {
             updateIntervalsList();
         }
+    }
+
+    // Restaurer SnapPoints depuis le manager
+    if (project.snapPointManager && project.toolsState.snapPoints) {
+        // Charger dans le manager
+        project.snapPointManager.load({
+            snapPoints: project.toolsState.snapPoints,
+            nextSnapPointId: project.toolsState.nextSnapPointId,
+            isCreating: project.toolsState.isCreatingSnapPoint
+        });
+
+        // Recréer les instances de la classe SnapPoint (si nécessaire)
+        // Note: snapPoints est déjà un tableau d'objets avec toutes les propriétés
+
+        // Mettre à jour l'affichage
+        if (typeof updateSnapPointsList === 'function') {
+            updateSnapPointsList();
+        }
+    }
+
+    // Restaurer Diff Canal depuis le manager
+    if (project.diffCanalManager && project.toolsState.diffCanal) {
+        // Charger dans le manager
+        project.diffCanalManager.load({
+            intervals: project.toolsState.diffCanal.intervals,
+            nextId: project.toolsState.diffCanal.nextId
+        });
+
+        // Mettre à jour l'affichage
+        if (typeof updateDiffCanalList === 'function') {
+            updateDiffCanalList();
+        }
+    }
+
+    // CRITIQUE : Synchroniser les variables globales avec les managers
+    if (typeof syncGlobalVariablesWithManagers === 'function') {
+        syncGlobalVariablesWithManagers();
     }
 
     // Restaurer Measure Tool

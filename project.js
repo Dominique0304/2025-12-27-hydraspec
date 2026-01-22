@@ -188,6 +188,14 @@ class Project {
         this.container = null;
         this.isActive = false;
 
+        // ========================================
+        // MANAGERS ORIENTÉS OBJET (Architecture POO)
+        // ========================================
+        // Remplacent les variables globales par une gestion encapsulée
+        this.snapPointManager = new SnapPointManager(this);
+        this.intervalManager = new IntervalManager(this);
+        this.diffCanalManager = new DiffCanalManager(this);
+
         console.log(`✅ Projet créé: ${this.name} [ID: ${this.id}]`);
     }
 

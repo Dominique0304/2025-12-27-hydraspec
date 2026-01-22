@@ -48,7 +48,7 @@ class SnapPoint {
         this.textVerticalAlign = 'middle'; // 'top', 'middle', 'bottom'
 
         // Apparence de la boîte
-        this.backgroundColor = '#FFD93D'; // Couleur de fond (jaune par défaut)
+        this.backgroundColor = null; // Couleur de fond (null = couleur du canal)
         this.backgroundOpacity = 0.5; // Opacité du fond (0-1) - 50% de transparence
         this.boxPaddingScale = 1.0; // Facteur d'agrandissement de la boîte (1.0 = normal)
         this.boxWidth = null; // Largeur personnalisée de la boîte (null = auto)
@@ -737,7 +737,7 @@ function drawSnapPoints(chart) {
 
         // Dessiner la flèche libre si activée (seulement si pas de canal d'accrochage)
         if (snapPoint.hasArrow && (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined)) {
-            const arrowColor = snapPoint.backgroundColor || '#FFD93D';
+            const arrowColor = snapPoint.backgroundColor || color;
             const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5;
 
             // Point d'arrivée : position définie par arrowEndX/Y (offsets)
@@ -1505,7 +1505,7 @@ function loadSnapPoints() {
             snapPoint.textDecoration = item.textDecoration || 'none';
             snapPoint.textAlign = item.textAlign || 'center';
             snapPoint.textVerticalAlign = item.textVerticalAlign || 'middle';
-            snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
+            snapPoint.backgroundColor = item.backgroundColor || null;
             snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.5;
             snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
             snapPoint.boxWidth = item.boxWidth || null;
@@ -1553,7 +1553,7 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         snapPoint.textDecoration = item.textDecoration || 'none';
         snapPoint.textAlign = item.textAlign || 'center';
         snapPoint.textVerticalAlign = item.textVerticalAlign || 'middle';
-        snapPoint.backgroundColor = item.backgroundColor || '#FFD93D';
+        snapPoint.backgroundColor = item.backgroundColor || null;
         snapPoint.backgroundOpacity = item.backgroundOpacity !== undefined ? item.backgroundOpacity : 0.5;
         snapPoint.boxPaddingScale = item.boxPaddingScale || 1.0;
         snapPoint.boxWidth = item.boxWidth || null;

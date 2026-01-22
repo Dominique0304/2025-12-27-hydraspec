@@ -48,7 +48,9 @@ class SnapPoint {
         this.textVerticalAlign = 'middle'; // 'top', 'middle', 'bottom'
 
         // Apparence de la boîte
-        this.backgroundColor = null; // Couleur de fond (null = couleur du canal)
+        // Initialiser avec la couleur du canal
+        const channelColor = appState.channelConfig?.[channelIndex]?.color;
+        this.backgroundColor = channelColor || '#4ECDC4'; // Couleur de fond (couleur du canal par défaut)
         this.backgroundOpacity = 0.5; // Opacité du fond (0-1) - 50% de transparence
         this.boxPaddingScale = 1.0; // Facteur d'agrandissement de la boîte (1.0 = normal)
         this.boxWidth = null; // Largeur personnalisée de la boîte (null = auto)
@@ -970,8 +972,10 @@ function openSnapPointEditModal(id) {
 
     // Régler la couleur de fond
     const bgColorPicker = document.getElementById('snap-bg-color');
-    if (bgColorPicker && snapPoint.backgroundColor) {
-        bgColorPicker.value = snapPoint.backgroundColor;
+    if (bgColorPicker) {
+        // Utiliser la couleur du marqueur, ou celle du canal si non définie
+        const channelColor = appState.channelConfig?.[snapPoint.channelIndex]?.color;
+        bgColorPicker.value = snapPoint.backgroundColor || channelColor || '#4ECDC4';
     }
 
     // Régler l'opacité

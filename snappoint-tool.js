@@ -1794,13 +1794,6 @@ function handleSnapPointMouseDown(event, chart) {
         // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
         const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
-            // IMPORTANT : Si c'est le premier redimensionnement, figer les dimensions actuelles
-            // pour éviter un saut dimensionnel
-            if (snapPoint.boxWidth === null || snapPoint.boxHeight === null) {
-                snapPoint.boxWidth = boxWidth;
-                snapPoint.boxHeight = boxHeight;
-            }
-
             // Commencer le resize
             snapPointState.dragging = 'resize';
             snapPointState.draggedSnapPoint = snapPoint;
@@ -1813,6 +1806,7 @@ function handleSnapPointMouseDown(event, chart) {
             snapPointState.resizeStartBoxY = boxY;
             snapPointState.dragOffsetX = snapPoint.offsetX;
             snapPointState.dragOffsetY = snapPoint.offsetY;
+            snapPointState.dimensionsFrozen = false; // Indicateur pour figer les dimensions au premier mouvement
 
             // Sauvegarder la position initiale de la flèche si elle existe
             if (snapPoint.hasArrow) {
@@ -1920,6 +1914,16 @@ function handleSnapPointMouseMove(event, chart) {
                 }
             }
         } else if (snapPointState.dragging === 'resize') {
+            // Figer les dimensions au premier mouvement pour éviter un saut dimensionnel
+            if (!snapPointState.dimensionsFrozen) {
+                const snapPoint = snapPointState.draggedSnapPoint;
+                if (snapPoint.boxWidth === null || snapPoint.boxHeight === null) {
+                    snapPoint.boxWidth = snapPointState.resizeStartWidth;
+                    snapPoint.boxHeight = snapPointState.resizeStartHeight;
+                }
+                snapPointState.dimensionsFrozen = true;
+            }
+
             // Resize de la boîte
             const direction = snapPointState.resizeDirection;
             let newWidth = snapPointState.resizeStartWidth;

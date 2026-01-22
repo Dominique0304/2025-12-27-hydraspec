@@ -503,9 +503,15 @@ function drawSnapPoints(chart) {
     snapPoints.forEach(snapPoint => {
         if (!snapPoint.visible) return;
 
-        // Vérifier que le canal existe
-        if (!appState.channelConfig[snapPoint.channelIndex]) {
-            return;
+        // Déterminer si le marqueur est flottant (non associé à un canal)
+        const isFloating = (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
+
+        // Si le marqueur est associé à un canal (pas flottant), vérifier que le canal existe et est visible
+        if (!isFloating) {
+            const config = appState.channelConfig[snapPoint.channelIndex];
+            if (!config || !config.visible) {
+                return; // Canal masqué ou inexistant, ne pas dessiner le marqueur associé
+            }
         }
 
         const pointPos = snapPoint.getPointPixelPosition(chart);
@@ -514,8 +520,9 @@ function drawSnapPoints(chart) {
         const boxPos = snapPoint.getBoxPixelPosition(chart);
         if (!boxPos) return;
 
+        // Obtenir la couleur : utiliser celle du canal si disponible, sinon couleur par défaut
         const config = appState.channelConfig[snapPoint.channelIndex];
-        const color = config.color || snapPoint.color;
+        const color = config?.color || snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
 
         // Dessiner le point d'accroche et la ligne SEULEMENT si un canal d'accrochage est défini
         if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {

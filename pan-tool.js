@@ -171,6 +171,12 @@ function handlePanMouseUp() {
     if (panState.dragging) {
         panState.dragging = false;
 
+        // CRITIQUE: Recalculer le downsampling après le pan
+        if (typeof updateTimeChart === 'function') {
+            updateTimeChart();
+            console.log("🔄 Downsampling recalculé après pan");
+        }
+
         // Sauvegarder l'état après le déplacement
         if (typeof saveZoomState === 'function') {
             saveZoomState();
@@ -580,6 +586,12 @@ function handleGridZoomRelease(event, chart, canvas) {
 
     if (typeof updateZoomInputs === 'function') {
         updateZoomInputs();
+    }
+
+    // CRITIQUE: Recalculer le downsampling après le zoom par grille
+    if (typeof updateTimeChart === 'function') {
+        updateTimeChart();
+        console.log("🔄 Downsampling recalculé après zoom par grille");
     }
 
     return true;

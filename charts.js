@@ -852,7 +852,15 @@ function handleZoom(chart, e) {
         });
     }
 
-    chart.update('none');
+    // CRITIQUE: Recalculer le downsampling dynamique après le zoom
+    // On appelle updateTimeChart() pour recalculer les données affichées selon la nouvelle plage
+    if (typeof updateTimeChart === 'function') {
+        updateTimeChart();
+        console.log("🔄 Downsampling recalculé après zoom");
+    } else {
+        // Fallback si updateTimeChart n'est pas disponible
+        chart.update('none');
+    }
 
     // METTRE À JOUR LES CHAMPS DE ZOOM APRÈS CHAQUE ZOOM
     setTimeout(updateZoomInputs, 10);

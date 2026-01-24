@@ -647,19 +647,65 @@ function updateTimeChartMultiChannel() {
         xData = appState.allColumnData[xChannelIndex];
     }
 
-    // Downsampling si nécessaire
-    let downsampleStep = 1;
-    if (xData.length > 15000) {
-        downsampleStep = Math.ceil(xData.length / 15000);
+    // ========================================
+    // DOWNSAMPLING DYNAMIQUE (basé sur le zoom)
+    // ========================================
+
+    // Récupérer les limites du zoom X actuel
+    const xMin = chart.options.scales.x.min;
+    const xMax = chart.options.scales.x.max;
+
+    let visibleStartIndex = 0;
+    let visibleEndIndex = xData.length - 1;
+    let visibleXData, visibleYData;
+
+    // Si un zoom est appliqué, extraire seulement la plage visible
+    if (xMin !== undefined && xMax !== undefined && xMin !== null && xMax !== null) {
+        // Trouver les indices correspondant au zoom
+        visibleStartIndex = xData.findIndex(x => x >= xMin);
+        visibleEndIndex = xData.findIndex(x => x > xMax);
+
+        if (visibleStartIndex === -1) visibleStartIndex = 0;
+        if (visibleEndIndex === -1) visibleEndIndex = xData.length - 1;
+
+        // Extraire la plage visible
+        visibleXData = xData.slice(visibleStartIndex, visibleEndIndex + 1);
+
+        console.log(`🔍 Zoom actif: ${xMin.toFixed(0)} à ${xMax.toFixed(0)} ms`);
+        console.log(`📊 Plage visible: indices ${visibleStartIndex} à ${visibleEndIndex} (${visibleXData.length} points)`);
+    } else {
+        // Pas de zoom, utiliser toutes les données
+        visibleXData = xData;
+        console.log(`📊 Pas de zoom: ${visibleXData.length} points`);
     }
 
-    const downsampledX = downsampleStep > 1 ? xData.filter((_, i) => i % downsampleStep === 0) : Array.from(xData);
+    // Calculer le downsampling sur la PLAGE VISIBLE uniquement
+    let downsampleStep = 1;
+    const maxDisplayPoints = 15000;
+
+    if (visibleXData.length > maxDisplayPoints) {
+        downsampleStep = Math.ceil(visibleXData.length / maxDisplayPoints);
+        console.log(`⚡ Downsampling: 1 point sur ${downsampleStep} (${visibleXData.length} → ${Math.ceil(visibleXData.length / downsampleStep)} points)`);
+    } else {
+        console.log(`✅ Pas de downsampling nécessaire (${visibleXData.length} points < ${maxDisplayPoints})`);
+    }
+
+    const downsampledX = downsampleStep > 1
+        ? visibleXData.filter((_, i) => i % downsampleStep === 0)
+        : Array.from(visibleXData);
 
     // Créer les datasets pour chaque canal visible
     chart.data.labels = downsampledX;
     chart.data.datasets = visibleChannels.map(config => {
-        const channelData = appState.allColumnData[config.index];
-        const downsampledY = downsampleStep > 1 ? channelData.filter((_, i) => i % downsampleStep === 0) : Array.from(channelData);
+        const fullChannelData = appState.allColumnData[config.index];
+
+        // Extraire la même plage visible pour les données Y
+        const visibleChannelData = fullChannelData.slice(visibleStartIndex, visibleEndIndex + 1);
+
+        // Appliquer le downsampling
+        const downsampledY = downsampleStep > 1
+            ? visibleChannelData.filter((_, i) => i % downsampleStep === 0)
+            : Array.from(visibleChannelData);
 
         return {
             label: config.label,

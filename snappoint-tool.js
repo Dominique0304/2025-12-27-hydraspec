@@ -91,23 +91,40 @@ class SnapPoint {
     getPointPixelPosition(chart) {
         const xScale = chart.scales.x;
 
-        // Déterminer quel canal utiliser pour le Y
-        const targetChannelIndex = this.anchorChannelIndex !== null && this.anchorChannelIndex !== undefined
-                                    ? this.anchorChannelIndex
-                                    : this.channelIndex;
+        // Déterminer si c'est une annotation flottante (pas d'accrochage à un canal)
+        const isFloating = (this.anchorChannelIndex === null || this.anchorChannelIndex === undefined);
 
-        const yAxisID = appState.channelConfig[targetChannelIndex]?.yAxisID || 'y';
-        const yScale = chart.scales[yAxisID];
+        let yAxisID, yScale, yValue;
 
-        if (!yScale) return null;
+        if (isFloating) {
+            // ANNOTATION FLOTTANTE : utiliser l'échelle Y par défaut et la valeur fixe
+            yAxisID = 'y'; // Échelle Y par défaut
+            yScale = chart.scales[yAxisID];
+            yValue = this.value; // Valeur fixe (pas de suivi de courbe)
 
-        // Si un canal d'accrochage est défini, recalculer la valeur Y en temps réel
-        let yValue = this.value;
-        if (this.anchorChannelIndex !== null && this.anchorChannelIndex !== undefined) {
-            const liveValue = getSnapPointValueOnCurve(this.anchorChannelIndex, this.time);
-            if (liveValue !== null) {
-                yValue = liveValue;
+            console.log(`📍 Annotation flottante ID=${this.id} : échelle='y', valeur fixe=${yValue.toFixed(2)}`);
+        } else {
+            // ANNOTATION ACCROCHÉE : utiliser l'échelle du canal d'accrochage
+            const targetChannelIndex = this.anchorChannelIndex;
+            const channelConfig = appState.channelConfig[targetChannelIndex];
+
+            // Si le canal d'accrochage n'existe plus ou est masqué, ne pas afficher
+            if (!channelConfig) {
+                console.warn(`⚠️ Canal d'accrochage ${targetChannelIndex} introuvable pour l'annotation ID=${this.id}`);
+                return null;
             }
+
+            yAxisID = channelConfig.yAxisID || 'y';
+            yScale = chart.scales[yAxisID];
+
+            // Recalculer la valeur Y en temps réel sur la courbe
+            const liveValue = getSnapPointValueOnCurve(this.anchorChannelIndex, this.time);
+            yValue = (liveValue !== null) ? liveValue : this.value;
+        }
+
+        if (!yScale) {
+            console.warn(`⚠️ Échelle Y '${yAxisID}' introuvable pour l'annotation ID=${this.id}`);
+            return null;
         }
 
         return {
@@ -506,12 +523,15 @@ function drawSnapPoints(chart) {
         // Déterminer si le marqueur est flottant (non associé à un canal)
         const isFloating = (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
 
-        // Si le marqueur est associé à un canal (pas flottant), vérifier que le canal existe et est visible
+        // Si le marqueur est accroché à un canal (pas flottant), vérifier que le canal d'accrochage existe et est visible
         if (!isFloating) {
-            const config = appState.channelConfig[snapPoint.channelIndex];
-            if (!config || !config.visible) {
-                return; // Canal masqué ou inexistant, ne pas dessiner le marqueur associé
+            const anchorConfig = appState.channelConfig[snapPoint.anchorChannelIndex];
+            if (!anchorConfig || !anchorConfig.visible) {
+                console.log(`🔍 Annotation ID=${snapPoint.id} masquée car canal d'accrochage ${snapPoint.anchorChannelIndex} est masqué/inexistant`);
+                return; // Canal d'accrochage masqué ou inexistant, ne pas dessiner le marqueur
             }
+        } else {
+            console.log(`🎈 Annotation flottante ID=${snapPoint.id} affichée (indépendante des canaux)`);
         }
 
         const pointPos = snapPoint.getPointPixelPosition(chart);
@@ -520,9 +540,17 @@ function drawSnapPoints(chart) {
         const boxPos = snapPoint.getBoxPixelPosition(chart);
         if (!boxPos) return;
 
-        // Obtenir la couleur : utiliser celle du canal si disponible, sinon couleur par défaut
-        const config = appState.channelConfig[snapPoint.channelIndex];
-        const color = config?.color || snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
+        // Obtenir la couleur : pour annotation flottante, utiliser sa propre couleur
+        // Pour annotation accrochée, utiliser la couleur du canal d'accrochage
+        let color;
+        if (isFloating) {
+            // Annotation flottante : utiliser sa couleur définie
+            color = snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
+        } else {
+            // Annotation accrochée : utiliser la couleur du canal d'accrochage
+            const anchorConfig = appState.channelConfig[snapPoint.anchorChannelIndex];
+            color = anchorConfig?.color || snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
+        }
 
         // Dessiner le point d'accroche et la ligne SEULEMENT si un canal d'accrochage est défini
         if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
@@ -944,8 +972,17 @@ function updateSnapPointsList() {
         const eyeIcon = isVisible ? 'fa-eye' : 'fa-eye-slash';
         const eyeColor = isVisible ? 'var(--accent-green)' : 'var(--text-muted)';
 
-        const config = appState.channelConfig[snapPoint.channelIndex];
-        const color = config?.color || snapPoint.color;
+        // Déterminer la couleur selon si l'annotation est flottante ou accrochée
+        const isFloating = (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
+        let color;
+        if (isFloating) {
+            // Annotation flottante : utiliser sa couleur
+            color = snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
+        } else {
+            // Annotation accrochée : utiliser la couleur du canal d'accrochage
+            const anchorConfig = appState.channelConfig[snapPoint.anchorChannelIndex];
+            color = anchorConfig?.color || snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
+        }
 
         html += `
             <div style="padding:8px; margin-bottom:6px; background:var(--bg-secondary); border-radius:4px; border-left:3px solid ${color}; font-size:0.75rem;">

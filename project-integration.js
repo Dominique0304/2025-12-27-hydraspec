@@ -1062,6 +1062,12 @@ function updateAllInterface(isInitialLoad = false) {
             }
         }
 
+        // CRITIQUE : Créer le canal fantôme pour les annotations flottantes
+        // (APRÈS le chargement ou l'initialisation des canaux normaux)
+        if (typeof getOrCreatePhantomChannel === 'function') {
+            getOrCreatePhantomChannel();
+        }
+
         if (typeof updateColumnSelector === 'function') {
             updateColumnSelector();
         }

@@ -91,33 +91,21 @@ class SnapPoint {
     getPointPixelPosition(chart) {
         const xScale = chart.scales.x;
 
-        // Déterminer si c'est une annotation flottante (pas d'accrochage à un canal)
-        const isFloating = (this.anchorChannelIndex === null || this.anchorChannelIndex === undefined);
+        // Déterminer si c'est une annotation flottante (-1 = canal fantôme)
+        const isFloating = (this.anchorChannelIndex === -1 || this.anchorChannelIndex === null || this.anchorChannelIndex === undefined);
 
         let yAxisID, yScale, yValue;
 
         if (isFloating) {
-            // ANNOTATION FLOTTANTE : trouver une échelle Y disponible
-            // Essayer d'abord l'échelle par défaut 'y', sinon chercher n'importe quelle échelle Y
-            yAxisID = 'y';
+            // ANNOTATION FLOTTANTE : utiliser le canal fantôme
+            yAxisID = 'yPhantom'; // Échelle du canal fantôme
             yScale = chart.scales[yAxisID];
-
-            // Si l'échelle 'y' n'existe pas, chercher la première échelle Y disponible
-            if (!yScale) {
-                const availableYScales = Object.keys(chart.scales).filter(key => key.startsWith('y'));
-                if (availableYScales.length > 0) {
-                    yAxisID = availableYScales[0];
-                    yScale = chart.scales[yAxisID];
-                    console.log(`📍 Annotation flottante ID=${this.id} : échelle 'y' introuvable, utilisation de '${yAxisID}'`);
-                }
-            }
-
             yValue = this.value; // Valeur fixe (pas de suivi de courbe)
 
             if (yScale) {
-                console.log(`📍 Annotation flottante ID=${this.id} : échelle='${yAxisID}', valeur fixe=${yValue.toFixed(2)}`);
+                console.log(`👻 Annotation flottante ID=${this.id} : canal fantôme (yPhantom), valeur fixe=${yValue.toFixed(2)}`);
             } else {
-                console.warn(`⚠️ Aucune échelle Y disponible pour l'annotation flottante ID=${this.id}`);
+                console.warn(`⚠️ Canal fantôme (yPhantom) introuvable pour l'annotation ID=${this.id}! Vérifier que getOrCreatePhantomChannel() a été appelé.`);
                 return null;
             }
         } else {
@@ -537,8 +525,8 @@ function drawSnapPoints(chart) {
     snapPoints.forEach(snapPoint => {
         if (!snapPoint.visible) return;
 
-        // Déterminer si le marqueur est flottant (non associé à un canal)
-        const isFloating = (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
+        // Déterminer si le marqueur est flottant (-1 = canal fantôme)
+        const isFloating = (snapPoint.anchorChannelIndex === -1 || snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
 
         // Si le marqueur est accroché à un canal (pas flottant), vérifier que le canal d'accrochage existe et est visible
         if (!isFloating) {
@@ -569,8 +557,8 @@ function drawSnapPoints(chart) {
             color = anchorConfig?.color || snapPoint.backgroundColor || snapPoint.color || '#4ECDC4';
         }
 
-        // Dessiner le point d'accroche et la ligne SEULEMENT si un canal d'accrochage est défini
-        if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+        // Dessiner le point d'accroche et la ligne SEULEMENT si un canal d'accrochage est défini (pas -1)
+        if (snapPoint.anchorChannelIndex !== -1 && snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
             // Obtenir la couleur du canal d'accrochage
             const anchorConfig = appState.channelConfig[snapPoint.anchorChannelIndex];
             const anchorColor = anchorConfig?.color || color;
@@ -989,8 +977,8 @@ function updateSnapPointsList() {
         const eyeIcon = isVisible ? 'fa-eye' : 'fa-eye-slash';
         const eyeColor = isVisible ? 'var(--accent-green)' : 'var(--text-muted)';
 
-        // Déterminer la couleur selon si l'annotation est flottante ou accrochée
-        const isFloating = (snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
+        // Déterminer la couleur selon si l'annotation est flottante ou accrochée (-1 = canal fantôme)
+        const isFloating = (snapPoint.anchorChannelIndex === -1 || snapPoint.anchorChannelIndex === null || snapPoint.anchorChannelIndex === undefined);
         let color;
         if (isFloating) {
             // Annotation flottante : utiliser sa couleur
@@ -1116,8 +1104,11 @@ function openSnapPointEditModal(id) {
         // Vider et repeupler le sélecteur
         anchorChannelSelect.innerHTML = '<option value="-1">Aucun (boîte flottante)</option>';
 
-        // Ajouter tous les canaux disponibles
+        // Ajouter tous les canaux disponibles (SAUF le canal fantôme)
         appState.channelConfig.forEach((config, index) => {
+            // Ignorer le canal fantôme
+            if (config.isPhantom) return;
+
             const option = document.createElement('option');
             option.value = index;
             option.textContent = config.label || `Canal ${index + 1}`;
@@ -1712,6 +1703,21 @@ function loadSnapPointsFromProject(savedSnapPoints) {
     }
 
     console.log("📥 Loading", savedSnapPoints.length, "snap points from project");
+
+    // DOUBLE VÉRIFICATION : Vérifier si des annotations flottantes existent
+    const hasFloatingAnnotations = savedSnapPoints.some(sp =>
+        sp.anchorChannelIndex === -1 || sp.anchorChannelIndex === null
+    );
+
+    // Si oui, garantir que le canal fantôme existe AVANT le chargement
+    if (hasFloatingAnnotations) {
+        console.log("👻 Annotations flottantes détectées, vérification du canal fantôme...");
+        if (typeof getOrCreatePhantomChannel === 'function') {
+            getOrCreatePhantomChannel();
+        } else {
+            console.warn("⚠️ Fonction getOrCreatePhantomChannel introuvable!");
+        }
+    }
 
     snapPoints = savedSnapPoints.map(item => {
         const snapPoint = new SnapPoint(

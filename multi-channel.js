@@ -14,6 +14,49 @@ const DEFAULT_CHANNEL_COLORS = [
     '#8B00FF'   // Violet
 ];
 
+/**
+ * Créer ou obtenir le canal fantôme pour les annotations flottantes
+ * Ce canal invisible permet aux annotations de rester affichées même quand tous les canaux sont masqués
+ * @returns {Object} La configuration du canal fantôme
+ */
+function getOrCreatePhantomChannel() {
+    // Vérifier si le canal fantôme existe déjà
+    const existingPhantom = appState.channelConfig?.find(c => c.isPhantom === true);
+    if (existingPhantom) {
+        console.log("✅ Canal fantôme déjà présent (ID=" + existingPhantom.index + ")");
+        return existingPhantom;
+    }
+
+    // Créer le canal fantôme
+    const phantomChannel = {
+        index: -1,                           // ID négatif impossible pour un canal normal
+        name: "__PHANTOM__",                 // Nom interne (ne pas traduire)
+        label: "Annotations flottantes",     // Label affiché (si besoin)
+        unit: "",
+        visible: false,                      // TOUJOURS invisible
+        color: '#CCCCCC',                   // Gris (jamais affiché)
+        lineWidth: 0,
+        yAxisPosition: 'left',
+        yMin: 0,                            // Plage fixe large
+        yMax: 1000,                         // Ajustable si annotations hors plage
+        yAxisID: 'yPhantom',                // Échelle Y dédiée
+        showFFT: false,
+        isPhantom: true,                    // FLAG CRITIQUE pour filtrage
+        isCalculated: false,
+        isSmoothing: false,
+        isDerivative: false
+    };
+
+    // Ajouter à la configuration
+    if (!appState.channelConfig) {
+        appState.channelConfig = [];
+    }
+    appState.channelConfig.push(phantomChannel);
+
+    console.log("👻 Canal fantôme créé pour annotations flottantes");
+    return phantomChannel;
+}
+
 // Initialiser la configuration des canaux
 function initChannelConfig() {
     console.log("🎨 Initialisation de la configuration multi-canaux");
@@ -94,8 +137,11 @@ function updateChannelConfigUI() {
 
     tbody.innerHTML = '';
 
-    // Ajouter une ligne pour chaque canal
-    appState.channelConfig.forEach((config, index) => {
+    // Filtrer les canaux fantômes (ne pas les afficher dans l'UI)
+    const visibleChannels = appState.channelConfig.filter(c => !c.isPhantom);
+
+    // Ajouter une ligne pour chaque canal (sauf fantômes)
+    visibleChannels.forEach((config, index) => {
         const row = document.createElement('tr');
 
         // Checkbox visible
@@ -516,10 +562,12 @@ function applyChannelConfig() {
     console.log("✅ Configuration des canaux appliquée");
 
     // IMPORTANT : Sauvegarder la config dans le projet actif
+    // MAIS exclure le canal fantôme (sera recréé automatiquement au chargement)
     const project = typeof getActiveProject === 'function' ? getActiveProject() : null;
     if (project && appState.channelConfig) {
-        project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
-        console.log(`💾 Configuration sauvegardée dans le projet : ${project.name}`);
+        const configToSave = appState.channelConfig.filter(c => !c.isPhantom);
+        project.state.channelConfig = JSON.parse(JSON.stringify(configToSave));
+        console.log(`💾 Configuration sauvegardée dans le projet : ${project.name} (${configToSave.length} canaux, fantôme exclu)`);
     }
 
     updateTimeChart();

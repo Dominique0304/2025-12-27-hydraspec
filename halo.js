@@ -300,8 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // b) Distance au trait (ligne entre point et boîte)
-                if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+                // b) Distance au trait (ligne entre point et boîte) - seulement si accroché (pas -1)
+                if (snapPoint.anchorChannelIndex !== -1 && snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
                     const distToLine = distanceToLineSegment(mouseX, mouseY, pointX, pointY, boxX, boxY);
                     if (distToLine <= magnetZone) {
                         isNearCursor = true;

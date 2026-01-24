@@ -547,13 +547,35 @@ function updateXAxisSelector() {
     timeOption.textContent = 'Temps (ms)';
     select.appendChild(timeOption);
 
-    // Options pour chaque canal
-    appState.availableColumns.forEach((col, index) => {
+    // Filtrer les canaux valides (exclure fantômes et canaux invalides)
+    const validColumns = appState.availableColumns.filter(col => {
+        // Vérifier que la colonne existe et n'est pas un fantôme
+        if (!col || col.isPhantom) return false;
+
+        // Vérifier que les données existent
+        if (col.index === undefined || !appState.allColumnData[col.index]) return false;
+
+        return true;
+    });
+
+    // Options pour chaque canal valide
+    validColumns.forEach((col) => {
         const option = document.createElement('option');
-        option.value = (index + 1).toString();
+        // Utiliser l'index dans availableColumns + 1 (car 0 = temps)
+        const originalIndex = appState.availableColumns.indexOf(col);
+        option.value = (originalIndex + 1).toString();
         option.textContent = col.label;
         select.appendChild(option);
     });
+
+    // Vérifier si le canal X actuel est toujours valide
+    if (appState.xAxisChannel > 0) {
+        const currentXColumn = appState.availableColumns[appState.xAxisChannel - 1];
+        if (!currentXColumn || currentXColumn.isPhantom || !appState.allColumnData[currentXColumn.index]) {
+            console.warn(`⚠️ Canal X actuel (${appState.xAxisChannel}) invalide, réinitialisation à Temps`);
+            appState.xAxisChannel = 0;
+        }
+    }
 
     select.value = appState.xAxisChannel.toString();
     select.onchange = (e) => {

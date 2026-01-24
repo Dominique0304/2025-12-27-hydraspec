@@ -432,6 +432,12 @@ function deleteDerivativeChannel(channelId) {
                 col.isDerivative && (col.label === channelName || col.name === channelName)
             );
             if (availableColIndex !== -1) {
+                // Vérifier si le canal supprimé était utilisé comme axe X (AVANT suppression)
+                if (appState.xAxisChannel > 0 && appState.xAxisChannel - 1 === availableColIndex) {
+                    console.warn(`⚠️ Canal X supprimé (plan B), réinitialisation à Temps`);
+                    appState.xAxisChannel = 0;
+                }
+
                 appState.availableColumns.splice(availableColIndex, 1);
                 console.log(`✅ Supprimé de availableColumns (plan B)`);
             }
@@ -473,6 +479,12 @@ function deleteDerivativeChannel(channelId) {
         // Supprimer de availableColumns (si existe)
         const availableColIndex = appState.availableColumns.findIndex(col => col.derivativeId === channelId);
         if (availableColIndex !== -1) {
+            // Vérifier si le canal supprimé était utilisé comme axe X (AVANT suppression)
+            if (appState.xAxisChannel > 0 && appState.xAxisChannel - 1 === availableColIndex) {
+                console.warn(`⚠️ Canal X supprimé, réinitialisation à Temps`);
+                appState.xAxisChannel = 0;
+            }
+
             appState.availableColumns.splice(availableColIndex, 1);
             console.log(`✅ Supprimé de availableColumns`);
         }

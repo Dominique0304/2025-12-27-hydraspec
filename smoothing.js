@@ -346,6 +346,12 @@ function deleteSmoothedChannel(channelId, silent = false) {
     if (availableColIndex !== -1) {
         const dataIndex = appState.availableColumns[availableColIndex].index;
 
+        // Vérifier si le canal supprimé était utilisé comme axe X (AVANT suppression)
+        if (appState.xAxisChannel > 0 && appState.xAxisChannel - 1 === availableColIndex) {
+            console.warn(`⚠️ Canal X lissé supprimé, réinitialisation à Temps`);
+            appState.xAxisChannel = 0;
+        }
+
         // Supprimer de availableColumns
         appState.availableColumns.splice(availableColIndex, 1);
 

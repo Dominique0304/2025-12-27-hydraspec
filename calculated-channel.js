@@ -1026,10 +1026,30 @@ function deleteCalculatedChannel(channelId, silent = false) {
         // Supprimer de allColumnData
         appState.allColumnData.splice(dataIndex, 1);
 
+        // Supprimer de availableColumns et vérifier si c'était le canal X
+        const availableColIndex = appState.availableColumns.findIndex(col => col.calculatedId === channelId);
+        if (availableColIndex !== -1) {
+            // Vérifier si le canal supprimé était utilisé comme axe X (AVANT suppression)
+            if (appState.xAxisChannel > 0 && appState.xAxisChannel - 1 === availableColIndex) {
+                console.warn(`⚠️ Canal X calculé supprimé, réinitialisation à Temps`);
+                appState.xAxisChannel = 0;
+            }
+
+            appState.availableColumns.splice(availableColIndex, 1);
+            console.log(`✅ Supprimé de availableColumns`);
+        }
+
         // Mettre à jour les indices des autres canaux
         appState.channelConfig.forEach(cfg => {
             if (cfg.index > dataIndex) {
                 cfg.index--;
+            }
+        });
+
+        // Mettre à jour les indices dans availableColumns
+        appState.availableColumns.forEach(col => {
+            if (col.index > dataIndex) {
+                col.index--;
             }
         });
 

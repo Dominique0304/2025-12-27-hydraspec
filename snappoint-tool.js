@@ -868,8 +868,51 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColo
     }
 }
 
+// Vérifier l'intégrité des IDs de marqueurs (pas de doublons, pas de null/undefined)
+function checkSnapPointsIntegrity() {
+    let hasErrors = false;
+
+    // Vérifier les IDs null/undefined
+    const invalidIds = snapPoints.filter(sp => sp.id === null || sp.id === undefined);
+    if (invalidIds.length > 0) {
+        console.error(`❌ ${invalidIds.length} marqueur(s) avec ID null/undefined détecté(s)!`);
+        console.table(invalidIds.map((sp, idx) => ({
+            index: snapPoints.indexOf(sp),
+            id: sp.id,
+            time: sp.time?.toFixed(3) || 'N/A',
+            value: sp.value?.toFixed(1) || 'N/A'
+        })));
+        hasErrors = true;
+    }
+
+    // Vérifier les doublons d'IDs
+    const ids = snapPoints.map(sp => sp.id);
+    const uniqueIds = new Set(ids);
+
+    if (ids.length !== uniqueIds.size) {
+        console.error('❌ DOUBLONS D\'IDS DÉTECTÉS!');
+        const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+        console.error('IDs dupliqués:', duplicates);
+        console.table(snapPoints.map(sp => ({
+            id: sp.id,
+            time: sp.time.toFixed(3),
+            value: sp.value.toFixed(1),
+            comment: sp.comment
+        })));
+        hasErrors = true;
+    }
+
+    if (!hasErrors) {
+        console.log(`✅ Intégrité des ${snapPoints.length} marqueurs vérifiée: OK`);
+    }
+
+    return !hasErrors;
+}
+
 // Mettre à jour la liste des marqueurs dans le sidebar
 function updateSnapPointsList() {
+    // Vérifier l'intégrité des IDs
+    checkSnapPointsIntegrity();
     const listContainer = document.getElementById('snappoints-list');
     if (!listContainer) return;
 
@@ -884,6 +927,12 @@ function updateSnapPointsList() {
 
     let html = '';
     snapPoints.forEach((snapPoint, index) => {
+        // Vérification de sécurité : s'assurer que l'ID est valide
+        if (snapPoint.id === null || snapPoint.id === undefined) {
+            console.error(`❌ Marqueur à l'index ${index} a un ID invalide:`, snapPoint.id);
+            return; // Skip ce marqueur
+        }
+
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
         const timeInfo = `${snapPoint.time.toFixed(3)}s`;
@@ -947,11 +996,23 @@ let contextMenuSnapPointId = null;
 
 // Ouvrir la modale d'édition complète d'un marqueur
 function openSnapPointEditModal(id) {
-    const snapPoint = snapPoints.find(sp => sp.id === id);
-    if (!snapPoint) {
-        console.error(`Marqueur avec id ${id} introuvable`);
+    // IMPORTANT: Réinitialiser l'ID d'édition d'abord pour éviter tout conflit
+    editingSnapPointId = null;
+
+    // Vérifier que l'ID est valide
+    if (id === null || id === undefined) {
+        console.error(`❌ ID de marqueur invalide: ${id}`);
         return;
     }
+
+    const snapPoint = snapPoints.find(sp => sp.id === id);
+    if (!snapPoint) {
+        console.error(`❌ Marqueur avec id ${id} introuvable dans la liste de ${snapPoints.length} marqueurs`);
+        console.log('IDs disponibles:', snapPoints.map(sp => sp.id));
+        return;
+    }
+
+    console.log(`✏️ Ouverture de l'édition pour le marqueur ID=${id}`);
 
     // Récupérer les éléments de la modale
     const modal = document.getElementById('snappoint-edit-modal');
@@ -963,8 +1024,11 @@ function openSnapPointEditModal(id) {
 
     if (!modal) return;
 
-    // Stocker l'ID en édition
+    // Stocker l'ID en édition APRÈS toutes les vérifications
     editingSnapPointId = id;
+
+    // Stocker aussi dans le DOM pour debug
+    modal.setAttribute('data-editing-id', id);
 
     // Remplir les champs
     if (commentInput) commentInput.value = snapPoint.comment || '';
@@ -1033,28 +1097,45 @@ function openSnapPointEditModal(id) {
 function closeSnapPointEditModal() {
     const modal = document.getElementById('snappoint-edit-modal');
     if (modal) {
+        console.log(`🔒 Fermeture de l'édition du marqueur ID=${editingSnapPointId}`);
         modal.style.display = 'none';
+        modal.removeAttribute('data-editing-id');
     }
     editingSnapPointId = null;
+    console.log('✅ editingSnapPointId réinitialisé à null');
 }
 
 // Confirmer l'édition du marqueur
 function confirmSnapPointEdit() {
-    if (editingSnapPointId === null) {
-        console.error('Aucun marqueur en édition');
+    if (editingSnapPointId === null || editingSnapPointId === undefined) {
+        console.error('❌ Aucun marqueur en édition (editingSnapPointId est null/undefined)');
         return;
     }
 
+    console.log(`💾 Confirmation de l'édition pour le marqueur ID=${editingSnapPointId}`);
+
     const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
     if (!snapPoint) {
-        console.error(`Marqueur avec id ${editingSnapPointId} introuvable`);
+        console.error(`❌ Marqueur avec id ${editingSnapPointId} introuvable dans ${snapPoints.length} marqueurs`);
+        console.log('IDs disponibles:', snapPoints.map(sp => sp.id));
         return;
     }
+
+    // Vérification de sécurité: comparer avec l'attribut du modal
+    const modal = document.getElementById('snappoint-edit-modal');
+    const modalEditingId = modal ? parseInt(modal.getAttribute('data-editing-id')) : null;
+    if (modalEditingId !== null && modalEditingId !== editingSnapPointId) {
+        console.warn(`⚠️ Incohérence détectée! Modal ID=${modalEditingId}, editingSnapPointId=${editingSnapPointId}`);
+    }
+
+    console.log(`✅ Modification du marqueur ID=${snapPoint.id} (index ${snapPoints.indexOf(snapPoint)})`);
 
     // Récupérer les valeurs
     const commentInput = document.getElementById('snappoint-comment-input');
     if (commentInput) {
+        const oldComment = snapPoint.comment;
         snapPoint.comment = commentInput.value;
+        console.log(`  Commentaire: "${oldComment}" → "${snapPoint.comment}"`);
     }
 
     // Fermer la modale
@@ -1067,15 +1148,23 @@ function confirmSnapPointEdit() {
     // Sauvegarder
     saveSnapPoints();
 
-    setStatus(`Marqueur modifié`);
+    setStatus(`Marqueur ${snapPoint.id} modifié`);
 }
 
 // Basculer un format (bold, italic, underline)
 function toggleSnapPointFormat(format) {
-    if (editingSnapPointId === null) return;
+    if (editingSnapPointId === null) {
+        console.warn(`⚠️ toggleSnapPointFormat(${format}): editingSnapPointId est null`);
+        return;
+    }
 
     const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
-    if (!snapPoint) return;
+    if (!snapPoint) {
+        console.error(`❌ toggleSnapPointFormat(${format}): Marqueur ID=${editingSnapPointId} introuvable`);
+        return;
+    }
+
+    console.log(`🎨 Format ${format} basculé pour le marqueur ID=${editingSnapPointId}`);
 
     if (format === 'bold') {
         snapPoint.fontWeight = snapPoint.fontWeight === 'bold' ? 'normal' : 'bold';
@@ -1095,20 +1184,35 @@ function toggleSnapPointFormat(format) {
 
 // Définir la taille de police
 function setSnapPointFontSize(size) {
-    if (editingSnapPointId === null) return;
+    if (editingSnapPointId === null) {
+        console.warn(`⚠️ setSnapPointFontSize(${size}): editingSnapPointId est null`);
+        return;
+    }
 
     const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
-    if (!snapPoint) return;
+    if (!snapPoint) {
+        console.error(`❌ setSnapPointFontSize(${size}): Marqueur ID=${editingSnapPointId} introuvable`);
+        return;
+    }
 
+    console.log(`📏 Taille de police changée pour le marqueur ID=${editingSnapPointId}: ${snapPoint.fontSize} → ${size}`);
     snapPoint.fontSize = parseInt(size);
 }
 
 // Définir la couleur de fond
 function setSnapPointBackgroundColor(color) {
-    if (editingSnapPointId === null) return;
+    if (editingSnapPointId === null) {
+        console.warn(`⚠️ setSnapPointBackgroundColor(${color}): editingSnapPointId est null`);
+        return;
+    }
 
     const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
-    if (!snapPoint) return;
+    if (!snapPoint) {
+        console.error(`❌ setSnapPointBackgroundColor(${color}): Marqueur ID=${editingSnapPointId} introuvable`);
+        return;
+    }
+
+    console.log(`🎨 Couleur de fond changée pour le marqueur ID=${editingSnapPointId}: ${snapPoint.backgroundColor} → ${color}`);
 
     if (color === 'transparent') {
         snapPoint.backgroundOpacity = 0;
@@ -1128,12 +1232,19 @@ function setSnapPointBackgroundColor(color) {
 
 // Définir l'opacité du fond
 function setSnapPointOpacity(value) {
-    if (editingSnapPointId === null) return;
+    if (editingSnapPointId === null) {
+        console.warn(`⚠️ setSnapPointOpacity(${value}): editingSnapPointId est null`);
+        return;
+    }
 
     const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
-    if (!snapPoint) return;
+    if (!snapPoint) {
+        console.error(`❌ setSnapPointOpacity(${value}): Marqueur ID=${editingSnapPointId} introuvable`);
+        return;
+    }
 
     const opacity = parseInt(value) / 100;
+    console.log(`🌫️ Opacité changée pour le marqueur ID=${editingSnapPointId}: ${snapPoint.backgroundOpacity} → ${opacity}`);
     snapPoint.backgroundOpacity = opacity;
 
     // Mettre à jour l'affichage de la valeur
@@ -1531,6 +1642,8 @@ function loadSnapPoints() {
             return snapPoint;
         });
 
+        console.log(`📥 ${snapPoints.length} marqueur(s) chargé(s) depuis localStorage`);
+        checkSnapPointsIntegrity();
         updateSnapPointsList();
     } catch (e) {
         console.error('Erreur chargement marqueurs:', e);
@@ -1580,6 +1693,7 @@ function loadSnapPointsFromProject(savedSnapPoints) {
     });
 
     console.log("✅ Loaded", snapPoints.length, "snap points successfully");
+    checkSnapPointsIntegrity();
     updateSnapPointsList();
 }
 

@@ -534,6 +534,174 @@ function setupArrowKeyNavigation() {
     });
 }
 
+// =====================================
+// GESTION DYNAMIQUE DE L'AXE X
+// =====================================
+
+/**
+ * Obtenir les informations sur l'axe X actuel
+ * @returns {Object} Configuration de l'axe X
+ */
+function getXAxisInfo() {
+    if (appState.xAxisChannel === 0) {
+        // Axe X = Temps
+        return {
+            channelIndex: 0,
+            data: appState.fullDataTime,
+            unit: 's',           // Unité affichée (secondes)
+            unitSymbol: 'ms',    // Unité interne (millisecondes)
+            label: 'Temps',
+            scale: 1000,         // Facteur de conversion (interne → affiché)
+            isTime: true,
+            isMonotone: true
+        };
+    } else {
+        // Axe X = Canal utilisateur
+        const colIndex = appState.xAxisChannel - 1;
+        const col = appState.availableColumns[colIndex];
+
+        if (!col) {
+            console.error(`❌ Canal X invalide: index ${appState.xAxisChannel}`);
+            return getXAxisInfo.call({xAxisChannel: 0}); // Fallback sur Temps
+        }
+
+        const data = appState.allColumnData[col.index];
+
+        return {
+            channelIndex: appState.xAxisChannel,
+            data: data,
+            unit: col.unit || '',
+            unitSymbol: col.unit || '',
+            label: col.label || col.name || `Canal ${appState.xAxisChannel}`,
+            scale: 1,            // Pas de conversion (unité native)
+            isTime: false,
+            isMonotone: null     // À valider
+        };
+    }
+}
+
+/**
+ * Mettre à jour les labels des champs Min/Max selon l'axe X
+ */
+function updateXAxisLabels() {
+    const xInfo = getXAxisInfo();
+
+    // Mettre à jour les labels dans index.html
+    const minLabel = document.querySelector('label[for="zoom-min"]');
+    const maxLabel = document.querySelector('label[for="zoom-max"]');
+
+    if (minLabel) {
+        minLabel.innerHTML = `<i class="fas fa-compress-arrows-alt"></i> <span data-i18n="labels.min_x">Min (${xInfo.unit}):</span>`;
+    }
+    if (maxLabel) {
+        maxLabel.innerHTML = `<i class="fas fa-expand-arrows-alt"></i> <span data-i18n="labels.max_x">Max (${xInfo.unit}):</span>`;
+    }
+
+    console.log(`📊 Labels axe X mis à jour: ${xInfo.unit}`);
+}
+
+/**
+ * Valider que le canal X est monotone croissant
+ * @param {Array} data - Données du canal X
+ * @returns {Object} {valid: boolean, error: string}
+ */
+function validateXAxisMonotony(data) {
+    if (!data || data.length < 2) {
+        return { valid: true };
+    }
+
+    // Vérifier NaN/Infinity
+    for (let i = 0; i < data.length; i++) {
+        if (!isFinite(data[i])) {
+            return {
+                valid: false,
+                error: `Le canal X contient des valeurs invalides (NaN/Infinity) à l'indice ${i}`
+            };
+        }
+    }
+
+    // Vérifier monotonie croissante
+    let nonMonotoneCount = 0;
+    for (let i = 1; i < data.length; i++) {
+        if (data[i] < data[i-1]) {
+            nonMonotoneCount++;
+            if (nonMonotoneCount > 10) break; // Limiter le comptage
+        }
+    }
+
+    if (nonMonotoneCount > 0) {
+        return {
+            valid: false,
+            error: `Le canal X n'est pas monotone croissant (${nonMonotoneCount}+ inversions détectées)`
+        };
+    }
+
+    return { valid: true };
+}
+
+/**
+ * Masquer/afficher les outils selon si l'axe X est temporel
+ * Seuls les marqueurs (SnapPoints) restent visibles si X ≠ Temps
+ * @param {boolean} isTime - True si l'axe X est le temps
+ */
+function toggleToolsVisibility(isTime) {
+    // Liste des outils à masquer si X ≠ Temps
+    const toolsToHide = [
+        'cursors-section',       // Curseurs verticaux
+        'intervals-section',     // Intervalles
+        'measure-section',       // Measure tool
+        'ruler-section',         // Ruler tool
+        'diff-canal-section',    // Diff canal tool
+        'track-section'          // Track tool
+    ];
+
+    toolsToHide.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.style.display = isTime ? '' : 'none';
+        }
+    });
+
+    // Afficher un message si des outils sont masqués
+    if (!isTime) {
+        console.log(`⚠️ Certains outils sont masqués car l'axe X n'est pas temporel`);
+    }
+}
+
+/**
+ * Désactiver la FFT si l'axe X n'est pas le temps
+ * @param {boolean} isTime - True si l'axe X est le temps
+ */
+function toggleFFTVisibility(isTime) {
+    const fftSection = document.getElementById('fft-section');
+    const spectrogramSection = document.getElementById('spectrogram-section');
+
+    if (fftSection) {
+        if (isTime) {
+            fftSection.style.display = '';
+            fftSection.style.opacity = '1';
+        } else {
+            fftSection.style.display = 'none';
+            console.log(`⚠️ FFT désactivée: nécessite un axe X temporel`);
+        }
+    }
+
+    if (spectrogramSection) {
+        if (isTime) {
+            spectrogramSection.style.display = '';
+            spectrogramSection.style.opacity = '1';
+        } else {
+            spectrogramSection.style.display = 'none';
+            console.log(`⚠️ Spectrogramme désactivé: nécessite un axe X temporel`);
+        }
+    }
+
+    // Afficher un avertissement à l'utilisateur
+    if (!isTime) {
+        setStatus('ℹ️ FFT/Spectrogramme désactivés avec axe X non-temporel', 'info');
+    }
+}
+
 // Mettre à jour le sélecteur d'axe X
 function updateXAxisSelector() {
     const select = document.getElementById('x-axis-channel-select');
@@ -600,9 +768,37 @@ function updateXAxisSelector() {
 
     select.value = appState.xAxisChannel.toString();
     select.onchange = (e) => {
-        appState.xAxisChannel = parseInt(e.target.value);
+        const newChannelIndex = parseInt(e.target.value);
+        appState.xAxisChannel = newChannelIndex;
+
+        // Mettre à jour les labels des champs Min/Max
+        updateXAxisLabels();
+
+        // Valider la monotonie du nouveau canal X
+        const xInfo = getXAxisInfo();
+        const validation = validateXAxisMonotony(xInfo.data);
+        if (!validation.valid) {
+            console.warn(`⚠️ ${validation.error}`);
+            setStatus(`⚠️ ${validation.error}`, 'warning');
+        }
+
+        // Gérer la visibilité des outils selon le type d'axe X
+        toggleToolsVisibility(xInfo.isTime);
+
+        // Gérer la visibilité de la FFT
+        toggleFFTVisibility(xInfo.isTime);
+
+        // Mettre à jour le graphique
         updateTimeChart();
+
+        console.log(`📊 Canal X changé: ${xInfo.label} (${xInfo.unit})`);
     };
+
+    // Initialiser les labels et visibilité des outils au chargement
+    updateXAxisLabels();
+    const xInfo = getXAxisInfo();
+    toggleToolsVisibility(xInfo.isTime);
+    toggleFFTVisibility(xInfo.isTime);
 }
 
 // Appliquer la configuration et fermer

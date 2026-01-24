@@ -607,6 +607,31 @@ function updateTimeChartMultiChannel() {
         // Effacer complètement le graphique
         chart.data.labels = [];
         chart.data.datasets = [];
+
+        // CRITIQUE: Même sans canaux visibles, créer l'échelle yPhantom
+        // pour que les annotations flottantes restent affichées
+        const phantomChannel = appState.channelConfig.find(c => c.isPhantom);
+        if (phantomChannel) {
+            // Supprimer les anciennes échelles
+            const oldScales = Object.keys(chart.options.scales).filter(key => key !== 'x');
+            oldScales.forEach(key => {
+                delete chart.options.scales[key];
+            });
+
+            // Créer SEULEMENT l'échelle yPhantom
+            chart.options.scales.yPhantom = {
+                type: 'linear',
+                position: 'hidden',
+                display: false,
+                min: phantomChannel.yMin !== null ? phantomChannel.yMin : 0,
+                max: phantomChannel.yMax !== null ? phantomChannel.yMax : 1000,
+                grid: {
+                    display: false
+                }
+            };
+            console.log("👻 Échelle yPhantom créée (aucun canal visible, annotations flottantes seulement)");
+        }
+
         chart.update('none');
         return true; // Retourner true car on a bien géré le cas multi-canaux
     }
@@ -773,6 +798,23 @@ function updateTimeChartMultiChannel() {
             min: yMin,
             max: yMax
         };
+    }
+
+    // CRITIQUE: Créer l'échelle yPhantom pour les annotations flottantes
+    // Cette échelle doit TOUJOURS exister, même si le canal fantôme est invisible
+    const phantomChannel = appState.channelConfig.find(c => c.isPhantom);
+    if (phantomChannel) {
+        chart.options.scales.yPhantom = {
+            type: 'linear',
+            position: 'hidden',  // Complètement cachée
+            display: false,      // Pas affichée
+            min: phantomChannel.yMin !== null ? phantomChannel.yMin : 0,
+            max: phantomChannel.yMax !== null ? phantomChannel.yMax : 1000,
+            grid: {
+                display: false
+            }
+        };
+        console.log("👻 Échelle yPhantom créée pour annotations flottantes (0 à 1000)");
     }
 
     chart.update();

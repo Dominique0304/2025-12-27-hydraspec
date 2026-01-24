@@ -141,8 +141,13 @@ function updateChannelConfigUI() {
     const visibleChannels = appState.channelConfig.filter(c => !c.isPhantom);
 
     // Ajouter une ligne pour chaque canal (sauf fantômes)
-    visibleChannels.forEach((config, index) => {
+    visibleChannels.forEach((config, uiIndex) => {
         const row = document.createElement('tr');
+
+        // Stocker l'index global pour mapper correctement aux lignes du tableau
+        const globalIndex = appState.channelConfig.indexOf(config);
+        row.setAttribute('data-global-index', globalIndex);
+        console.log(`📋 Ligne UI ${uiIndex} → Canal global ${globalIndex} (${config.label})`);
 
         // Checkbox visible
         const visibleCell = document.createElement('td');
@@ -897,24 +902,30 @@ function updateChannelsWithPreset(presetNum) {
     const newYMax = parseFloat(document.getElementById(`preset${presetNum}-ymax`).value);
 
     // Parcourir tous les canaux et mettre à jour ceux qui utilisent ce preset
-    appState.channelConfig.forEach((config, index) => {
-        // Trouver le sélecteur de preset pour ce canal
+    appState.channelConfig.forEach((config, globalIndex) => {
+        // Ignorer les canaux fantômes (pas dans le tableau UI)
+        if (config.isPhantom) return;
+
+        // Trouver la ligne correspondante via data-global-index
         const table = document.getElementById('channel-config-tbody');
-        if (table && table.rows[index]) {
-            // Il y a 1 select par ligne: le Preset
-            const selects = table.rows[index].querySelectorAll('select');
-            const presetSelect = selects[0]; // Le premier (et seul) select est celui du preset
+        if (table) {
+            const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+            if (row) {
+                // Il y a 1 select par ligne: le Preset
+                const selects = row.querySelectorAll('select');
+                const presetSelect = selects[0]; // Le premier (et seul) select est celui du preset
 
-            if (presetSelect && presetSelect.value === presetNum.toString()) {
-                // Ce canal utilise ce preset, mettre à jour ses valeurs
-                config.yMin = newYMin;
-                config.yMax = newYMax;
+                if (presetSelect && presetSelect.value === presetNum.toString()) {
+                    // Ce canal utilise ce preset, mettre à jour ses valeurs
+                    config.yMin = newYMin;
+                    config.yMax = newYMax;
 
-                // Mettre à jour les champs d'entrée visuellement
-                const yMinInput = table.rows[index].querySelectorAll('input[type="number"]')[0];
-                const yMaxInput = table.rows[index].querySelectorAll('input[type="number"]')[1];
-                if (yMinInput) yMinInput.value = newYMin;
-                if (yMaxInput) yMaxInput.value = newYMax;
+                    // Mettre à jour les champs d'entrée visuellement
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                    if (yMinInput) yMinInput.value = newYMin;
+                    if (yMaxInput) yMaxInput.value = newYMax;
+                }
             }
         }
     });
@@ -956,24 +967,31 @@ function autoPresetYScales() {
 
     console.log(`🔍 Nombre total de canaux: ${appState.channelConfig.length}`);
 
-    appState.channelConfig.forEach((config, index) => {
-        console.log(`\n🔎 Canal ${index}: ${config.name || config.label}`);
+    appState.channelConfig.forEach((config, globalIndex) => {
+        // Ignorer les canaux fantômes (pas dans le tableau UI)
+        if (config.isPhantom) {
+            console.log(`\n👻 Canal ${globalIndex}: Fantôme ignoré`);
+            return;
+        }
+
+        console.log(`\n🔎 Canal ${globalIndex}: ${config.name || config.label}`);
         console.log(`  Label: "${config.label}"`);
 
-        // Vérifier les conditions: visible ET preset="--"
+        // Trouver la ligne correspondante via data-global-index
         const table = document.getElementById('channel-config-tbody');
         if (!table) {
             console.log(`  ❌ Table non trouvée`);
             return;
         }
 
-        if (!table.rows[index]) {
-            console.log(`  ❌ Ligne ${index} non trouvée dans la table`);
+        const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+        if (!row) {
+            console.log(`  ❌ Ligne non trouvée pour globalIndex ${globalIndex}`);
             return;
         }
 
-        const visibleCheckbox = table.rows[index].querySelector('input[type="checkbox"]');
-        const presetSelect = table.rows[index].querySelector('select');
+        const visibleCheckbox = row.querySelector('input[type="checkbox"]');
+        const presetSelect = row.querySelector('select');
 
         console.log(`  Checkbox trouvée: ${!!visibleCheckbox}, Checked: ${visibleCheckbox?.checked}`);
         console.log(`  Select trouvé: ${!!presetSelect}, Valeur: "${presetSelect?.value}"`);
@@ -989,10 +1007,10 @@ function autoPresetYScales() {
             console.log(`  ✅ Canal éligible! Unité extraite = "${unit}"`);
 
             if (unit === 'bar') {
-                barChannels.push({ config, index });
+                barChannels.push({ config, globalIndex });
                 console.log(`  📊 Ajouté aux canaux bar`);
             } else if (unit === 'mA') {
-                maChannels.push({ config, index });
+                maChannels.push({ config, globalIndex });
                 console.log(`  📊 Ajouté aux canaux mA`);
             } else {
                 console.log(`  ⚠️ Unité "${unit}" non reconnue (ni bar ni mA)`);
@@ -1023,17 +1041,20 @@ function autoPresetYScales() {
         console.log(`✅ Canaux bar: Max mesuré = ${maxBarValue.toFixed(2)}, Ymax appliqué = ${yMax}`);
 
         // Appliquer Ymin=0 et Ymax à tous les canaux bar
-        barChannels.forEach(({ config, index }) => {
+        barChannels.forEach(({ config, globalIndex }) => {
             config.yMin = 0;
             config.yMax = yMax;
 
             // Mettre à jour l'interface
             const table = document.getElementById('channel-config-tbody');
-            if (table && table.rows[index]) {
-                const yMinInput = table.rows[index].querySelectorAll('input[type="number"]')[0];
-                const yMaxInput = table.rows[index].querySelectorAll('input[type="number"]')[1];
-                if (yMinInput) yMinInput.value = 0;
-                if (yMaxInput) yMaxInput.value = yMax;
+            if (table) {
+                const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+                if (row) {
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                    if (yMinInput) yMinInput.value = 0;
+                    if (yMaxInput) yMaxInput.value = yMax;
+                }
             }
         });
     }
@@ -1056,17 +1077,20 @@ function autoPresetYScales() {
         console.log(`✅ Canaux mA: Max mesuré = ${maxMaValue.toFixed(2)}, Ymax appliqué = ${yMax}`);
 
         // Appliquer Ymin=0 et Ymax à tous les canaux mA
-        maChannels.forEach(({ config, index }) => {
+        maChannels.forEach(({ config, globalIndex }) => {
             config.yMin = 0;
             config.yMax = yMax;
 
             // Mettre à jour l'interface
             const table = document.getElementById('channel-config-tbody');
-            if (table && table.rows[index]) {
-                const yMinInput = table.rows[index].querySelectorAll('input[type="number"]')[0];
-                const yMaxInput = table.rows[index].querySelectorAll('input[type="number"]')[1];
-                if (yMinInput) yMinInput.value = 0;
-                if (yMaxInput) yMaxInput.value = yMax;
+            if (table) {
+                const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+                if (row) {
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                    if (yMinInput) yMinInput.value = 0;
+                    if (yMaxInput) yMaxInput.value = yMax;
+                }
             }
         });
     }
@@ -1136,13 +1160,19 @@ function autoPresetYScalesPerChannel() {
     let barCount = 0;
     let maCount = 0;
 
-    appState.channelConfig.forEach((config, index) => {
-        // Vérifier les conditions: visible ET preset=""
-        const table = document.getElementById('channel-config-tbody');
-        if (!table || !table.rows[index]) return;
+    appState.channelConfig.forEach((config, globalIndex) => {
+        // Ignorer les canaux fantômes (pas dans le tableau UI)
+        if (config.isPhantom) return;
 
-        const visibleCheckbox = table.rows[index].querySelector('input[type="checkbox"]');
-        const presetSelect = table.rows[index].querySelector('select');
+        // Trouver la ligne correspondante via data-global-index
+        const table = document.getElementById('channel-config-tbody');
+        if (!table) return;
+
+        const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+        if (!row) return;
+
+        const visibleCheckbox = row.querySelector('input[type="checkbox"]');
+        const presetSelect = row.querySelector('select');
 
         const isVisible = visibleCheckbox && visibleCheckbox.checked;
         const hasNoPreset = presetSelect && (presetSelect.value === '--' || presetSelect.value === '');
@@ -1166,8 +1196,8 @@ function autoPresetYScalesPerChannel() {
                     config.yMax = yMax;
 
                     // Mettre à jour l'interface
-                    const yMinInput = table.rows[index].querySelectorAll('input[type="number"]')[0];
-                    const yMaxInput = table.rows[index].querySelectorAll('input[type="number"]')[1];
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
                     if (yMinInput) yMinInput.value = 0;
                     if (yMaxInput) yMaxInput.value = yMax;
 
@@ -1281,9 +1311,11 @@ function setupModalDrag() {
 function updateGlobalLineWidth() {
     const lineWidth = parseFloat(document.getElementById('global-line-width').value) || 0.5;
 
-    // Appliquer à tous les canaux
+    // Appliquer à tous les canaux (sauf fantômes)
     appState.channelConfig.forEach(config => {
-        config.lineWidth = lineWidth;
+        if (!config.isPhantom) {
+            config.lineWidth = lineWidth;
+        }
     });
 
     // Mettre à jour le graphique temporel

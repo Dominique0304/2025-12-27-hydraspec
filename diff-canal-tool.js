@@ -164,10 +164,10 @@ function updateChannelSelect() {
     // Vider la liste
     select.innerHTML = '<option value="">-- Sélectionner un canal --</option>';
 
-    // Ajouter tous les canaux visibles
+    // Ajouter tous les canaux visibles (sauf fantômes)
     if (appState.channelConfig && appState.channelConfig.length > 0) {
         appState.channelConfig.forEach((config, index) => {
-            if (config.visible) {
+            if (config.visible && !config.isPhantom) {
                 const option = document.createElement('option');
                 option.value = index;
                 option.textContent = config.label || `Canal ${index + 1}`;

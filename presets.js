@@ -205,9 +205,12 @@ function applyPreset(presetId) {
         }
     }
 
-    // Appliquer le template de canaux
+    // Appliquer le template de canaux (sauf fantômes)
     if (config.channels && config.channels.template && typeof appState !== 'undefined') {
         appState.channelConfig.forEach((channel, index) => {
+            // Ignorer les canaux fantômes
+            if (channel.isPhantom) return;
+
             const template = config.channels.template[Math.min(index, config.channels.template.length - 1)];
             if (template) {
                 Object.assign(channel, template);

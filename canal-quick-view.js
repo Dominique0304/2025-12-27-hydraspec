@@ -40,6 +40,9 @@ function updateCanalQuickView() {
     tbody.innerHTML = '';
 
     appState.channelConfig.forEach((config, index) => {
+        // Ignorer les canaux fantômes (canal interne pour annotations flottantes)
+        if (config.isPhantom) return;
+
         const row = document.createElement('tr');
         row.style.borderBottom = '1px solid var(--border-color)';
         row.style.transition = 'background-color 0.2s';
@@ -161,8 +164,8 @@ function updateFFTCanalQuickView() {
 
     tbody.innerHTML = '';
 
-    // Afficher TOUS les canaux visibles dans le domaine temporel
-    const visibleChannels = appState.channelConfig.filter(config => config.visible);
+    // Afficher TOUS les canaux visibles dans le domaine temporel (sauf fantômes)
+    const visibleChannels = appState.channelConfig.filter(config => config.visible && !config.isPhantom);
 
     visibleChannels.forEach((config, index) => {
         const row = document.createElement('tr');

@@ -634,8 +634,8 @@ function createCalculatedChannel() {
         }
 
         appState.channelConfig.forEach((config) => {
-            // Exclure les canaux calculés pour éviter les dépendances circulaires
-            if (!config.isCalculated) {
+            // Exclure les canaux calculés et fantômes pour éviter les dépendances circulaires
+            if (!config.isCalculated && !config.isPhantom) {
                 const columnData = appState.allColumnData[config.index];
                 if (columnData && columnData.length > 0) {
                     const channelKey = 'S' + channelIndex;
@@ -778,8 +778,8 @@ function updateExistingCalculatedChannel(channelId, formula, name, color) {
         let channelIndex = 1;
 
         appState.channelConfig.forEach((config) => {
-            // Exclure les canaux calculés ET le canal en cours d'édition
-            if (!config.isCalculated || config.calculatedId === channelId) {
+            // Exclure les canaux calculés, fantômes ET le canal en cours d'édition
+            if ((!config.isCalculated || config.calculatedId === channelId) && !config.isPhantom) {
                 if (config.calculatedId !== channelId) {
                     const columnData = appState.allColumnData[config.index];
                     if (columnData && columnData.length > 0) {
@@ -1227,8 +1227,8 @@ function recreateCalculatedChannel(channel) {
             let channelIndex = 1;
 
             appState.channelConfig.forEach((config) => {
-                // Exclure les canaux calculés pour éviter les dépendances circulaires
-                if (!config.isCalculated && !config.isCylinder) {
+                // Exclure les canaux calculés, cylindres et fantômes pour éviter les dépendances circulaires
+                if (!config.isCalculated && !config.isCylinder && !config.isPhantom) {
                     const columnData = appState.allColumnData[config.index];
                     if (columnData && columnData.length > 0) {
                         const channelKey = 'S' + channelIndex;

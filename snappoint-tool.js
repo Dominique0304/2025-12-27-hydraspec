@@ -97,12 +97,29 @@ class SnapPoint {
         let yAxisID, yScale, yValue;
 
         if (isFloating) {
-            // ANNOTATION FLOTTANTE : utiliser l'échelle Y par défaut et la valeur fixe
-            yAxisID = 'y'; // Échelle Y par défaut
+            // ANNOTATION FLOTTANTE : trouver une échelle Y disponible
+            // Essayer d'abord l'échelle par défaut 'y', sinon chercher n'importe quelle échelle Y
+            yAxisID = 'y';
             yScale = chart.scales[yAxisID];
+
+            // Si l'échelle 'y' n'existe pas, chercher la première échelle Y disponible
+            if (!yScale) {
+                const availableYScales = Object.keys(chart.scales).filter(key => key.startsWith('y'));
+                if (availableYScales.length > 0) {
+                    yAxisID = availableYScales[0];
+                    yScale = chart.scales[yAxisID];
+                    console.log(`📍 Annotation flottante ID=${this.id} : échelle 'y' introuvable, utilisation de '${yAxisID}'`);
+                }
+            }
+
             yValue = this.value; // Valeur fixe (pas de suivi de courbe)
 
-            console.log(`📍 Annotation flottante ID=${this.id} : échelle='y', valeur fixe=${yValue.toFixed(2)}`);
+            if (yScale) {
+                console.log(`📍 Annotation flottante ID=${this.id} : échelle='${yAxisID}', valeur fixe=${yValue.toFixed(2)}`);
+            } else {
+                console.warn(`⚠️ Aucune échelle Y disponible pour l'annotation flottante ID=${this.id}`);
+                return null;
+            }
         } else {
             // ANNOTATION ACCROCHÉE : utiliser l'échelle du canal d'accrochage
             const targetChannelIndex = this.anchorChannelIndex;

@@ -547,13 +547,21 @@ function updateXAxisSelector() {
     timeOption.textContent = 'Temps (ms)';
     select.appendChild(timeOption);
 
-    // Filtrer les canaux valides (exclure fantômes et canaux invalides)
+    // Filtrer les canaux valides (exclure fantômes, canaux supprimés et canaux invalides)
     const validColumns = appState.availableColumns.filter(col => {
         // Vérifier que la colonne existe et n'est pas un fantôme
         if (!col || col.isPhantom) return false;
 
         // Vérifier que les données existent
         if (col.index === undefined || !appState.allColumnData[col.index]) return false;
+
+        // CRITIQUE: Vérifier que le canal existe aussi dans channelConfig
+        // Un canal dans availableColumns mais pas dans channelConfig a été supprimé
+        const existsInChannelConfig = appState.channelConfig.some(cfg => cfg.index === col.index);
+        if (!existsInChannelConfig) {
+            console.warn(`⚠️ Canal X orphelin détecté: ${col.label} (index ${col.index}) - existe dans availableColumns mais pas dans channelConfig`);
+            return false;
+        }
 
         return true;
     });

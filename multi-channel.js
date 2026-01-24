@@ -558,8 +558,21 @@ function updateXAxisSelector() {
         return true;
     });
 
-    // Options pour chaque canal valide
-    validColumns.forEach((col) => {
+    // Dédoublonner par index (clé unique) pour éviter les doublons
+    const seenIndices = new Set();
+    const uniqueColumns = validColumns.filter(col => {
+        if (seenIndices.has(col.index)) {
+            console.warn(`⚠️ Canal X doublon détecté: ${col.label} (index ${col.index})`);
+            return false;
+        }
+        seenIndices.add(col.index);
+        return true;
+    });
+
+    console.log(`📊 Canal X: ${validColumns.length} canaux valides, ${uniqueColumns.length} uniques`);
+
+    // Options pour chaque canal valide et unique
+    uniqueColumns.forEach((col) => {
         const option = document.createElement('option');
         // Utiliser l'index dans availableColumns + 1 (car 0 = temps)
         const originalIndex = appState.availableColumns.indexOf(col);

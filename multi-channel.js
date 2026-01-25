@@ -96,9 +96,18 @@ function openChannelConfig(silent = false) {
     // Mettre à jour le contenu de la modale
     updateChannelConfigUI();
 
-    // Mettre à jour l'aperçu des premières lignes du fichier
+    // Mettre à jour l'aperçu CSV (uniquement pour fichiers CSV)
+    const csvPreviewSection = document.getElementById('csv-preview-section');
     const filePreviewTextarea = document.getElementById('file-preview-text');
-    if (filePreviewTextarea) {
+
+    const project = getActiveProject();
+    const isCSV = project && project.fileType === 'csv';
+
+    if (csvPreviewSection) {
+        csvPreviewSection.style.display = isCSV ? 'block' : 'none';
+    }
+
+    if (filePreviewTextarea && isCSV) {
         filePreviewTextarea.value = appState.rawFilePreview || '';
     }
 

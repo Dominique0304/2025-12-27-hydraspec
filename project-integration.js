@@ -1267,10 +1267,158 @@ function initPOOSystem() {
 }
 
 // Export global pour debugging
+// ========================================
+// RÉIMPORTATION CSV DEPUIS APERÇU
+// ========================================
+
+/**
+ * Réimporte les données CSV depuis le champ d'aperçu modifiable
+ * Permet de corriger l'en-tête ou les données sans modifier le fichier original
+ */
+async function reimportFromPreview() {
+    const textarea = document.getElementById('file-preview-text');
+    if (!textarea) {
+        console.error("❌ Textarea d'aperçu non trouvé");
+        return;
+    }
+
+    const csvContent = textarea.value.trim();
+    if (!csvContent) {
+        alert(t("dialogs.no_csv_content") || "Aucun contenu CSV à importer");
+        return;
+    }
+
+    const project = getActiveProject();
+    if (!project || project.fileType !== 'csv') {
+        alert(t("dialogs.not_csv_file") || "Cette fonction est réservée aux fichiers CSV");
+        return;
+    }
+
+    // Demander confirmation
+    const fileName = project.fileName || project.name;
+    const confirm = window.confirm(
+        (t("dialogs.reimport_csv_confirm") ||
+        "Voulez-vous réimporter le CSV avec les modifications ?\n\n" +
+        "Cela remplacera les données actuelles du projet '{fileName}'.\n" +
+        "Le fichier original ne sera pas modifié.").replace('{fileName}', fileName)
+    );
+
+    if (!confirm) return;
+
+    try {
+        setStatus(t("status.reimporting_csv") || "Réimportation du CSV...");
+
+        // Créer un objet File virtuel à partir du contenu du textarea
+        // On reconstruit le CSV complet en utilisant les 5 lignes + le reste depuis allColumnData
+        const fullCsvContent = reconstructFullCSV(csvContent);
+        const blob = new Blob([fullCsvContent], { type: 'text/csv' });
+        const virtualFile = new File([blob], fileName, { type: 'text/csv' });
+
+        // Sauvegarder l'ID du projet actuel pour le supprimer après
+        const oldProjectId = project.id;
+
+        // Créer un nouveau projet depuis le CSV modifié
+        const newProject = await projectManager.createProjectFromCSV(virtualFile);
+        newProject.setFileInfo('csv', fileName);
+
+        console.log(`✅ CSV réimporté : ${newProject.name}`);
+
+        // Basculer vers le nouveau projet
+        projectManager.switchTo(newProject.id);
+
+        // Supprimer l'ancien projet
+        projectManager.deleteProject(oldProjectId);
+
+        // Mettre à jour l'interface
+        updateAllInterface(true);
+
+        // Appliquer auto-config comme pour un nouveau CSV
+        setTimeout(() => {
+            if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
+                openChannelConfig(true); // Mode silencieux
+                setTimeout(() => {
+                    if (typeof autoPresetYScales === 'function') {
+                        autoPresetYScales();
+                    }
+
+                    // Réinitialiser le zoom X
+                    const zoomMinInput = document.getElementById('zoom-min');
+                    const zoomMaxInput = document.getElementById('zoom-max');
+                    if (zoomMinInput && zoomMaxInput && appState.fullDataTime.length) {
+                        const t = appState.fullDataTime;
+                        zoomMinInput.value = (t[0] / 1000).toFixed(3);
+                        zoomMaxInput.value = (t[t.length - 1] / 1000).toFixed(3);
+                    }
+
+                    setTimeout(() => {
+                        if (typeof updateTimeChart === 'function') updateTimeChart(true);
+                        closeChannelConfig();
+                    }, 100);
+                }, 100);
+            }
+        }, 300);
+
+        setStatus(t("status.csv_reimported") || "CSV réimporté avec succès");
+
+    } catch (error) {
+        console.error("❌ Erreur réimportation CSV:", error);
+        alert((t("dialogs.reimport_error") || "Erreur lors de la réimportation du CSV") + ":\n" + error.message);
+        setStatus(t("status.reimport_failed") || "Échec de la réimportation");
+    }
+}
+
+/**
+ * Reconstruit le CSV complet en utilisant les 5 premières lignes modifiées
+ * + le reste des données depuis allColumnData
+ */
+function reconstructFullCSV(modifiedHeaderLines) {
+    const lines = modifiedHeaderLines.split('\n');
+
+    // Si l'utilisateur a modifié plus que l'en-tête, on utilise tout le contenu tel quel
+    // Sinon, on reconstruit avec les données complètes
+    if (lines.length > 5) {
+        return modifiedHeaderLines;
+    }
+
+    // Détecter le séparateur depuis la première ligne
+    const firstLine = lines[0];
+    let separator = firstLine.includes(';') ? ';' :
+        firstLine.includes(',') ? ',' :
+        firstLine.includes('\t') ? '\t' : ';';
+
+    // Utiliser les lignes modifiées + reconstruire le reste depuis allColumnData
+    let csv = modifiedHeaderLines;
+
+    // Ajouter les données depuis la ligne 6 (index 5)
+    if (appState.allColumnData && appState.allColumnData.length > 0) {
+        const numRows = appState.allColumnData[0].length;
+        const numCols = appState.allColumnData.length;
+
+        // Commencer après les 5 premières lignes (ou depuis 1 si header)
+        const startRow = lines[0].match(/^[0-9.,]/) ? 5 : 6; // Si pas d'en-tête, commencer à 5, sinon 6
+
+        for (let i = startRow; i < numRows; i++) {
+            const row = [];
+            for (let j = 0; j < numCols; j++) {
+                // Temps en secondes (colonne 0)
+                if (j === 0) {
+                    row.push((appState.allColumnData[j][i] / 1000).toFixed(6));
+                } else {
+                    row.push(appState.allColumnData[j][i].toFixed(6));
+                }
+            }
+            csv += '\n' + row.join(separator);
+        }
+    }
+
+    return csv;
+}
+
 // Note: window.projectManager est assigné dans initProjectManager()
 window.getActiveProject = getActiveProject;
 window.initPOOSystem = initPOOSystem;
 window.updateProjectTabs = updateProjectTabs;
+window.reimportFromPreview = reimportFromPreview;
 // window.createNewProject supprimé - fonction n'existe plus
 window.saveChartZoomLimits = saveChartZoomLimits;
 window.restoreChartZoomLimits = restoreChartZoomLimits;

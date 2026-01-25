@@ -342,15 +342,7 @@ function updateChannelConfigUI() {
                 presetSelect.value = '';
             }
 
-            // Si ce canal est utilisé comme axe X, mettre à jour l'axe X
-            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { channelIndex: 0 };
-            if (!xInfo.isTime && xInfo.channelIndex === (config.index + 1)) {
-                console.log(`📊 Ymin du canal X modifié: mise à jour axe X`);
-                if (typeof applyXAxisZoomFromChannel === 'function') {
-                    applyXAxisZoomFromChannel();
-                }
-            }
-
+            // Mettre à jour le graphique (appliquera Ymin/Ymax du canal X si nécessaire)
             updateTimeChart();
         };
         yMinCell.appendChild(yMinInput);
@@ -385,15 +377,7 @@ function updateChannelConfigUI() {
                 presetSelect.value = '';
             }
 
-            // Si ce canal est utilisé comme axe X, mettre à jour l'axe X
-            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { channelIndex: 0 };
-            if (!xInfo.isTime && xInfo.channelIndex === (config.index + 1)) {
-                console.log(`📊 Ymax du canal X modifié: mise à jour axe X`);
-                if (typeof applyXAxisZoomFromChannel === 'function') {
-                    applyXAxisZoomFromChannel();
-                }
-            }
-
+            // Mettre à jour le graphique (appliquera Ymin/Ymax du canal X si nécessaire)
             updateTimeChart();
         };
         yMaxCell.appendChild(yMaxInput);
@@ -845,12 +829,7 @@ function updateXAxisSelector() {
         // Gérer la visibilité de la FFT
         toggleFFTVisibility(xInfo.isTime);
 
-        // Si X ≠ Temps, appliquer le zoom X depuis Ymin/Ymax du canal X
-        if (!xInfo.isTime) {
-            applyXAxisZoomFromChannel();
-        }
-
-        // Mettre à jour le graphique
+        // Mettre à jour le graphique (appliquera Ymin/Ymax du canal X si nécessaire)
         updateTimeChart();
 
         console.log(`📊 Canal X changé: ${xInfo.label} (${xInfo.unit})`);
@@ -1076,8 +1055,23 @@ function updateTimeChartMultiChannel() {
             console.log(`✅ Axe X ajusté (temps): ${(visibleXData[0] / 1000).toFixed(3)}s à ${(visibleXData[visibleXData.length - 1] / 1000).toFixed(3)}s`);
         }
     } else {
-        // X ≠ Temps: l'axe X est contrôlé par Ymin/Ymax du canal X (déjà appliqué)
-        console.log("✅ Axe X contrôlé par Ymin/Ymax du canal", xInfo.label);
+        // X ≠ Temps: l'axe X est contrôlé par Ymin/Ymax du canal X
+        const xChannelIndex = appState.xAxisChannel - 1;
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+
+        if (xChannelConfig && xChannelConfig.yMin !== null && xChannelConfig.yMax !== null) {
+            // Utiliser Ymin/Ymax du canal X pour l'axe X
+            chart.options.scales.x.min = xChannelConfig.yMin * xInfo.scale;
+            chart.options.scales.x.max = xChannelConfig.yMax * xInfo.scale;
+            console.log(`✅ Axe X contrôlé par Ymin/Ymax du canal ${xInfo.label}: ${xChannelConfig.yMin} à ${xChannelConfig.yMax} ${xInfo.unit}`);
+        } else {
+            // Si Ymin/Ymax ne sont pas définis, utiliser les données filtrées
+            if (visibleXData.length > 0) {
+                chart.options.scales.x.min = Math.min(...visibleXData);
+                chart.options.scales.x.max = Math.max(...visibleXData);
+                console.log(`📐 Axe X auto (canal ${xInfo.label}): ${(Math.min(...visibleXData) / xInfo.scale).toFixed(2)} à ${(Math.max(...visibleXData) / xInfo.scale).toFixed(2)} ${xInfo.unit}`);
+            }
+        }
     }
 
     // Label de l'axe X

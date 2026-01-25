@@ -870,14 +870,7 @@ function applyTimeZoom() {
             // Le filtrage se fait dans updateTimeChart()
             console.log(`⏱️ Filtrage temporel demandé: ${minX}s à ${maxX}s`);
 
-            if (!xInfo.isTime) {
-                // X ≠ Temps: appliquer aussi le zoom spatial via Ymin/Ymax du canal X
-                if (typeof applyXAxisZoomFromChannel === 'function') {
-                    applyXAxisZoomFromChannel();
-                }
-            }
-
-            // Déclencher le filtrage des données
+            // Déclencher le filtrage des données (appliquera aussi Ymin/Ymax du canal X si nécessaire)
             if (typeof updateTimeChart === 'function') {
                 updateTimeChart();
             } else {

@@ -96,6 +96,12 @@ function openChannelConfig(silent = false) {
     // Mettre à jour le contenu de la modale
     updateChannelConfigUI();
 
+    // Mettre à jour l'aperçu des premières lignes du fichier
+    const filePreviewTextarea = document.getElementById('file-preview-text');
+    if (filePreviewTextarea) {
+        filePreviewTextarea.value = appState.rawFilePreview || '';
+    }
+
     // Synchroniser les champs min(s) et max(s) avec l'axe X actuel
     syncZoomInputsWithChart();
 

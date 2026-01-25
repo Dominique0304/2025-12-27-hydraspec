@@ -212,6 +212,9 @@ async function performHSPSave(project, fileName, isNewFile) {
             timeIncrement: project.state.timeIncrement,
             chartFontSize: project.state.chartFontSize,
 
+            // Aperçu des premières lignes du fichier
+            rawFilePreview: project.state.rawFilePreview || "",
+
             // Visibilité des graphiques
             graphVisibility: {
                 timeVisible: typeof uiState !== 'undefined' ? uiState.timeVisible : true,
@@ -489,6 +492,9 @@ async function restoreProjectFromHSP(project, hspData) {
     // Restaurer paramètres
     project.state.timeIncrement = hspData.state.timeIncrement || 1.0;
     project.state.chartFontSize = hspData.state.chartFontSize || 12;
+
+    // Restaurer l'aperçu des premières lignes du fichier
+    project.state.rawFilePreview = hspData.state.rawFilePreview || "";
 
     // Restaurer visibilité des graphiques
     if (hspData.state.graphVisibility && typeof uiState !== 'undefined') {

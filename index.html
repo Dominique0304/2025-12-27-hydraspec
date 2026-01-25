@@ -1380,6 +1380,19 @@
                                 <span id="display-increment-config" style="color:var(--accent-green); font-weight:bold;">--</span>
                             </div>
                         </div>
+
+                        <!-- Aperçu des premières lignes du fichier -->
+                        <div style="margin-top:15px;">
+                            <h5 style="margin-top:0; margin-bottom:8px; color:var(--text-main);">
+                                <i class="fas fa-file-alt"></i> <span data-i18n="labels.file_preview">Aperçu (5 premières lignes)</span>
+                            </h5>
+                            <textarea id="file-preview-text" readonly
+                                      style="width:100%; height:100px; padding:8px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border-color); border-radius:4px; font-family:monospace; font-size:0.8em; resize:vertical; overflow-y:auto;"
+                                      placeholder="Aucun fichier chargé"></textarea>
+                            <div style="font-size:0.75em; color:var(--text-muted); margin-top:5px;">
+                                <span data-i18n="labels.file_preview_help">Ce champ affiche les 5 premières lignes brutes du fichier pour vérifier le pas d'échantillonnage.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div> <!-- Fin onglet Paramètres -->

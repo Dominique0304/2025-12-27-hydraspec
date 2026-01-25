@@ -222,6 +222,9 @@ class Project {
                         return;
                     }
 
+                    // Stocker les 5 premières lignes brutes pour l'aperçu
+                    this.state.rawFilePreview = lines.slice(0, 5).join('\n');
+
                     // Mettre à jour le nom du projet avec le nom du fichier
                     this.name = file.name.replace(/\.[^/.]+$/, "");
 

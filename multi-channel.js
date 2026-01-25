@@ -571,6 +571,7 @@ function getXAxisInfo() {
 
         return {
             channelIndex: appState.xAxisChannel,
+            dataIndex: col.index,    // Index réel dans allColumnData et channelConfig
             data: data,
             unit: col.unit || '',
             unitSymbol: col.unit || '',
@@ -715,12 +716,11 @@ function applyXAxisZoomFromChannel() {
     const chart = appState.charts.time;
     if (!chart) return;
 
-    // Trouver le canal X dans channelConfig
-    const xChannelIndex = appState.xAxisChannel - 1; // -1 car index 0 = temps
-    const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+    // Trouver le canal X dans channelConfig en utilisant le dataIndex
+    const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xInfo.dataIndex);
 
     if (!xChannelConfig) {
-        console.warn(`⚠️ Configuration du canal X (index ${xChannelIndex}) introuvable`);
+        console.warn(`⚠️ Configuration du canal X (dataIndex ${xInfo.dataIndex}) introuvable`);
         return;
     }
 
@@ -1056,8 +1056,9 @@ function updateTimeChartMultiChannel() {
         }
     } else {
         // X ≠ Temps: l'axe X est contrôlé par Ymin/Ymax du canal X
-        const xChannelIndex = appState.xAxisChannel - 1;
-        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xInfo.dataIndex);
+
+        console.log(`🔍 Recherche config pour canal X: dataIndex=${xInfo.dataIndex}, trouvé=`, xChannelConfig);
 
         if (xChannelConfig && xChannelConfig.yMin !== null && xChannelConfig.yMax !== null) {
             // Utiliser Ymin/Ymax du canal X pour l'axe X
@@ -1465,8 +1466,7 @@ function resetZoomAndAutoGroup() {
 
     // 2. Si X ≠ Temps, réinitialiser aussi Ymin/Ymax du canal X
     if (!xInfo.isTime) {
-        const xChannelIndex = appState.xAxisChannel - 1;
-        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xInfo.dataIndex);
         if (xChannelConfig) {
             // Réinitialiser à null pour mode auto
             xChannelConfig.yMin = null;
@@ -1738,8 +1738,7 @@ function syncZoomInputsWithChart() {
         }
     } else {
         // X ≠ Temps: synchroniser Ymin/Ymax du canal X avec l'axe X
-        const xChannelIndex = appState.xAxisChannel - 1;
-        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xInfo.dataIndex);
 
         if (xChannelConfig) {
             const minValue = minInternal / xInfo.scale;

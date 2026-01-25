@@ -1347,22 +1347,23 @@ function autoPresetYScales() {
 function resetZoomAndAutoGroup() {
     console.log("🔄 Reset zoom complet : X + Auto Groupé");
 
-    // 1. Réinitialiser les champs de zoom X (important pour que updateTimeChart utilise la plage complète)
+    // Obtenir les infos du canal X actuel
+    const xInfo = getXAxisInfo();
+
+    // 1. Réinitialiser les champs de zoom X selon le canal X actuel
     const zoomMinInput = document.getElementById('zoom-min');
     const zoomMaxInput = document.getElementById('zoom-max');
-    if (zoomMinInput && zoomMaxInput && appState.fullDataTime.length) {
-        const t = appState.fullDataTime;
-        zoomMinInput.value = (t[0] / 1000).toFixed(3); // Convertir ms en s
-        zoomMaxInput.value = (t[t.length - 1] / 1000).toFixed(3);
-        console.log("🔍 Zoom X réinitialisé: " + zoomMinInput.value + " à " + zoomMaxInput.value + " sec");
+    if (zoomMinInput && zoomMaxInput && xInfo.data && xInfo.data.length) {
+        zoomMinInput.value = (xInfo.data[0] / xInfo.scale).toFixed(3);
+        zoomMaxInput.value = (xInfo.data[xInfo.data.length - 1] / xInfo.scale).toFixed(3);
+        console.log(`🔍 Zoom X réinitialisé: ${zoomMinInput.value} à ${zoomMaxInput.value} ${xInfo.unit}`);
     }
 
     // 2. Réinitialiser directement le zoom X du graphique
     const chart = appState.charts.time;
-    if (chart && appState.fullDataTime.length) {
-        const t = appState.fullDataTime;
-        chart.options.scales.x.min = t[0];
-        chart.options.scales.x.max = t[t.length - 1];
+    if (chart && xInfo.data && xInfo.data.length) {
+        chart.options.scales.x.min = xInfo.data[0];
+        chart.options.scales.x.max = xInfo.data[xInfo.data.length - 1];
     }
 
     // 3. Appliquer Auto Groupé sur les axes Y (cela appellera updateTimeChart qui utilisera les valeurs des inputs)
@@ -1620,14 +1621,17 @@ function syncZoomInputsWithChart() {
         return;
     }
 
-    // Récupérer les valeurs min et max de l'axe X (en ms)
+    // Obtenir les infos du canal X actuel
+    const xInfo = getXAxisInfo();
+
+    // Récupérer les valeurs min et max de l'axe X (en unité interne)
     const xScale = chart.scales.x;
-    const minMs = xScale.min;
-    const maxMs = xScale.max;
+    const minInternal = xScale.min;
+    const maxInternal = xScale.max;
 
-    // Convertir en secondes et mettre à jour les champs
-    zoomMinInput.value = (minMs / 1000).toFixed(3);
-    zoomMaxInput.value = (maxMs / 1000).toFixed(3);
+    // Convertir vers l'unité d'affichage et mettre à jour les champs
+    zoomMinInput.value = (minInternal / xInfo.scale).toFixed(3);
+    zoomMaxInput.value = (maxInternal / xInfo.scale).toFixed(3);
 
-    console.log(`✅ Champs zoom synchronisés: ${zoomMinInput.value}s - ${zoomMaxInput.value}s`);
+    console.log(`✅ Champs zoom synchronisés: ${zoomMinInput.value}${xInfo.unit} - ${zoomMaxInput.value}${xInfo.unit}`);
 }

@@ -59,7 +59,17 @@ const timeChart = new Chart(ctxTime, {
                         weight: 'normal'
                     },
                     callback: function(v) {
-                        return (v/1000 < 60) ? (v/1000).toFixed(2)+"s" : (v/1000).toFixed(0)+"s";
+                        // Conversion dynamique selon le canal X actuel
+                        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
+
+                        if (xInfo.isTime) {
+                            // Axe X = Temps: afficher en secondes avec format intelligent
+                            return (v/1000 < 60) ? (v/1000).toFixed(2)+"s" : (v/1000).toFixed(0)+"s";
+                        } else {
+                            // Axe X = Canal: afficher la valeur avec l'unité
+                            const displayValue = (v / xInfo.scale).toFixed(2);
+                            return xInfo.unit ? `${displayValue} ${xInfo.unit}` : displayValue;
+                        }
                     }
                 }
             },

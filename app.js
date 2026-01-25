@@ -821,34 +821,20 @@ function changeLanguage(lang) {
 }
 
 // --- ZOOM TEMPOREL MANUEL ---
-function updateZoomInputs() {
-    if (appState.charts.time && appState.charts.time.scales) {
-        const xScale = appState.charts.time.scales.x;
-        const yScale = appState.charts.time.scales.y;
-        
-        console.log("Mise à jour des champs de zoom:", xScale.min, xScale.max); // Debug
-        
-        // Mise à jour des champs horizontaux (convertir ms en secondes)
-        document.getElementById('zoom-min').value = (xScale.min / 1000).toFixed(3);
-        document.getElementById('zoom-max').value = (xScale.max / 1000).toFixed(3);
-
-        // Mise à jour des champs verticaux (vérifier qu'ils existent)
-        const zoomYMin = document.getElementById('zoom-y-min');
-        const zoomYMax = document.getElementById('zoom-y-max');
-        if (zoomYMin) zoomYMin.value = yScale.min.toFixed(1);
-        if (zoomYMax) zoomYMax.value = yScale.max.toFixed(1);
-    }
-}
-
 // --- ZOOM TEMPOREL ET VERTICAL MANUEL ---
 function updateZoomInputs() {
     if (appState.charts.time && appState.charts.time.scales) {
         const xScale = appState.charts.time.scales.x;
         const yScale = appState.charts.time.scales.y;
-        
-        // Mise à jour des champs horizontaux (convertir ms en secondes)
-        document.getElementById('zoom-min').value = (xScale.min / 1000).toFixed(3);
-        document.getElementById('zoom-max').value = (xScale.max / 1000).toFixed(3);
+
+        // Obtenir les infos du canal X pour la conversion dynamique
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+
+        console.log("Mise à jour des champs de zoom:", xScale.min, xScale.max); // Debug
+
+        // Mise à jour des champs horizontaux (conversion dynamique selon canal X)
+        document.getElementById('zoom-min').value = (xScale.min / xInfo.scale).toFixed(3);
+        document.getElementById('zoom-max').value = (xScale.max / xInfo.scale).toFixed(3);
 
         // Mise à jour des champs verticaux (vérifier qu'ils existent)
         const zoomYMin = document.getElementById('zoom-y-min');
@@ -878,10 +864,13 @@ function applyTimeZoom() {
         const maxX = parseFloat(maxXInput.value);
 
         if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
-            chart.options.scales.x.min = minX * 1000; // Convertir en ms
-            chart.options.scales.x.max = maxX * 1000; // Convertir en ms
+            // Obtenir les infos du canal X pour la conversion dynamique
+            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+
+            chart.options.scales.x.min = minX * xInfo.scale;
+            chart.options.scales.x.max = maxX * xInfo.scale;
             zoomApplied = true;
-            console.log(`✅ Zoom X appliqué: ${minX}s à ${maxX}s (${minX * 1000}ms à ${maxX * 1000}ms)`);
+            console.log(`✅ Zoom X appliqué: ${minX}${xInfo.unit} à ${maxX}${xInfo.unit} (échelle interne: ${minX * xInfo.scale} à ${maxX * xInfo.scale})`);
         }
     }
 

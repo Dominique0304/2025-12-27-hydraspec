@@ -65,7 +65,9 @@ const i18nTranslations = {
             export_hsp: "Exporter vers .hsp",
             export_csv: "Exporter fichier .csv",
             export_png: "Exporter PNG",
-            export_pdf: "Exporter PDF"
+            export_pdf: "Exporter PDF",
+            copy: "Copier",
+            copied: "Copié !"
         },
 
         // ===== SIDEBAR - SECTIONS =====
@@ -254,6 +256,11 @@ const i18nTranslations = {
             reimporting_csv: "Réimportation du CSV...",
             csv_reimported: "CSV réimporté avec succès",
             reimport_failed: "Échec de la réimportation",
+            copying_chart: "Copie du graphique...",
+            chart_copied: "✅ Graphique copié dans le presse-papier !",
+            copy_cancelled: "Copie annulée",
+            copy_failed: "Échec de la copie",
+            chart_downloaded: "✅ Graphique téléchargé",
 
             // Outil Marqueur (SnapPoint)
             marker_activated: "Outil Marqueur activé - Cliquez sur un point du graphique",
@@ -362,6 +369,10 @@ const i18nTranslations = {
             not_csv_file: "Cette fonction est réservée aux fichiers CSV",
             reimport_csv_confirm: "Voulez-vous réimporter le CSV avec les modifications ?\n\nCela remplacera les données actuelles du projet '{fileName}'.\nLe fichier original ne sera pas modifié.",
             reimport_error: "Erreur lors de la réimportation du CSV",
+            no_chart: "Graphique temporel non disponible",
+            clipboard_failed: "Impossible de copier dans le presse-papier.\n\nVoulez-vous télécharger l'image à la place ?",
+            copy_error: "Erreur lors de la copie du graphique",
+            download_failed: "Impossible de télécharger l'image",
 
             // Confirmations
             confirm_reset_channels: "Réinitialiser la configuration des canaux à leur état par défaut ?",
@@ -589,6 +600,7 @@ const i18nTranslations = {
             multi_channel_config: "Configuration Multi-Canaux",
             settings: "Paramètres",
             help: "Aide",
+            copy_time_chart: "Copier le graphique temporel dans le presse-papier",
             toggle_arrow: "Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)",
             formula_help: "Aide sur les formules",
             reset_zoom_auto_grouped: "Reset Zoom + Auto Groupé",
@@ -661,7 +673,9 @@ const i18nTranslations = {
             export_hsp: "Export to .hsp",
             export_csv: "Export .csv file",
             export_png: "Export PNG",
-            export_pdf: "Export PDF"
+            export_pdf: "Export PDF",
+            copy: "Copy",
+            copied: "Copied!"
         },
 
         // SIDEBAR
@@ -850,6 +864,11 @@ const i18nTranslations = {
             reimporting_csv: "Reimporting CSV...",
             csv_reimported: "CSV reimported successfully",
             reimport_failed: "Reimport failed",
+            copying_chart: "Copying chart...",
+            chart_copied: "✅ Chart copied to clipboard!",
+            copy_cancelled: "Copy cancelled",
+            copy_failed: "Copy failed",
+            chart_downloaded: "✅ Chart downloaded",
 
             marker_activated: "Marker tool activated - Click on a graph point",
             marker_deactivated: "Marker tool deactivated",
@@ -943,6 +962,10 @@ const i18nTranslations = {
             not_csv_file: "This function is for CSV files only",
             reimport_csv_confirm: "Do you want to reimport the CSV with the changes?\n\nThis will replace the current project data '{fileName}'.\nThe original file will not be modified.",
             reimport_error: "Error reimporting CSV",
+            no_chart: "Time chart not available",
+            clipboard_failed: "Unable to copy to clipboard.\n\nWould you like to download the image instead?",
+            copy_error: "Error copying chart",
+            download_failed: "Unable to download image",
 
             confirm_reset_channels: "Reset channel configuration to default?",
             confirm_reset_sections: "Reset section order?",
@@ -1167,6 +1190,7 @@ const i18nTranslations = {
             multi_channel_config: "Multi-Channel Configuration",
             settings: "Settings",
             help: "Help",
+            copy_time_chart: "Copy time chart to clipboard",
             toggle_arrow: "Enable/Disable arrow (available only without anchor channel)",
             formula_help: "Formula help",
             reset_zoom_auto_grouped: "Reset Zoom + Auto Grouped",
@@ -1239,7 +1263,9 @@ const i18nTranslations = {
             export_hsp: "Nach .hsp exportieren",
             export_csv: ".csv-Datei exportieren",
             export_png: "PNG exportieren",
-            export_pdf: "PDF exportieren"
+            export_pdf: "PDF exportieren",
+            copy: "Kopieren",
+            copied: "Kopiert!"
         },
 
         // SIDEBAR
@@ -1428,6 +1454,11 @@ const i18nTranslations = {
             reimporting_csv: "CSV wird neu importiert...",
             csv_reimported: "CSV erfolgreich neu importiert",
             reimport_failed: "Neuimport fehlgeschlagen",
+            copying_chart: "Diagramm wird kopiert...",
+            chart_copied: "✅ Diagramm in Zwischenablage kopiert!",
+            copy_cancelled: "Kopieren abgebrochen",
+            copy_failed: "Kopieren fehlgeschlagen",
+            chart_downloaded: "✅ Diagramm heruntergeladen",
 
             marker_activated: "Markierungswerkzeug aktiviert - Klicken Sie auf einen Diagrammpunkt",
             marker_deactivated: "Markierungswerkzeug deaktiviert",
@@ -1521,6 +1552,10 @@ const i18nTranslations = {
             not_csv_file: "Diese Funktion ist nur für CSV-Dateien",
             reimport_csv_confirm: "Möchten Sie das CSV mit den Änderungen neu importieren?\n\nDies ersetzt die aktuellen Projektdaten '{fileName}'.\nDie Originaldatei wird nicht geändert.",
             reimport_error: "Fehler beim erneuten Importieren von CSV",
+            no_chart: "Zeitdiagramm nicht verfügbar",
+            clipboard_failed: "Kopieren in die Zwischenablage nicht möglich.\n\nMöchten Sie stattdessen das Bild herunterladen?",
+            copy_error: "Fehler beim Kopieren des Diagramms",
+            download_failed: "Bild kann nicht heruntergeladen werden",
 
             confirm_reset_channels: "Kanalkonfiguration auf Standard zurücksetzen?",
             confirm_reset_sections: "Abschnittsreihenfolge zurücksetzen?",
@@ -1745,6 +1780,7 @@ const i18nTranslations = {
             multi_channel_config: "Mehrkanal-Konfiguration",
             settings: "Einstellungen",
             help: "Hilfe",
+            copy_time_chart: "Zeitdiagramm in Zwischenablage kopieren",
             toggle_arrow: "Pfeil aktivieren/deaktivieren (nur verfügbar ohne Ankerkanal)",
             formula_help: "Formelhilfe",
             reset_zoom_auto_grouped: "Zoom zurücksetzen + Auto gruppiert",

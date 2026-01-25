@@ -994,3 +994,117 @@ function finalizePDF(pdf, filename) {
     setStatus(t("status.pdf_export_success"), 'success');
     closeModal('filenameModal');
 }
+
+// ========================================
+// COPIE GRAPHIQUE DANS LE PRESSE-PAPIER
+// ========================================
+
+/**
+ * Copie le graphique du domaine temporel dans le presse-papier
+ * Utilise l'API Clipboard moderne pour copier l'image PNG
+ */
+async function copyTimeChartToClipboard() {
+    try {
+        // Vérifier qu'il y a des données
+        if (!appState.fullDataTime || appState.fullDataTime.length === 0) {
+            alert(t("dialogs.no_data") || "Aucune donnée à copier");
+            return;
+        }
+
+        // Vérifier que le graphique existe
+        const chart = appState.charts.time;
+        if (!chart || !chart.canvas) {
+            alert(t("dialogs.no_chart") || "Graphique temporel non disponible");
+            return;
+        }
+
+        // Vérifier le support de l'API Clipboard
+        if (!navigator.clipboard || !navigator.clipboard.write) {
+            // Fallback : télécharger l'image à la place
+            console.warn("⚠️ API Clipboard non supportée, téléchargement de l'image à la place");
+            fallbackDownloadChart(chart);
+            return;
+        }
+
+        setStatus(t("status.copying_chart") || "Copie du graphique...");
+
+        // Convertir le canvas en Blob PNG
+        chart.canvas.toBlob(async (blob) => {
+            if (!blob) {
+                throw new Error("Impossible de créer le Blob");
+            }
+
+            try {
+                // Créer un ClipboardItem avec le Blob
+                const item = new ClipboardItem({ 'image/png': blob });
+
+                // Copier dans le presse-papier
+                await navigator.clipboard.write([item]);
+
+                setStatus(t("status.chart_copied") || "✅ Graphique copié dans le presse-papier !", 'success');
+
+                // Feedback visuel temporaire sur le bouton
+                const copyBtn = document.querySelector('[onclick="copyTimeChartToClipboard()"]');
+                if (copyBtn) {
+                    const originalHTML = copyBtn.innerHTML;
+                    const originalColor = copyBtn.style.color;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> <span data-i18n="menu.copied">Copié !</span>';
+                    copyBtn.style.color = 'var(--accent-green)';
+
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.style.color = originalColor;
+                    }, 2000);
+                }
+
+            } catch (clipboardError) {
+                console.error("❌ Erreur copie presse-papier:", clipboardError);
+
+                // Si l'API Clipboard échoue, proposer le téléchargement
+                const download = confirm(
+                    (t("dialogs.clipboard_failed") ||
+                    "Impossible de copier dans le presse-papier.\n\nVoulez-vous télécharger l'image à la place ?")
+                );
+
+                if (download) {
+                    fallbackDownloadChart(chart);
+                } else {
+                    setStatus(t("status.copy_cancelled") || "Copie annulée");
+                }
+            }
+        }, 'image/png', 1.0); // Qualité PNG maximale
+
+    } catch (error) {
+        console.error("❌ Erreur lors de la copie:", error);
+        alert((t("dialogs.copy_error") || "Erreur lors de la copie du graphique") + ":\n" + error.message);
+        setStatus(t("status.copy_failed") || "Échec de la copie");
+    }
+}
+
+/**
+ * Fallback : télécharge l'image si la copie dans le presse-papier échoue
+ * @param {Chart} chart - Instance Chart.js
+ */
+function fallbackDownloadChart(chart) {
+    try {
+        // Générer un nom de fichier avec timestamp
+        const now = new Date();
+        const timestamp = now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
+        const filename = `HydraSpec_Temporel_${timestamp}.png`;
+
+        // Convertir le canvas en Data URL
+        const dataURL = chart.canvas.toDataURL('image/png', 1.0);
+
+        // Créer un lien de téléchargement
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = filename;
+        link.click();
+
+        setStatus(t("status.chart_downloaded") || "✅ Graphique téléchargé", 'success');
+
+    } catch (error) {
+        console.error("❌ Erreur téléchargement fallback:", error);
+        alert((t("dialogs.download_failed") || "Impossible de télécharger l'image") + ":\n" + error.message);
+    }
+}

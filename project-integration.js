@@ -1107,6 +1107,10 @@ function updateAllInterface(isInitialLoad = false) {
     appState.spectroData = project.state.spectroData;
     console.log(`📊 Spectrogramme synchronisé : ${appState.spectroData ? appState.spectroData.length + ' points' : 'aucune donnée'}`);
 
+    // Synchroniser l'aperçu des premières lignes du fichier
+    appState.rawFilePreview = project.state.rawFilePreview || "";
+    console.log(`📄 Aperçu fichier synchronisé : ${appState.rawFilePreview ? appState.rawFilePreview.split('\n').length + ' lignes' : 'aucun aperçu'}`);
+
     // Mettre à jour les graphiques
     if (typeof updateTimeChart === 'function') updateTimeChart(isInitialLoad);
     if (typeof updateStats === 'function') updateStats();

@@ -62,7 +62,10 @@ let appState = {
 
     // Configuration multi-canaux
     channelConfig: [],          // Configuration de chaque canal {visible, color, yAxisPosition, yMin, yMax, yAxisID}
-    xAxisChannel: 0             // Index du canal utilisé pour l'axe X (0 = temps par défaut)
+    xAxisChannel: 0,            // Index du canal utilisé pour l'axe X (0 = temps par défaut)
+
+    // Aperçu du fichier
+    rawFilePreview: ""          // 5 premières lignes brutes du fichier CSV/HSP
 };
 
 let uiState = {

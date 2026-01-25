@@ -56,6 +56,9 @@ class Project {
             timeIncrement: 1.0,
             chartFontSize: 12,
 
+            // Aperçu du fichier
+            rawFilePreview: "",
+
             // État d'interaction
             isDragging: false,
             dragTarget: null,

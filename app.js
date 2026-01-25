@@ -1076,8 +1076,12 @@ function recalculateTimeData(newFs) {
 }
 
 // Gestion des clics en dehors des modales
-window.onclick = function(e) { 
+window.onclick = function(e) {
     if(e.target.classList.contains('modal')) {
+        // Ne pas fermer le configurateur multi-canaux au clic extérieur
+        if (e.target.id === 'channel-config-modal') {
+            return; // Ignorer le clic extérieur pour cette modale
+        }
         e.target.style.display = "none";
     }
 }

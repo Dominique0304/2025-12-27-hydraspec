@@ -1141,8 +1141,10 @@ function openSnapPointEditModal(id) {
     // Mettre à jour l'état du bouton flèche
     updateArrowButtonState();
 
-    // Afficher la modale
+    // Afficher la modale (alignement en haut pour éviter l'espace vide en bas)
     modal.style.display = 'flex';
+    modal.style.alignItems = 'flex-start';
+    modal.style.paddingTop = '20px';
 
     // Initialiser le drag de la modale
     makeSnapPointModalDraggable();

@@ -503,8 +503,13 @@ button.icon-btn { padding: 4px 8px; font-size: 0.8rem; background: transparent; 
 .btn-close { float: right; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size:1.2rem; }
 
 /* Modale marqueur - hauteur ajustée au contenu */
+#snappoint-edit-modal {
+    align-items: flex-start !important;
+    padding-top: 20px !important;
+}
+
 #snappoint-edit-modal .modal-content {
-    margin: 20px auto !important;
+    margin: 0 auto !important;
 }
 
 /* Utility */

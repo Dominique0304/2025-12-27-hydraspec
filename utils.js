@@ -1000,6 +1000,120 @@ function finalizePDF(pdf, filename) {
 // ========================================
 
 /**
+ * Ajoute les notes utilisateur en dessous d'un canvas
+ * @param {HTMLCanvasElement} sourceCanvas - Canvas source (graphiques)
+ * @returns {HTMLCanvasElement} Canvas avec notes ajoutées ou canvas original si pas de notes
+ */
+async function addNotesToCanvas(sourceCanvas) {
+    // Récupérer le texte des notes
+    const notesTextarea = document.getElementById('user-notes');
+    const notesText = notesTextarea ? notesTextarea.value.trim() : '';
+
+    // Si pas de notes, retourner le canvas tel quel
+    if (!notesText) {
+        return sourceCanvas;
+    }
+
+    console.log(`📝 Ajout des notes au canvas (${notesText.length} caractères)`);
+
+    // Créer un canvas temporaire pour mesurer le texte
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Configuration du texte
+    const fontSize = 24; // Taille de police adaptée pour scale 2
+    const lineHeight = fontSize * 1.4;
+    const padding = 40;
+    const maxWidth = sourceCanvas.width - (padding * 2);
+
+    tempCtx.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif`;
+
+    // Fonction pour découper le texte en lignes (word wrap)
+    function wrapText(text, maxWidth) {
+        const lines = [];
+        const paragraphs = text.split('\n');
+
+        for (const paragraph of paragraphs) {
+            if (!paragraph.trim()) {
+                lines.push('');
+                continue;
+            }
+
+            const words = paragraph.split(' ');
+            let currentLine = '';
+
+            for (const word of words) {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                const metrics = tempCtx.measureText(testLine);
+
+                if (metrics.width > maxWidth && currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+        }
+
+        return lines;
+    }
+
+    // Découper le texte en lignes
+    const wrappedLines = wrapText(notesText, maxWidth);
+
+    // Calculer la hauteur nécessaire pour la section notes
+    const titleHeight = fontSize * 1.6;
+    const textHeight = wrappedLines.length * lineHeight;
+    const notesHeight = padding + titleHeight + textHeight + padding;
+
+    // Créer le canvas final avec la hauteur augmentée
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = sourceCanvas.width;
+    finalCanvas.height = sourceCanvas.height + notesHeight;
+
+    const ctx = finalCanvas.getContext('2d');
+
+    // Copier le canvas source (graphiques) en haut
+    ctx.drawImage(sourceCanvas, 0, 0);
+
+    // Dessiner le fond de la section notes
+    const bgColor = getComputedStyle(document.body).backgroundColor;
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, sourceCanvas.height, finalCanvas.width, notesHeight);
+
+    // Dessiner une ligne de séparation
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color') || '#444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, sourceCanvas.height + padding / 2);
+    ctx.lineTo(finalCanvas.width - padding, sourceCanvas.height + padding / 2);
+    ctx.stroke();
+
+    // Dessiner le titre "Notes :"
+    const textColor = getComputedStyle(document.body).color;
+    ctx.fillStyle = textColor;
+    ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif`;
+    ctx.fillText(t("notes") || "Notes :", padding, sourceCanvas.height + padding + titleHeight);
+
+    // Dessiner le texte des notes
+    ctx.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif`;
+    let yPosition = sourceCanvas.height + padding + titleHeight + lineHeight;
+
+    for (const line of wrappedLines) {
+        ctx.fillText(line, padding, yPosition);
+        yPosition += lineHeight;
+    }
+
+    console.log(`✅ Notes ajoutées : ${wrappedLines.length} ligne(s), hauteur +${notesHeight}px`);
+
+    return finalCanvas;
+}
+
+/**
  * Copie tous les graphiques visibles dans le presse-papier
  * Capture le domaine temporel, fréquentiel et spectrogramme s'ils sont ouverts
  * Utilise html2canvas pour capturer les conteneurs complets (avec titres, etc.)
@@ -1088,8 +1202,11 @@ async function copyChartsToClipboard() {
 
         console.log(`✅ Canvas composite créé : ${compositeCanvas.width}x${compositeCanvas.height}`);
 
-        // Convertir le canvas composite en Blob PNG
-        compositeCanvas.toBlob(async (blob) => {
+        // Ajouter les notes si elles existent
+        const finalCanvas = await addNotesToCanvas(compositeCanvas);
+
+        // Convertir le canvas final en Blob PNG
+        finalCanvas.toBlob(async (blob) => {
             if (!blob) {
                 throw new Error("Impossible de créer le Blob");
             }
@@ -1211,13 +1328,16 @@ async function fallbackDownloadCharts() {
             yOffset += canvas.height;
         }
 
+        // Ajouter les notes si elles existent
+        const finalCanvas = await addNotesToCanvas(compositeCanvas);
+
         // Générer un nom de fichier avec timestamp
         const now = new Date();
         const timestamp = now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
         const filename = `HydraSpec_Graphiques_${timestamp}.png`;
 
-        // Convertir le canvas en Data URL
-        const dataURL = compositeCanvas.toDataURL('image/png', 1.0);
+        // Convertir le canvas final en Data URL
+        const dataURL = finalCanvas.toDataURL('image/png', 1.0);
 
         // Créer un lien de téléchargement
         const link = document.createElement('a');

@@ -858,19 +858,32 @@ function applyTimeZoom() {
 
     let zoomApplied = false;
 
-    // Appliquer le zoom horizontal si les éléments et valeurs sont valides
+    // Appliquer le zoom horizontal
     if (minXInput && maxXInput) {
         const minX = parseFloat(minXInput.value);
         const maxX = parseFloat(maxXInput.value);
 
         if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
-            // Obtenir les infos du canal X pour la conversion dynamique
-            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
 
-            chart.options.scales.x.min = minX * xInfo.scale;
-            chart.options.scales.x.max = maxX * xInfo.scale;
-            zoomApplied = true;
-            console.log(`✅ Zoom X appliqué: ${minX}${xInfo.unit} à ${maxX}${xInfo.unit} (échelle interne: ${minX * xInfo.scale} à ${maxX * xInfo.scale})`);
+            if (xInfo.isTime) {
+                // X = Temps: Min(s)/Max(s) contrôlent l'axe X
+                chart.options.scales.x.min = minX * xInfo.scale;
+                chart.options.scales.x.max = maxX * xInfo.scale;
+                zoomApplied = true;
+                console.log(`✅ Zoom X appliqué (temps): ${minX}s à ${maxX}s`);
+            } else {
+                // X ≠ Temps: Min(s)/Max(s) filtrent temporellement
+                // L'axe X est contrôlé par Ymin/Ymax du canal X
+                // Le filtrage temporel se fait dans updateTimeChart()
+                console.log(`📊 Filtrage temporel: ${minX}s à ${maxX}s (axe X contrôlé par Ymin/Ymax du canal ${xInfo.label})`);
+
+                // Appliquer le zoom de l'axe X depuis Ymin/Ymax du canal X
+                if (typeof applyXAxisZoomFromChannel === 'function') {
+                    applyXAxisZoomFromChannel();
+                }
+                zoomApplied = true;
+            }
         }
     }
 

@@ -342,6 +342,15 @@ function updateChannelConfigUI() {
                 presetSelect.value = '';
             }
 
+            // Si ce canal est utilisé comme axe X, mettre à jour l'axe X
+            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { channelIndex: 0 };
+            if (!xInfo.isTime && xInfo.channelIndex === (config.index + 1)) {
+                console.log(`📊 Ymin du canal X modifié: mise à jour axe X`);
+                if (typeof applyXAxisZoomFromChannel === 'function') {
+                    applyXAxisZoomFromChannel();
+                }
+            }
+
             updateTimeChart();
         };
         yMinCell.appendChild(yMinInput);
@@ -374,6 +383,15 @@ function updateChannelConfigUI() {
             // Si ne correspond à aucun preset, réinitialiser à "--"
             if (!matchesPreset) {
                 presetSelect.value = '';
+            }
+
+            // Si ce canal est utilisé comme axe X, mettre à jour l'axe X
+            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { channelIndex: 0 };
+            if (!xInfo.isTime && xInfo.channelIndex === (config.index + 1)) {
+                console.log(`📊 Ymax du canal X modifié: mise à jour axe X`);
+                if (typeof applyXAxisZoomFromChannel === 'function') {
+                    applyXAxisZoomFromChannel();
+                }
             }
 
             updateTimeChart();
@@ -702,6 +720,45 @@ function toggleFFTVisibility(isTime) {
     }
 }
 
+/**
+ * Appliquer le zoom de l'axe X depuis Ymin/Ymax du canal X sélectionné
+ * Appelé quand X ≠ Temps
+ */
+function applyXAxisZoomFromChannel() {
+    const xInfo = getXAxisInfo();
+    if (xInfo.isTime) return; // Ne rien faire si X = Temps
+
+    const chart = appState.charts.time;
+    if (!chart) return;
+
+    // Trouver le canal X dans channelConfig
+    const xChannelIndex = appState.xAxisChannel - 1; // -1 car index 0 = temps
+    const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+
+    if (!xChannelConfig) {
+        console.warn(`⚠️ Configuration du canal X (index ${xChannelIndex}) introuvable`);
+        return;
+    }
+
+    // Utiliser Ymin/Ymax du canal X pour contrôler l'axe X
+    if (xChannelConfig.yMin !== null && xChannelConfig.yMax !== null) {
+        chart.options.scales.x.min = xChannelConfig.yMin * xInfo.scale;
+        chart.options.scales.x.max = xChannelConfig.yMax * xInfo.scale;
+        console.log(`✅ Axe X contrôlé par Ymin/Ymax du canal ${xInfo.label}: ${xChannelConfig.yMin} à ${xChannelConfig.yMax} ${xInfo.unit}`);
+    } else {
+        // Si Ymin/Ymax ne sont pas définis, utiliser les données complètes
+        if (xInfo.data && xInfo.data.length > 0) {
+            const dataMin = Math.min(...xInfo.data);
+            const dataMax = Math.max(...xInfo.data);
+            chart.options.scales.x.min = dataMin;
+            chart.options.scales.x.max = dataMax;
+            console.log(`📐 Axe X auto (canal ${xInfo.label}): ${(dataMin / xInfo.scale).toFixed(2)} à ${(dataMax / xInfo.scale).toFixed(2)} ${xInfo.unit}`);
+        }
+    }
+
+    chart.update('none');
+}
+
 // Mettre à jour le sélecteur d'axe X
 function updateXAxisSelector() {
     const select = document.getElementById('x-axis-channel-select');
@@ -787,6 +844,11 @@ function updateXAxisSelector() {
 
         // Gérer la visibilité de la FFT
         toggleFFTVisibility(xInfo.isTime);
+
+        // Si X ≠ Temps, appliquer le zoom X depuis Ymin/Ymax du canal X
+        if (!xInfo.isTime) {
+            applyXAxisZoomFromChannel();
+        }
 
         // Mettre à jour le graphique
         updateTimeChart();
@@ -881,6 +943,7 @@ function updateTimeChartMultiChannel() {
     }
 
     // Déterminer les données de l'axe X
+    const xInfo = getXAxisInfo();
     let xData;
     if (appState.xAxisChannel === 0) {
         // Utiliser le temps
@@ -892,35 +955,67 @@ function updateTimeChartMultiChannel() {
     }
 
     // ========================================
-    // DOWNSAMPLING DYNAMIQUE (basé sur le zoom)
+    // DOUBLE FILTRAGE (temporel + spatial)
     // ========================================
-
-    // Récupérer les limites du zoom X actuel
-    const xMin = chart.options.scales.x.min;
-    const xMax = chart.options.scales.x.max;
 
     let visibleStartIndex = 0;
     let visibleEndIndex = xData.length - 1;
-    let visibleXData, visibleYData;
+    let visibleXData;
 
-    // Si un zoom est appliqué, extraire seulement la plage visible
+    // ÉTAPE 1: Filtrage temporel (toujours basé sur Min(s)/Max(s))
+    if (!xInfo.isTime) {
+        // X ≠ Temps: filtrer temporellement d'abord
+        const zoomMinInput = document.getElementById('zoom-min');
+        const zoomMaxInput = document.getElementById('zoom-max');
+
+        if (zoomMinInput && zoomMaxInput) {
+            const tMin = parseFloat(zoomMinInput.value);
+            const tMax = parseFloat(zoomMaxInput.value);
+
+            if (!isNaN(tMin) && !isNaN(tMax)) {
+                const timeData = appState.fullDataTime;
+                const tMinMs = tMin * 1000; // Convertir en ms
+                const tMaxMs = tMax * 1000;
+
+                // Trouver les indices temporels
+                visibleStartIndex = timeData.findIndex(t => t >= tMinMs);
+                visibleEndIndex = timeData.findIndex(t => t > tMaxMs);
+
+                if (visibleStartIndex === -1) visibleStartIndex = 0;
+                if (visibleEndIndex === -1) visibleEndIndex = timeData.length - 1;
+
+                console.log(`⏱️ Filtrage temporel: ${tMin}s à ${tMax}s (indices ${visibleStartIndex} à ${visibleEndIndex})`);
+            }
+        }
+    }
+
+    // ÉTAPE 2: Zoom spatial sur l'axe X
+    const xMin = chart.options.scales.x.min;
+    const xMax = chart.options.scales.x.max;
+
+    // Extraire la plage temporellement filtrée
+    visibleXData = xData.slice(visibleStartIndex, visibleEndIndex + 1);
+
+    // Si un zoom spatial est appliqué, filtrer encore
     if (xMin !== undefined && xMax !== undefined && xMin !== null && xMax !== null) {
-        // Trouver les indices correspondant au zoom
-        visibleStartIndex = xData.findIndex(x => x >= xMin);
-        visibleEndIndex = xData.findIndex(x => x > xMax);
+        // Trouver les indices dans la plage déjà filtrée
+        const spatialStartIndex = visibleXData.findIndex(x => x >= xMin);
+        const spatialEndIndex = visibleXData.findIndex(x => x > xMax);
 
-        if (visibleStartIndex === -1) visibleStartIndex = 0;
-        if (visibleEndIndex === -1) visibleEndIndex = xData.length - 1;
+        let finalStartIndex = spatialStartIndex !== -1 ? spatialStartIndex : 0;
+        let finalEndIndex = spatialEndIndex !== -1 ? spatialEndIndex : visibleXData.length - 1;
 
-        // Extraire la plage visible
+        // Ajuster les indices globaux
+        visibleStartIndex += finalStartIndex;
+        visibleEndIndex = visibleStartIndex + (finalEndIndex - finalStartIndex);
+
+        // Re-extraire avec les indices finaux
         visibleXData = xData.slice(visibleStartIndex, visibleEndIndex + 1);
 
-        console.log(`🔍 Zoom actif: ${xMin.toFixed(0)} à ${xMax.toFixed(0)} ms`);
-        console.log(`📊 Plage visible: indices ${visibleStartIndex} à ${visibleEndIndex} (${visibleXData.length} points)`);
+        console.log(`🔍 Zoom spatial X: ${(xMin / xInfo.scale).toFixed(2)} à ${(xMax / xInfo.scale).toFixed(2)} ${xInfo.unit}`);
+        console.log(`📊 Plage finale: indices ${visibleStartIndex} à ${visibleEndIndex} (${visibleXData.length} points)`);
     } else {
-        // Pas de zoom, utiliser toutes les données
-        visibleXData = xData;
-        console.log(`📊 Pas de zoom: ${visibleXData.length} points`);
+        console.log(`📊 Pas de zoom spatial: ${visibleXData.length} points`);
     }
 
     // Calculer le downsampling sur la PLAGE VISIBLE uniquement
@@ -1606,32 +1701,54 @@ function switchConfigTab(tabName) {
 
 // Synchroniser les champs min(s) et max(s) avec les valeurs actuelles de l'axe X
 function syncZoomInputsWithChart() {
-    const zoomMinInput = document.getElementById('zoom-min');
-    const zoomMaxInput = document.getElementById('zoom-max');
-
-    if (!zoomMinInput || !zoomMaxInput) {
-        console.warn('⚠️ Champs zoom-min ou zoom-max non trouvés');
-        return;
-    }
-
-    // Récupérer le graphique time
     const chart = appState.charts?.time;
     if (!chart || !chart.scales || !chart.scales.x) {
         console.warn('⚠️ Graphique ou échelle X non disponible');
         return;
     }
 
-    // Obtenir les infos du canal X actuel
     const xInfo = getXAxisInfo();
-
-    // Récupérer les valeurs min et max de l'axe X (en unité interne)
     const xScale = chart.scales.x;
     const minInternal = xScale.min;
     const maxInternal = xScale.max;
 
-    // Convertir vers l'unité d'affichage et mettre à jour les champs
-    zoomMinInput.value = (minInternal / xInfo.scale).toFixed(3);
-    zoomMaxInput.value = (maxInternal / xInfo.scale).toFixed(3);
+    if (xInfo.isTime) {
+        // X = Temps: synchroniser Min(s)/Max(s) avec l'axe X
+        const zoomMinInput = document.getElementById('zoom-min');
+        const zoomMaxInput = document.getElementById('zoom-max');
 
-    console.log(`✅ Champs zoom synchronisés: ${zoomMinInput.value}${xInfo.unit} - ${zoomMaxInput.value}${xInfo.unit}`);
+        if (zoomMinInput && zoomMaxInput) {
+            zoomMinInput.value = (minInternal / xInfo.scale).toFixed(3);
+            zoomMaxInput.value = (maxInternal / xInfo.scale).toFixed(3);
+            console.log(`✅ Min(s)/Max(s) synchronisés avec axe X: ${zoomMinInput.value}s - ${zoomMaxInput.value}s`);
+        }
+    } else {
+        // X ≠ Temps: synchroniser Ymin/Ymax du canal X avec l'axe X
+        const xChannelIndex = appState.xAxisChannel - 1;
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+
+        if (xChannelConfig) {
+            const minValue = minInternal / xInfo.scale;
+            const maxValue = maxInternal / xInfo.scale;
+
+            // Mettre à jour la config
+            xChannelConfig.yMin = minValue;
+            xChannelConfig.yMax = maxValue;
+
+            // Mettre à jour les champs d'entrée visuellement
+            const table = document.getElementById('channel-config-tbody');
+            if (table) {
+                const globalIndex = appState.channelConfig.indexOf(xChannelConfig);
+                const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+                if (row) {
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                    if (yMinInput) yMinInput.value = minValue.toFixed(1);
+                    if (yMaxInput) yMaxInput.value = maxValue.toFixed(1);
+                }
+            }
+
+            console.log(`✅ Ymin/Ymax du canal ${xInfo.label} synchronisés avec axe X: ${minValue.toFixed(2)} - ${maxValue.toFixed(2)} ${xInfo.unit}`);
+        }
+    }
 }

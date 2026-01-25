@@ -866,24 +866,25 @@ function applyTimeZoom() {
         if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
             const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
 
-            if (xInfo.isTime) {
-                // X = Temps: Min(s)/Max(s) contrôlent l'axe X
-                chart.options.scales.x.min = minX * xInfo.scale;
-                chart.options.scales.x.max = maxX * xInfo.scale;
-                zoomApplied = true;
-                console.log(`✅ Zoom X appliqué (temps): ${minX}s à ${maxX}s`);
-            } else {
-                // X ≠ Temps: Min(s)/Max(s) filtrent temporellement
-                // L'axe X est contrôlé par Ymin/Ymax du canal X
-                // Le filtrage temporel se fait dans updateTimeChart()
-                console.log(`📊 Filtrage temporel: ${minX}s à ${maxX}s (axe X contrôlé par Ymin/Ymax du canal ${xInfo.label})`);
+            // Min(s)/Max(s) déclenchent toujours un filtrage temporel des données
+            // Le filtrage se fait dans updateTimeChart()
+            console.log(`⏱️ Filtrage temporel demandé: ${minX}s à ${maxX}s`);
 
-                // Appliquer le zoom de l'axe X depuis Ymin/Ymax du canal X
+            if (!xInfo.isTime) {
+                // X ≠ Temps: appliquer aussi le zoom spatial via Ymin/Ymax du canal X
                 if (typeof applyXAxisZoomFromChannel === 'function') {
                     applyXAxisZoomFromChannel();
                 }
-                zoomApplied = true;
             }
+
+            // Déclencher le filtrage des données
+            if (typeof updateTimeChart === 'function') {
+                updateTimeChart();
+            } else {
+                chart.update();
+            }
+
+            zoomApplied = true;
         }
     }
 

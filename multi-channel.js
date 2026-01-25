@@ -955,67 +955,73 @@ function updateTimeChartMultiChannel() {
     }
 
     // ========================================
-    // DOUBLE FILTRAGE (temporel + spatial)
+    // FILTRAGE TEMPOREL UNIVERSEL
     // ========================================
+    // Min(s)/Max(s) filtrent TOUJOURS temporellement, peu importe le canal X
 
     let visibleStartIndex = 0;
     let visibleEndIndex = xData.length - 1;
     let visibleXData;
 
-    // ÉTAPE 1: Filtrage temporel (toujours basé sur Min(s)/Max(s))
-    if (!xInfo.isTime) {
-        // X ≠ Temps: filtrer temporellement d'abord
-        const zoomMinInput = document.getElementById('zoom-min');
-        const zoomMaxInput = document.getElementById('zoom-max');
+    // Récupérer les valeurs Min(s)/Max(s)
+    const zoomMinInput = document.getElementById('zoom-min');
+    const zoomMaxInput = document.getElementById('zoom-max');
 
-        if (zoomMinInput && zoomMaxInput) {
-            const tMin = parseFloat(zoomMinInput.value);
-            const tMax = parseFloat(zoomMaxInput.value);
+    if (zoomMinInput && zoomMaxInput) {
+        const tMin = parseFloat(zoomMinInput.value);
+        const tMax = parseFloat(zoomMaxInput.value);
 
-            if (!isNaN(tMin) && !isNaN(tMax)) {
-                const timeData = appState.fullDataTime;
-                const tMinMs = tMin * 1000; // Convertir en ms
-                const tMaxMs = tMax * 1000;
+        if (!isNaN(tMin) && !isNaN(tMax)) {
+            const timeData = appState.fullDataTime;
+            const tMinMs = tMin * 1000; // Convertir en ms
+            const tMaxMs = tMax * 1000;
 
-                // Trouver les indices temporels
-                visibleStartIndex = timeData.findIndex(t => t >= tMinMs);
-                visibleEndIndex = timeData.findIndex(t => t > tMaxMs);
+            // Trouver les indices temporels dans fullDataTime
+            visibleStartIndex = timeData.findIndex(t => t >= tMinMs);
+            visibleEndIndex = timeData.findIndex(t => t > tMaxMs);
 
-                if (visibleStartIndex === -1) visibleStartIndex = 0;
-                if (visibleEndIndex === -1) visibleEndIndex = timeData.length - 1;
+            if (visibleStartIndex === -1) visibleStartIndex = 0;
+            if (visibleEndIndex === -1) visibleEndIndex = timeData.length - 1;
 
-                console.log(`⏱️ Filtrage temporel: ${tMin}s à ${tMax}s (indices ${visibleStartIndex} à ${visibleEndIndex})`);
-            }
+            console.log(`⏱️ Filtrage temporel: ${tMin}s à ${tMax}s (indices ${visibleStartIndex} à ${visibleEndIndex}, ${visibleEndIndex - visibleStartIndex + 1} points)`);
         }
     }
-
-    // ÉTAPE 2: Zoom spatial sur l'axe X
-    const xMin = chart.options.scales.x.min;
-    const xMax = chart.options.scales.x.max;
 
     // Extraire la plage temporellement filtrée
     visibleXData = xData.slice(visibleStartIndex, visibleEndIndex + 1);
 
-    // Si un zoom spatial est appliqué, filtrer encore
-    if (xMin !== undefined && xMax !== undefined && xMin !== null && xMax !== null) {
-        // Trouver les indices dans la plage déjà filtrée
-        const spatialStartIndex = visibleXData.findIndex(x => x >= xMin);
-        const spatialEndIndex = visibleXData.findIndex(x => x > xMax);
+    // ========================================
+    // ZOOM SPATIAL (seulement si X ≠ Temps)
+    // ========================================
 
-        let finalStartIndex = spatialStartIndex !== -1 ? spatialStartIndex : 0;
-        let finalEndIndex = spatialEndIndex !== -1 ? spatialEndIndex : visibleXData.length - 1;
+    if (!xInfo.isTime) {
+        // X ≠ Temps: appliquer aussi le zoom spatial via Ymin/Ymax du canal X
+        const xMin = chart.options.scales.x.min;
+        const xMax = chart.options.scales.x.max;
 
-        // Ajuster les indices globaux
-        visibleStartIndex += finalStartIndex;
-        visibleEndIndex = visibleStartIndex + (finalEndIndex - finalStartIndex);
+        if (xMin !== undefined && xMax !== undefined && xMin !== null && xMax !== null) {
+            // Trouver les indices dans la plage déjà filtrée temporellement
+            const spatialStartIndex = visibleXData.findIndex(x => x >= xMin);
+            const spatialEndIndex = visibleXData.findIndex(x => x > xMax);
 
-        // Re-extraire avec les indices finaux
-        visibleXData = xData.slice(visibleStartIndex, visibleEndIndex + 1);
+            let finalStartIndex = spatialStartIndex !== -1 ? spatialStartIndex : 0;
+            let finalEndIndex = spatialEndIndex !== -1 ? spatialEndIndex : visibleXData.length - 1;
 
-        console.log(`🔍 Zoom spatial X: ${(xMin / xInfo.scale).toFixed(2)} à ${(xMax / xInfo.scale).toFixed(2)} ${xInfo.unit}`);
-        console.log(`📊 Plage finale: indices ${visibleStartIndex} à ${visibleEndIndex} (${visibleXData.length} points)`);
+            // Ajuster les indices globaux
+            visibleStartIndex += finalStartIndex;
+            visibleEndIndex = visibleStartIndex + (finalEndIndex - finalStartIndex);
+
+            // Re-extraire avec les indices finaux
+            visibleXData = xData.slice(visibleStartIndex, visibleEndIndex + 1);
+
+            console.log(`🔍 Zoom spatial X: ${(xMin / xInfo.scale).toFixed(2)} à ${(xMax / xInfo.scale).toFixed(2)} ${xInfo.unit}`);
+            console.log(`📊 Plage finale: indices ${visibleStartIndex} à ${visibleEndIndex} (${visibleXData.length} points)`);
+        } else {
+            console.log(`📊 Pas de zoom spatial: ${visibleXData.length} points`);
+        }
     } else {
-        console.log(`📊 Pas de zoom spatial: ${visibleXData.length} points`);
+        // X = Temps: pas de zoom spatial supplémentaire
+        console.log(`📊 X=Temps: ${visibleXData.length} points après filtrage temporel`);
     }
 
     // Calculer le downsampling sur la PLAGE VISIBLE uniquement
@@ -1058,13 +1064,21 @@ function updateTimeChartMultiChannel() {
         };
     });
 
-    // ✅ CONSERVER LE ZOOM X ACTUEL (ne pas réinitialiser)
-    // On ne modifie pas chart.options.scales.x.min/max
-    // Le zoom actuel est déjà présent dans le graphique
-    console.log("✅ Zoom X conservé:", {
-        min: chart.options.scales.x.min,
-        max: chart.options.scales.x.max
-    });
+    // ========================================
+    // AJUSTEMENT DE L'AXE X
+    // ========================================
+
+    if (xInfo.isTime) {
+        // X = Temps: ajuster l'axe X pour afficher la plage filtrée
+        if (visibleXData.length > 0) {
+            chart.options.scales.x.min = visibleXData[0];
+            chart.options.scales.x.max = visibleXData[visibleXData.length - 1];
+            console.log(`✅ Axe X ajusté (temps): ${(visibleXData[0] / 1000).toFixed(3)}s à ${(visibleXData[visibleXData.length - 1] / 1000).toFixed(3)}s`);
+        }
+    } else {
+        // X ≠ Temps: l'axe X est contrôlé par Ymin/Ymax du canal X (déjà appliqué)
+        console.log("✅ Axe X contrôlé par Ymin/Ymax du canal", xInfo.label);
+    }
 
     // Label de l'axe X
     if (appState.xAxisChannel === 0) {
@@ -1445,20 +1459,26 @@ function resetZoomAndAutoGroup() {
     // Obtenir les infos du canal X actuel
     const xInfo = getXAxisInfo();
 
-    // 1. Réinitialiser les champs de zoom X selon le canal X actuel
+    // 1. Réinitialiser les champs Min(s)/Max(s) avec les données TEMPORELLES
     const zoomMinInput = document.getElementById('zoom-min');
     const zoomMaxInput = document.getElementById('zoom-max');
-    if (zoomMinInput && zoomMaxInput && xInfo.data && xInfo.data.length) {
-        zoomMinInput.value = (xInfo.data[0] / xInfo.scale).toFixed(3);
-        zoomMaxInput.value = (xInfo.data[xInfo.data.length - 1] / xInfo.scale).toFixed(3);
-        console.log(`🔍 Zoom X réinitialisé: ${zoomMinInput.value} à ${zoomMaxInput.value} ${xInfo.unit}`);
+    if (zoomMinInput && zoomMaxInput && appState.fullDataTime && appState.fullDataTime.length) {
+        const timeData = appState.fullDataTime;
+        zoomMinInput.value = (timeData[0] / 1000).toFixed(3); // Convertir ms → s
+        zoomMaxInput.value = (timeData[timeData.length - 1] / 1000).toFixed(3);
+        console.log(`🔍 Filtrage temporel réinitialisé: ${zoomMinInput.value}s à ${zoomMaxInput.value}s`);
     }
 
-    // 2. Réinitialiser directement le zoom X du graphique
-    const chart = appState.charts.time;
-    if (chart && xInfo.data && xInfo.data.length) {
-        chart.options.scales.x.min = xInfo.data[0];
-        chart.options.scales.x.max = xInfo.data[xInfo.data.length - 1];
+    // 2. Si X ≠ Temps, réinitialiser aussi Ymin/Ymax du canal X
+    if (!xInfo.isTime) {
+        const xChannelIndex = appState.xAxisChannel - 1;
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xChannelIndex);
+        if (xChannelConfig) {
+            // Réinitialiser à null pour mode auto
+            xChannelConfig.yMin = null;
+            xChannelConfig.yMax = null;
+            console.log(`🔍 Ymin/Ymax du canal ${xInfo.label} réinitialisés (auto)`);
+        }
     }
 
     // 3. Appliquer Auto Groupé sur les axes Y (cela appellera updateTimeChart qui utilisera les valeurs des inputs)

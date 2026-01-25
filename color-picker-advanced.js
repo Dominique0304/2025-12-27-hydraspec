@@ -544,19 +544,13 @@ function openAdvancedColorPicker(initialColor = '#FF0000', callback = null, targ
     }
 }
 
-// Fermer au clic en dehors
+// Fermer au clic en dehors - DÉSACTIVÉ
+// Le sélecteur de couleur ne se ferme maintenant que via le bouton OK ou la croix
 function initModalClickOutside() {
-    const modal = document.getElementById('advanced-color-picker-modal');
-    const content = document.querySelector('.advanced-color-picker-content');
-
-    if (!modal || !content) return;
-
-    // Fermer si clic sur le fond (modal) mais pas sur le contenu
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeAdvancedColorPicker();
-        }
-    });
+    // Fonction désactivée - le clic extérieur ne ferme plus la modale
+    // Le sélecteur de couleur se ferme uniquement via :
+    // - Bouton OK
+    // - Croix de fermeture (×)
 }
 
 // Initialiser le drag and drop du modal

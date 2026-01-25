@@ -1078,10 +1078,19 @@ function recalculateTimeData(newFs) {
 // Gestion des clics en dehors des modales
 window.onclick = function(e) {
     if(e.target.classList.contains('modal')) {
-        // Ne pas fermer le configurateur multi-canaux au clic extérieur
-        if (e.target.id === 'channel-config-modal') {
-            return; // Ignorer le clic extérieur pour cette modale
+        // Liste des modales qui ne doivent PAS se fermer au clic extérieur
+        const noCloseModals = [
+            'channel-config-modal',  // Configurateur multi-canaux
+            'settingsModal',          // Paramètres
+            'helpModal',              // Aide
+            'snappoint-edit-modal',   // Modifier marqueur
+            'advanced-color-picker-modal'  // Sélecteur de couleur
+        ];
+
+        if (noCloseModals.includes(e.target.id)) {
+            return; // Ignorer le clic extérieur pour ces modales
         }
+
         e.target.style.display = "none";
     }
 }

@@ -1000,10 +1000,11 @@ function finalizePDF(pdf, filename) {
 // ========================================
 
 /**
- * Copie le graphique du domaine temporel dans le presse-papier
- * Utilise l'API Clipboard moderne pour copier l'image PNG
+ * Copie tous les graphiques visibles dans le presse-papier
+ * Capture le domaine temporel, fréquentiel et spectrogramme s'ils sont ouverts
+ * Utilise html2canvas pour capturer les conteneurs complets (avec titres, etc.)
  */
-async function copyTimeChartToClipboard() {
+async function copyChartsToClipboard() {
     try {
         // Vérifier qu'il y a des données
         if (!appState.fullDataTime || appState.fullDataTime.length === 0) {
@@ -1011,25 +1012,84 @@ async function copyTimeChartToClipboard() {
             return;
         }
 
-        // Vérifier que le graphique existe
-        const chart = appState.charts.time;
-        if (!chart || !chart.canvas) {
-            alert(t("dialogs.no_chart") || "Graphique temporel non disponible");
-            return;
-        }
-
         // Vérifier le support de l'API Clipboard
         if (!navigator.clipboard || !navigator.clipboard.write) {
-            // Fallback : télécharger l'image à la place
             console.warn("⚠️ API Clipboard non supportée, téléchargement de l'image à la place");
-            fallbackDownloadChart(chart);
+            await fallbackDownloadCharts();
             return;
         }
 
-        setStatus(t("status.copying_chart") || "Copie du graphique...");
+        setStatus(t("status.copying_chart") || "Copie des graphiques...");
 
-        // Convertir le canvas en Blob PNG
-        chart.canvas.toBlob(async (blob) => {
+        // Identifier les conteneurs visibles
+        const timeContainer = document.getElementById('time-container');
+        const freqContainer = document.getElementById('freq-container');
+        const spectroContainer = document.getElementById('spectro-container');
+
+        const visibleContainers = [];
+        if (timeContainer && !timeContainer.classList.contains('hidden')) {
+            visibleContainers.push({ element: timeContainer, name: 'Temps' });
+        }
+        if (freqContainer && !freqContainer.classList.contains('hidden')) {
+            visibleContainers.push({ element: freqContainer, name: 'Fréquence' });
+        }
+        if (spectroContainer && !spectroContainer.classList.contains('hidden')) {
+            visibleContainers.push({ element: spectroContainer, name: 'Spectrogramme' });
+        }
+
+        if (visibleContainers.length === 0) {
+            alert(t("dialogs.no_chart") || "Aucun graphique visible");
+            return;
+        }
+
+        console.log(`📊 Capture de ${visibleContainers.length} graphique(s) : ${visibleContainers.map(c => c.name).join(', ')}`);
+
+        // Capturer chaque conteneur visible avec html2canvas
+        const captures = [];
+        for (const container of visibleContainers) {
+            try {
+                const canvas = await html2canvas(container.element, {
+                    backgroundColor: getComputedStyle(document.body).backgroundColor,
+                    scale: 2, // Qualité 2x pour meilleure résolution
+                    logging: false,
+                    useCORS: true
+                });
+                captures.push(canvas);
+                console.log(`✅ Capturé : ${container.name} (${canvas.width}x${canvas.height})`);
+            } catch (err) {
+                console.error(`❌ Erreur capture ${container.name}:`, err);
+            }
+        }
+
+        if (captures.length === 0) {
+            throw new Error("Aucun graphique n'a pu être capturé");
+        }
+
+        // Créer un canvas composite qui combine toutes les captures verticalement
+        const compositeCanvas = document.createElement('canvas');
+        const ctx = compositeCanvas.getContext('2d');
+
+        // Calculer dimensions du canvas composite
+        const maxWidth = Math.max(...captures.map(c => c.width));
+        const totalHeight = captures.reduce((sum, c) => sum + c.height, 0);
+        compositeCanvas.width = maxWidth;
+        compositeCanvas.height = totalHeight;
+
+        // Remplir le fond avec la couleur de fond du document
+        ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+        ctx.fillRect(0, 0, maxWidth, totalHeight);
+
+        // Dessiner chaque capture l'une au-dessus de l'autre
+        let yOffset = 0;
+        for (const canvas of captures) {
+            ctx.drawImage(canvas, 0, yOffset);
+            yOffset += canvas.height;
+        }
+
+        console.log(`✅ Canvas composite créé : ${compositeCanvas.width}x${compositeCanvas.height}`);
+
+        // Convertir le canvas composite en Blob PNG
+        compositeCanvas.toBlob(async (blob) => {
             if (!blob) {
                 throw new Error("Impossible de créer le Blob");
             }
@@ -1041,10 +1101,16 @@ async function copyTimeChartToClipboard() {
                 // Copier dans le presse-papier
                 await navigator.clipboard.write([item]);
 
-                setStatus(t("status.chart_copied") || "✅ Graphique copié dans le presse-papier !", 'success');
+                const graphCount = visibleContainers.length;
+                const graphNames = visibleContainers.map(c => c.name).join(', ');
+                setStatus(
+                    t("status.charts_copied")?.replace('{count}', graphCount).replace('{names}', graphNames) ||
+                    `✅ ${graphCount} graphique(s) copié(s) dans le presse-papier !`,
+                    'success'
+                );
 
                 // Feedback visuel temporaire sur le bouton
-                const copyBtn = document.querySelector('[onclick="copyTimeChartToClipboard()"]');
+                const copyBtn = document.querySelector('[onclick="copyChartsToClipboard()"]');
                 if (copyBtn) {
                     const originalHTML = copyBtn.innerHTML;
                     const originalColor = copyBtn.style.color;
@@ -1067,7 +1133,7 @@ async function copyTimeChartToClipboard() {
                 );
 
                 if (download) {
-                    fallbackDownloadChart(chart);
+                    await fallbackDownloadCharts();
                 } else {
                     setStatus(t("status.copy_cancelled") || "Copie annulée");
                 }
@@ -1076,24 +1142,82 @@ async function copyTimeChartToClipboard() {
 
     } catch (error) {
         console.error("❌ Erreur lors de la copie:", error);
-        alert((t("dialogs.copy_error") || "Erreur lors de la copie du graphique") + ":\n" + error.message);
+        alert((t("dialogs.copy_error") || "Erreur lors de la copie des graphiques") + ":\n" + error.message);
         setStatus(t("status.copy_failed") || "Échec de la copie");
     }
 }
 
 /**
- * Fallback : télécharge l'image si la copie dans le presse-papier échoue
- * @param {Chart} chart - Instance Chart.js
+ * Fallback : télécharge l'image composite si la copie dans le presse-papier échoue
  */
-function fallbackDownloadChart(chart) {
+async function fallbackDownloadCharts() {
     try {
+        // Identifier les conteneurs visibles
+        const timeContainer = document.getElementById('time-container');
+        const freqContainer = document.getElementById('freq-container');
+        const spectroContainer = document.getElementById('spectro-container');
+
+        const visibleContainers = [];
+        if (timeContainer && !timeContainer.classList.contains('hidden')) {
+            visibleContainers.push(timeContainer);
+        }
+        if (freqContainer && !freqContainer.classList.contains('hidden')) {
+            visibleContainers.push(freqContainer);
+        }
+        if (spectroContainer && !spectroContainer.classList.contains('hidden')) {
+            visibleContainers.push(spectroContainer);
+        }
+
+        if (visibleContainers.length === 0) {
+            alert(t("dialogs.no_chart") || "Aucun graphique visible");
+            return;
+        }
+
+        // Capturer chaque conteneur visible avec html2canvas
+        const captures = [];
+        for (const container of visibleContainers) {
+            try {
+                const canvas = await html2canvas(container, {
+                    backgroundColor: getComputedStyle(document.body).backgroundColor,
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+                captures.push(canvas);
+            } catch (err) {
+                console.error("❌ Erreur capture:", err);
+            }
+        }
+
+        if (captures.length === 0) {
+            throw new Error("Aucun graphique n'a pu être capturé");
+        }
+
+        // Créer un canvas composite
+        const compositeCanvas = document.createElement('canvas');
+        const ctx = compositeCanvas.getContext('2d');
+
+        const maxWidth = Math.max(...captures.map(c => c.width));
+        const totalHeight = captures.reduce((sum, c) => sum + c.height, 0);
+        compositeCanvas.width = maxWidth;
+        compositeCanvas.height = totalHeight;
+
+        ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+        ctx.fillRect(0, 0, maxWidth, totalHeight);
+
+        let yOffset = 0;
+        for (const canvas of captures) {
+            ctx.drawImage(canvas, 0, yOffset);
+            yOffset += canvas.height;
+        }
+
         // Générer un nom de fichier avec timestamp
         const now = new Date();
         const timestamp = now.toISOString().slice(0, 19).replace(/[T:]/g, '-');
-        const filename = `HydraSpec_Temporel_${timestamp}.png`;
+        const filename = `HydraSpec_Graphiques_${timestamp}.png`;
 
         // Convertir le canvas en Data URL
-        const dataURL = chart.canvas.toDataURL('image/png', 1.0);
+        const dataURL = compositeCanvas.toDataURL('image/png', 1.0);
 
         // Créer un lien de téléchargement
         const link = document.createElement('a');
@@ -1101,10 +1225,15 @@ function fallbackDownloadChart(chart) {
         link.download = filename;
         link.click();
 
-        setStatus(t("status.chart_downloaded") || "✅ Graphique téléchargé", 'success');
+        setStatus(t("status.chart_downloaded") || "✅ Graphiques téléchargés", 'success');
 
     } catch (error) {
         console.error("❌ Erreur téléchargement fallback:", error);
         alert((t("dialogs.download_failed") || "Impossible de télécharger l'image") + ":\n" + error.message);
     }
+}
+
+// Rétrocompatibilité : alias pour l'ancienne fonction
+async function copyTimeChartToClipboard() {
+    return copyChartsToClipboard();
 }

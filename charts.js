@@ -800,6 +800,9 @@ function handleZoom(chart, e) {
     const zoomX = !e.ctrlKey && !e.altKey;  // Zoom X si ni Ctrl ni Alt
     const zoomY = !e.shiftKey && !e.altKey; // Zoom Y normal si ni Shift ni Alt
 
+    // Obtenir les infos du canal X pour savoir si on est en mode temps ou spatial
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
+
     if (zoomX) {
         // Récupérer la position de la souris sur le canvas
         const rect = chart.canvas.getBoundingClientRect();
@@ -816,10 +819,35 @@ function handleZoom(chart, e) {
         const newRangeX = direction > 0 ? rangeX * zoomFactor : rangeX / zoomFactor;
 
         if(newRangeX > 0.000001) {
-            // Zoomer en gardant la position de la souris fixe
-            // Le point sous la souris reste au même endroit
-            chart.options.scales.x.min = mouseXValue - newRangeX * ratio;
-            chart.options.scales.x.max = mouseXValue + newRangeX * (1 - ratio);
+            // Calculer les nouvelles limites
+            const newXMin = mouseXValue - newRangeX * ratio;
+            const newXMax = mouseXValue + newRangeX * (1 - ratio);
+
+            // CORRECTION : Au lieu de modifier chart.options directement,
+            // mettre à jour les champs de contrôle qui seront lus par updateTimeChart()
+            if (xInfo.isTime) {
+                // X = Temps : mettre à jour Min(s)/Max(s)
+                const zoomMinInput = document.getElementById('zoom-min');
+                const zoomMaxInput = document.getElementById('zoom-max');
+
+                if (zoomMinInput && zoomMaxInput) {
+                    zoomMinInput.value = (newXMin / xInfo.scale).toFixed(3);
+                    zoomMaxInput.value = (newXMax / xInfo.scale).toFixed(3);
+                }
+            } else {
+                // X ≠ Temps : mettre à jour Ymin/Ymax du canal X
+                const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xInfo.dataIndex);
+                if (xChannelConfig) {
+                    xChannelConfig.yMin = newXMin / xInfo.scale;
+                    xChannelConfig.yMax = newXMax / xInfo.scale;
+
+                    // Mettre à jour l'interface
+                    const yMinInput = document.getElementById(`ymin-${xInfo.dataIndex}`);
+                    const yMaxInput = document.getElementById(`ymax-${xInfo.dataIndex}`);
+                    if (yMinInput) yMinInput.value = xChannelConfig.yMin.toFixed(1);
+                    if (yMaxInput) yMaxInput.value = xChannelConfig.yMax.toFixed(1);
+                }
+            }
         }
     }
 
@@ -833,8 +861,30 @@ function handleZoom(chart, e) {
                 const newRangeY = direction > 0 ? rangeY * zoomFactor : rangeY / zoomFactor;
 
                 if(newRangeY > 0.000001) {
-                    chart.options.scales[scaleKey].min = centerY - newRangeY / 2;
-                    chart.options.scales[scaleKey].max = centerY + newRangeY / 2;
+                    const newYMin = centerY - newRangeY / 2;
+                    const newYMax = centerY + newRangeY / 2;
+
+                    // CORRECTION : Mettre à jour les champs de contrôle
+                    // Identifier le canal correspondant à cette échelle Y
+                    const channelMatch = scaleKey.match(/^y(\d*)$/);
+                    if (channelMatch) {
+                        const scaleIndex = channelMatch[1] ? parseInt(channelMatch[1]) : 0;
+
+                        // Trouver le canal correspondant dans channelConfig
+                        // L'ordre des échelles Y correspond à l'ordre des canaux visibles
+                        const visibleChannels = appState.channelConfig.filter(cfg => cfg.visible);
+                        if (scaleIndex < visibleChannels.length) {
+                            const channel = visibleChannels[scaleIndex];
+                            channel.yMin = newYMin;
+                            channel.yMax = newYMax;
+
+                            // Mettre à jour l'interface
+                            const yMinInput = document.getElementById(`ymin-${channel.index}`);
+                            const yMaxInput = document.getElementById(`ymax-${channel.index}`);
+                            if (yMinInput) yMinInput.value = newYMin.toFixed(1);
+                            if (yMaxInput) yMaxInput.value = newYMax.toFixed(1);
+                        }
+                    }
                 }
             }
         });
@@ -855,25 +905,38 @@ function handleZoom(chart, e) {
                 const newYMax = yMin + newRangeY;
 
                 if(newRangeY > 0.000001) {
-                    chart.options.scales[scaleKey].min = yMin;  // yMin reste fixe
-                    chart.options.scales[scaleKey].max = newYMax;  // Seul yMax change
+                    // CORRECTION : Mettre à jour les champs de contrôle
+                    const channelMatch = scaleKey.match(/^y(\d*)$/);
+                    if (channelMatch) {
+                        const scaleIndex = channelMatch[1] ? parseInt(channelMatch[1]) : 0;
+
+                        const visibleChannels = appState.channelConfig.filter(cfg => cfg.visible);
+                        if (scaleIndex < visibleChannels.length) {
+                            const channel = visibleChannels[scaleIndex];
+                            channel.yMin = yMin;  // yMin reste fixe
+                            channel.yMax = newYMax;  // Seul yMax change
+
+                            // Mettre à jour l'interface
+                            const yMinInput = document.getElementById(`ymin-${channel.index}`);
+                            const yMaxInput = document.getElementById(`ymax-${channel.index}`);
+                            if (yMinInput) yMinInput.value = yMin.toFixed(1);
+                            if (yMaxInput) yMaxInput.value = newYMax.toFixed(1);
+                        }
+                    }
                 }
             }
         });
     }
 
-    // CRITIQUE: Recalculer le downsampling dynamique après le zoom
-    // On appelle updateTimeChart() pour recalculer les données affichées selon la nouvelle plage
+    // CRITIQUE: Appeler updateTimeChart() qui lira les champs de contrôle
+    // et appliquera tout cohéremment (filtrage temporel + zoom spatial)
     if (typeof updateTimeChart === 'function') {
         updateTimeChart();
-        console.log("🔄 Downsampling recalculé après zoom");
+        console.log("🔄 Zoom molette appliqué via updateTimeChart()");
     } else {
         // Fallback si updateTimeChart n'est pas disponible
         chart.update('none');
     }
-
-    // METTRE À JOUR LES CHAMPS DE ZOOM APRÈS CHAQUE ZOOM
-    setTimeout(updateZoomInputs, 10);
 }
 function handleFreqZoom(chart, e) {
     const zoomFactor = 1.1;

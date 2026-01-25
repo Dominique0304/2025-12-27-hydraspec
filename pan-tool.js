@@ -563,9 +563,41 @@ function handleGridZoomRelease(event, chart, canvas) {
     const newXMin = xScale.getValueForPixel(x1);
     const newXMax = xScale.getValueForPixel(x2);
 
-    // Appliquer le zoom horizontal
-    chart.options.scales.x.min = newXMin;
-    chart.options.scales.x.max = newXMax;
+    // Obtenir les infos du canal X
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
+
+    if (xInfo.isTime) {
+        // X = Temps: mettre à jour les champs Min(s)/Max(s) puis appliquer
+        const zoomMinInput = document.getElementById('zoom-min');
+        const zoomMaxInput = document.getElementById('zoom-max');
+
+        if (zoomMinInput && zoomMaxInput) {
+            zoomMinInput.value = (newXMin / xInfo.scale).toFixed(3);
+            zoomMaxInput.value = (newXMax / xInfo.scale).toFixed(3);
+            console.log(`🎯 Zoom Quadrillage (temps): ${zoomMinInput.value}s à ${zoomMaxInput.value}s`);
+        }
+    } else {
+        // X ≠ Temps: mettre à jour Ymin/Ymax du canal X
+        const xChannelConfig = appState.channelConfig.find(cfg => cfg.index === xInfo.dataIndex);
+        if (xChannelConfig) {
+            xChannelConfig.yMin = newXMin / xInfo.scale;
+            xChannelConfig.yMax = newXMax / xInfo.scale;
+            console.log(`🎯 Zoom Quadrillage (canal ${xInfo.label}): ${xChannelConfig.yMin.toFixed(2)} à ${xChannelConfig.yMax.toFixed(2)} ${xInfo.unit}`);
+
+            // Mettre à jour l'interface si le configurateur est ouvert
+            const table = document.getElementById('channel-config-tbody');
+            if (table) {
+                const globalIndex = appState.channelConfig.indexOf(xChannelConfig);
+                const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+                if (row) {
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                    if (yMinInput) yMinInput.value = xChannelConfig.yMin.toFixed(1);
+                    if (yMaxInput) yMaxInput.value = xChannelConfig.yMax.toFixed(1);
+                }
+            }
+        }
+    }
 
     // Si Y=0 n'est pas actif, zoomer aussi verticalement
     if (!panState.y0Active) {
@@ -582,16 +614,16 @@ function handleGridZoomRelease(event, chart, canvas) {
         });
     }
 
-    chart.update('none');
+    // CRITIQUE: Ne pas appeler chart.update() ni updateZoomInputs() ici!
+    // Les champs Min(s)/Max(s) ou Ymin/Ymax ont été mis à jour ci-dessus.
+    // updateTimeChart() va lire ces champs et appliquer le zoom correctement.
 
-    if (typeof updateZoomInputs === 'function') {
-        updateZoomInputs();
-    }
-
-    // CRITIQUE: Recalculer le downsampling après le zoom par grille
     if (typeof updateTimeChart === 'function') {
         updateTimeChart();
-        console.log("🔄 Downsampling recalculé après zoom par grille");
+        console.log("🔄 Zoom Quadrillage appliqué via updateTimeChart()");
+    } else {
+        // Fallback si updateTimeChart n'existe pas
+        chart.update('none');
     }
 
     return true;

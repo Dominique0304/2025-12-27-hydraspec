@@ -636,13 +636,16 @@ function updateZoomInputs() {
     const chart = appState.charts?.time;
     if (!chart) return;
 
-    // Récupérer l'échelle X (temps)
+    // Récupérer l'échelle X
     const xScale = chart.scales.x;
     if (!xScale) return;
 
-    // Mettre à jour les champs avec les valeurs min et max en secondes (convertir de ms)
-    tMinInput.value = (xScale.min / 1000).toFixed(3);
-    tMaxInput.value = (xScale.max / 1000).toFixed(3);
+    // Obtenir les infos du canal X pour la conversion dynamique
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+
+    // Mettre à jour les champs avec conversion dynamique
+    tMinInput.value = (xScale.min / xInfo.scale).toFixed(3);
+    tMaxInput.value = (xScale.max / xInfo.scale).toFixed(3);
 }
 
 // Appliquer le zoom depuis les champs T min et T max
@@ -665,12 +668,15 @@ function applyPanToolZoom() {
     const chart = appState.charts?.time;
     if (!chart) return;
 
-    // Appliquer le zoom (convertir s en ms)
-    chart.options.scales.x.min = minX * 1000;
-    chart.options.scales.x.max = maxX * 1000;
+    // Obtenir les infos du canal X pour la conversion dynamique
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+
+    // Appliquer le zoom avec conversion dynamique
+    chart.options.scales.x.min = minX * xInfo.scale;
+    chart.options.scales.x.max = maxX * xInfo.scale;
 
     chart.update('none');
-    setStatus(`Zoom appliqué: ${minX}s - ${maxX}s`, 'success');
+    setStatus(`Zoom appliqué: ${minX}${xInfo.unit} - ${maxX}${xInfo.unit}`, 'success');
 
     // Sauvegarder l'état après le zoom manuel
     if (typeof saveZoomState === 'function') {

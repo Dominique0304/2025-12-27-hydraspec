@@ -28,10 +28,10 @@ let snapPointState = {
 
 // Classe SnapPoint
 class SnapPoint {
-    constructor(id, channelIndex, time, value) {
+    constructor(id, channelIndex, xValue, value) {
         this.id = id;
         this.channelIndex = channelIndex; // Index du canal dans channelConfig
-        this.time = time; // Temps en secondes
+        this.xValue = xValue; // Valeur X dans l'unité du canal X (secondes si X=Temps, bar si X=S1, etc.)
         this.value = value; // Valeur Y
         this.comment = 'C$ Y$'; // Commentaire avec balises par défaut (sans point-virgule)
         this.offsetX = 80; // Offset de la boîte par rapport au point (en pixels)
@@ -90,6 +90,7 @@ class SnapPoint {
     // Obtenir la position du point en pixels
     getPointPixelPosition(chart) {
         const xScale = chart.scales.x;
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
 
         // Déterminer si c'est une annotation flottante (-1 = canal fantôme)
         const isFloating = (this.anchorChannelIndex === -1 || this.anchorChannelIndex === null || this.anchorChannelIndex === undefined);
@@ -123,7 +124,7 @@ class SnapPoint {
             yScale = chart.scales[yAxisID];
 
             // Recalculer la valeur Y en temps réel sur la courbe
-            const liveValue = getSnapPointValueOnCurve(this.anchorChannelIndex, this.time);
+            const liveValue = getSnapPointValueOnCurve(this.anchorChannelIndex, this.xValue);
             yValue = (liveValue !== null) ? liveValue : this.value;
         }
 
@@ -133,7 +134,7 @@ class SnapPoint {
         }
 
         return {
-            x: xScale.getPixelForValue(this.time * 1000),
+            x: xScale.getPixelForValue(this.xValue * xInfo.scale),
             y: yScale.getPixelForValue(yValue)
         };
     }
@@ -278,9 +279,11 @@ function handleSnapPointClick(event, chart) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    // Convertir en temps
-    const timeMs = chart.scales.x.getValueForPixel(x);
-    const timeSec = timeMs / 1000;
+    // Convertir en valeur X (canal X)
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
+    const xScale = chart.scales.x;
+    const xValueScaled = xScale.getValueForPixel(x);
+    const xValue = xValueScaled / xInfo.scale;
 
     // Trouver le canal le plus proche du clic
     let closestChannel = null;
@@ -295,7 +298,7 @@ function handleSnapPointClick(event, chart) {
             if (!yScale) return;
 
             // Interpoler la valeur sur ce canal
-            const value = interpolateChannelValue(index, timeSec);
+            const value = interpolateChannelValue(index, xValue);
             if (value === null) return;
 
             // Calculer la distance au clic
@@ -318,7 +321,7 @@ function handleSnapPointClick(event, chart) {
     const snapPoint = new SnapPoint(
         nextSnapPointId++,
         closestChannel.index,
-        timeSec,
+        xValue,
         closestChannel.value
     );
     snapPoints.push(snapPoint);
@@ -332,8 +335,8 @@ function handleSnapPointClick(event, chart) {
     return true;
 }
 
-// Interpoler la valeur Y sur un canal à un temps donné
-function interpolateChannelValue(channelIndex, timeSec) {
+// Interpoler la valeur Y sur un canal à une position X donnée
+function interpolateChannelValue(channelIndex, xValue) {
     if (!appState.channelConfig || !appState.channelConfig[channelIndex]) {
         return null;
     }
@@ -350,7 +353,8 @@ function interpolateChannelValue(channelIndex, timeSec) {
     const labels = chart.data.labels;
     const yData = dataset.data;
 
-    const timeMs = timeSec * 1000;
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
+    const xValueScaled = xValue * xInfo.scale;
 
     let leftIdx = -1;
     let rightIdx = -1;
@@ -358,10 +362,10 @@ function interpolateChannelValue(channelIndex, timeSec) {
     for (let i = 0; i < labels.length; i++) {
         const labelX = parseFloat(labels[i]);
 
-        if (labelX <= timeMs) {
+        if (labelX <= xValueScaled) {
             leftIdx = i;
         }
-        if (labelX >= timeMs && rightIdx === -1) {
+        if (labelX >= xValueScaled && rightIdx === -1) {
             rightIdx = i;
             break;
         }
@@ -378,7 +382,7 @@ function interpolateChannelValue(channelIndex, timeSec) {
         if (x1 === x2) {
             result = y1;
         } else {
-            const ratio = (timeMs - x1) / (x2 - x1);
+            const ratio = (xValueScaled - x1) / (x2 - x1);
             result = y1 + ratio * (y2 - y1);
         }
     } else if (leftIdx === -1 && rightIdx >= 0 && rightIdx < yData.length) {
@@ -392,10 +396,11 @@ function interpolateChannelValue(channelIndex, timeSec) {
     return result;
 }
 
-// Obtenir la valeur réelle sur une courbe à un temps donné (pour le suivi de courbe)
-function getSnapPointValueOnCurve(channelIndex, timeInSeconds) {
-    const timeMs = timeInSeconds * 1000; // Convertir en ms
-    const dataTime = appState.fullDataTime;
+// Obtenir la valeur réelle sur une courbe à une position X donnée (pour le suivi de courbe)
+function getSnapPointValueOnCurve(channelIndex, xValue) {
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, data: appState.fullDataTime };
+    const xValueScaled = xValue * xInfo.scale;
+    const dataX = xInfo.data;
 
     // Obtenir les données du bon canal
     let dataValues;
@@ -407,21 +412,21 @@ function getSnapPointValueOnCurve(channelIndex, timeInSeconds) {
         return null;
     }
 
-    if (!dataTime || !dataValues || dataTime.length === 0) {
+    if (!dataX || !dataValues || dataX.length === 0) {
         return null;
     }
 
     // Trouver l'index du point le plus proche
     let closestIndex = 0;
-    let minDiff = Math.abs(dataTime[0] - timeMs);
+    let minDiff = Math.abs(dataX[0] - xValueScaled);
 
-    for (let i = 1; i < dataTime.length; i++) {
-        const diff = Math.abs(dataTime[i] - timeMs);
+    for (let i = 1; i < dataX.length; i++) {
+        const diff = Math.abs(dataX[i] - xValueScaled);
         if (diff < minDiff) {
             minDiff = diff;
             closestIndex = i;
         }
-        if (dataTime[i] > timeMs) break; // Optimisation
+        if (dataX[i] > xValueScaled) break; // Optimisation
     }
 
     return dataValues[closestIndex];
@@ -481,12 +486,15 @@ function replaceSnapPointTags(comment, snapPoint) {
     if (hasAnchor) {
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
-        const timeText = `${snapPoint.time.toFixed(3)} sec`;
+
+        // Obtenir l'unité du canal X
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { unit: 's', isTime: true };
+        const xText = `${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`;
         const valueText = `${snapPoint.value.toFixed(1)} ${unit}`;
 
         // Remplacer les balises
         result = result.replace(/C\$/g, channelLabel);        // C$ → "S1; IA (mA)"
-        result = result.replace(/X\$/g, timeText);            // X$ → "7,444 sec"
+        result = result.replace(/X\$/g, xText);               // X$ → "7,444 s" ou "12,500 bar"
         result = result.replace(/Y\$/g, valueText);           // Y$ → "664,0 mA"
         result = result.replace(/U\$/g, unit);                // U$ → "mA"
     } else {
@@ -912,7 +920,7 @@ function checkSnapPointsIntegrity() {
         console.table(invalidIds.map((sp, idx) => ({
             index: snapPoints.indexOf(sp),
             id: sp.id,
-            time: sp.time?.toFixed(3) || 'N/A',
+            xValue: sp.xValue?.toFixed(3) || 'N/A',
             value: sp.value?.toFixed(1) || 'N/A'
         })));
         hasErrors = true;
@@ -928,7 +936,7 @@ function checkSnapPointsIntegrity() {
         console.error('IDs dupliqués:', duplicates);
         console.table(snapPoints.map(sp => ({
             id: sp.id,
-            time: sp.time.toFixed(3),
+            xValue: sp.xValue.toFixed(3),
             value: sp.value.toFixed(1),
             comment: sp.comment
         })));
@@ -968,7 +976,8 @@ function updateSnapPointsList() {
 
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
-        const timeInfo = `${snapPoint.time.toFixed(3)}s`;
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { unit: 's', isTime: true };
+        const xValueInfo = `${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`;
         const valueInfo = `${snapPoint.value.toFixed(1)} ${unit}`;
         // Traiter le commentaire avec les balises
         const commentInfo = snapPoint.comment ? replaceSnapPointTags(snapPoint.comment, snapPoint) : '';
@@ -1011,7 +1020,7 @@ function updateSnapPointsList() {
                     </button>
                 </div>
                 <div style="color:var(--text-main); margin-bottom:2px;">${channelLabel}</div>
-                <div style="color:var(--text-main); margin-bottom:2px;">${timeInfo} | ${valueInfo}</div>
+                <div style="color:var(--text-main); margin-bottom:2px;">${xValueInfo} | ${valueInfo}</div>
                 ${commentInfo ? `<div style="color:var(--text-muted); font-style:italic;">${commentInfo}</div>` : ''}
             </div>
         `;
@@ -1075,7 +1084,8 @@ function openSnapPointEditModal(id) {
     // Remplir les champs
     if (commentInput) commentInput.value = snapPoint.comment || '';
     if (infoChannel) infoChannel.textContent = snapPoint.getChannelLabel();
-    if (infoTime) infoTime.textContent = `${snapPoint.time.toFixed(3)}s`;
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { unit: 's', isTime: true };
+    if (infoTime) infoTime.textContent = `${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`;
     if (infoValue) infoValue.textContent = `${snapPoint.value.toFixed(1)} ${snapPoint.getChannelUnit()}`;
 
     // Régler la taille de police
@@ -1336,9 +1346,9 @@ function setSnapPointAnchorChannel(channelIndex) {
     const index = parseInt(channelIndex);
     snapPoint.anchorChannelIndex = index === -1 ? null : index;
 
-    // Si un canal d'accrochage est défini, recalculer la valeur Y à ce temps
+    // Si un canal d'accrochage est défini, recalculer la valeur Y à cette position X
     if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
-        const newValue = getSnapPointValueOnCurve(snapPoint.anchorChannelIndex, snapPoint.time);
+        const newValue = getSnapPointValueOnCurve(snapPoint.anchorChannelIndex, snapPoint.xValue);
         if (newValue !== null) {
             snapPoint.value = newValue;
         }
@@ -1620,7 +1630,7 @@ function saveSnapPoints() {
         const data = snapPoints.map(sp => ({
             id: sp.id,
             channelIndex: sp.channelIndex,
-            time: sp.time,
+            xValue: sp.xValue,
             value: sp.value,
             comment: sp.comment,
             offsetX: sp.offsetX,
@@ -1658,7 +1668,7 @@ function loadSnapPoints() {
             const snapPoint = new SnapPoint(
                 item.id,
                 item.channelIndex,
-                item.time,
+                item.xValue !== undefined ? item.xValue : item.time, // Compatibilité avec anciennes sauvegardes
                 item.value
             );
             snapPoint.comment = item.comment || '';
@@ -1723,7 +1733,7 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         const snapPoint = new SnapPoint(
             item.id,
             item.channelIndex,
-            item.time,
+            item.xValue !== undefined ? item.xValue : item.time, // Compatibilité avec anciennes sauvegardes
             item.value
         );
         snapPoint.comment = item.comment || '';
@@ -1846,9 +1856,10 @@ function handleSnapPointMouseDown(event, chart) {
 
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { unit: 's', isTime: true };
         const lines = [
             channelLabel,
-            `t = ${snapPoint.time.toFixed(3)}s`,
+            `x = ${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`,
             `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
@@ -2072,17 +2083,18 @@ function handleSnapPointMouseMove(event, chart) {
                 snapPointState.draggedSnapPoint.arrowEndY = snapPointState.initialArrowEndY - deltaY;
             }
         } else if (snapPointState.dragging === 'point') {
-            // Drag du point : recalculer time et value
+            // Drag du point : recalculer xValue et value
+            const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
             const xScale = chart.scales.x;
-            const timeMs = xScale.getValueForPixel(mouseX);
-            const timeSec = timeMs / 1000;
+            const xValueScaled = xScale.getValueForPixel(mouseX);
+            const xValue = xValueScaled / xInfo.scale;
 
-            snapPointState.draggedSnapPoint.time = timeSec;
+            snapPointState.draggedSnapPoint.xValue = xValue;
 
             // Si un canal d'accrochage est défini, suivre la courbe
             if (snapPointState.draggedSnapPoint.anchorChannelIndex !== null &&
                 snapPointState.draggedSnapPoint.anchorChannelIndex !== undefined) {
-                const liveValue = getSnapPointValueOnCurve(snapPointState.draggedSnapPoint.anchorChannelIndex, timeSec);
+                const liveValue = getSnapPointValueOnCurve(snapPointState.draggedSnapPoint.anchorChannelIndex, xValue);
                 if (liveValue !== null) {
                     snapPointState.draggedSnapPoint.value = liveValue;
                 }
@@ -2201,9 +2213,10 @@ function handleSnapPointMouseMove(event, chart) {
 
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { unit: 's', isTime: true };
         const lines = [
             channelLabel,
-            `t = ${snapPoint.time.toFixed(3)}s`,
+            `x = ${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`,
             `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
@@ -2331,9 +2344,10 @@ function handleSnapPointContextMenu(event, chart) {
 
         const channelLabel = snapPoint.getChannelLabel();
         const unit = snapPoint.getChannelUnit();
+        const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { unit: 's', isTime: true };
         const lines = [
             channelLabel,
-            `t = ${snapPoint.time.toFixed(3)}s`,
+            `x = ${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`,
             `${snapPoint.value.toFixed(1)} ${unit}`
         ];
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
@@ -2448,7 +2462,7 @@ function contextMenuDuplicate() {
             const duplicate = new SnapPoint(
                 nextSnapPointId++,
                 snapPoint.channelIndex,
-                snapPoint.time,
+                snapPoint.xValue,
                 snapPoint.value
             );
             duplicate.comment = snapPoint.comment + ' (copie)';

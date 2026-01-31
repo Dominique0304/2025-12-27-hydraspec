@@ -570,12 +570,9 @@ function saveAllToolsState(project) {
         };
     }
 
-    // Sauvegarder Annotations
-    if (typeof annotations !== 'undefined') {
-        project.toolsState.annotations = JSON.parse(JSON.stringify(annotations));
-        project.toolsState.isCreatingAnnotation = isCreatingAnnotation;
-        project.toolsState.annotationsVisible = annotationsVisible;
-    }
+    // NOTE: Le code legacy "annotations" a été supprimé.
+    // Les annotations de type texte libre sont maintenant gérées via SnapPoints (marqueurs)
+    // avec anchorChannelIndex = -1 pour les annotations flottantes.
 
     // Sauvegarder Pan Tool
     if (typeof panState !== 'undefined') {
@@ -758,38 +755,7 @@ function restoreAllToolsState(project) {
         }
     }
 
-    // Restaurer Annotations
-    if (typeof annotations !== 'undefined' && typeof Annotation !== 'undefined' && project.toolsState.annotations) {
-        annotations.length = 0; // Vider le tableau
-
-        // Recréer les instances de la classe Annotation
-        project.toolsState.annotations.forEach(data => {
-            const annotation = new Annotation(data.id, data.time, data.yValue, data.text, data.color, data.isFreeFloating);
-            annotation.width = data.width;
-            annotation.height = data.height;
-            annotation.offsetX = data.offsetX;
-            annotation.offsetY = data.offsetY;
-            annotation.pinned = data.pinned;
-            annotation.visible = data.visible;
-            annotation.columnIndex = data.columnIndex;
-            annotation.markerRadius = data.markerRadius;
-            annotation.backgroundStyle = data.backgroundStyle;
-            annotation.fontSize = data.fontSize;
-            annotation.fontWeight = data.fontWeight;
-            annotation.fontStyle = data.fontStyle;
-            annotation.textDecoration = data.textDecoration;
-            annotation.zIndex = data.zIndex;
-            annotations.push(annotation);
-        });
-
-        isCreatingAnnotation = project.toolsState.isCreatingAnnotation;
-        annotationsVisible = project.toolsState.annotationsVisible;
-
-        // Mettre à jour l'affichage
-        if (typeof updateAnnotationsList === 'function') {
-            updateAnnotationsList();
-        }
-    }
+    // NOTE: Code legacy "annotations" supprimé - voir SnapPoints pour annotations flottantes
 
     // Restaurer Pan Tool
     if (typeof panState !== 'undefined' && project.toolsState.panTool) {

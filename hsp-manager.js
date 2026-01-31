@@ -231,8 +231,9 @@ async function performHSPSave(project, fileName, isNewFile) {
             }
         },
 
-        // Annotations
-        annotations: project.toolsState.annotations || [],
+        // Annotations (Legacy - maintenant géré via SnapPoints avec anchorChannelIndex=-1)
+        // Conservé pour compatibilité avec anciens fichiers HSP
+        annotations: [],
 
         // Intervalles
         intervals: project.toolsState.intervals || [],
@@ -526,11 +527,7 @@ async function restoreProjectFromHSP(project, hspData) {
         console.log("✅ Visibilité graphiques restaurée:", uiState.timeVisible, uiState.freqVisible, uiState.spectroVisible);
     }
 
-    // Restaurer annotations
-    if (hspData.annotations) {
-        project.toolsState.annotations = hspData.annotations;
-        console.log("✅ Annotations restaurées:", hspData.annotations.length);
-    }
+    // NOTE: Code legacy annotations supprimé - voir SnapPoints pour annotations
 
     // Restaurer intervalles
     if (hspData.intervals) {

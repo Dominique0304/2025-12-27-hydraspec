@@ -844,19 +844,39 @@ function restoreAllToolsState(project) {
 
         // Recréer les instances de la classe SnapPoint
         project.toolsState.snapPoints.forEach(data => {
-            const snapPoint = new SnapPoint(data.id, data.channelIndex, data.time, data.value);
+            // CRITIQUE: Utiliser xValue (pas time) pour le constructeur
+            const snapPoint = new SnapPoint(data.id, data.channelIndex, data.xValue, data.value);
+
+            // Restaurer TOUTES les propriétés
             snapPoint.comment = data.comment || '';
             snapPoint.offsetX = data.offsetX || 80;
             snapPoint.offsetY = data.offsetY || -40;
             snapPoint.visible = data.visible !== false;
             snapPoint.color = data.color || '#4ECDC4';
+
+            // Formatage texte
             snapPoint.fontSize = data.fontSize || window.chartFontSize;
             snapPoint.fontWeight = data.fontWeight || 'normal';
             snapPoint.fontStyle = data.fontStyle || 'normal';
             snapPoint.textDecoration = data.textDecoration || 'none';
+            snapPoint.textAlign = data.textAlign || 'center';
+            snapPoint.textVerticalAlign = data.textVerticalAlign || 'middle';
+
+            // Apparence boîte
             snapPoint.backgroundColor = data.backgroundColor || '#FFD93D';
             snapPoint.backgroundOpacity = data.backgroundOpacity !== undefined ? data.backgroundOpacity : 0.9;
             snapPoint.boxPaddingScale = data.boxPaddingScale || 1.0;
+            snapPoint.boxWidth = data.boxWidth || null;
+            snapPoint.boxHeight = data.boxHeight || null;
+
+            // Accrochage
+            snapPoint.anchorChannelIndex = data.anchorChannelIndex !== undefined ? data.anchorChannelIndex : data.channelIndex;
+
+            // Flèche
+            snapPoint.hasArrow = data.hasArrow || false;
+            snapPoint.arrowEndX = data.arrowEndX || 150;
+            snapPoint.arrowEndY = data.arrowEndY || -80;
+
             snapPoints.push(snapPoint);
         });
 
@@ -866,6 +886,8 @@ function restoreAllToolsState(project) {
         if (project.toolsState.isCreatingSnapPoint !== undefined) {
             isCreatingSnapPoint = project.toolsState.isCreatingSnapPoint;
         }
+
+        console.log(`📌 ${snapPoints.length} marqueur(s) restauré(s) dans le tableau global`);
 
         // Mettre à jour l'affichage
         if (typeof updateSnapPointsList === 'function') {

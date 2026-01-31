@@ -114,12 +114,26 @@ class IntervalManager {
     load(savedData) {
         if (!savedData) return;
 
-        this.intervals = savedData.intervals || [];
+        // CRITIQUE: Recréer les instances de la classe Interval
+        this.intervals = [];
+        if (savedData.intervals && savedData.intervals.length > 0) {
+            savedData.intervals.forEach(data => {
+                const interval = new Interval(data.id, data.startTime, data.endTime, data.comment, data.yPosition);
+                interval.color = data.color;
+                interval.visible = data.visible;
+                interval.fontSize = data.fontSize;
+                interval.fontWeight = data.fontWeight;
+                interval.fontStyle = data.fontStyle;
+                interval.textDecoration = data.textDecoration;
+                this.intervals.push(interval);
+            });
+        }
+
         this.nextIntervalId = savedData.nextIntervalId || 1;
         this.isCreating = savedData.isCreating || false;
         this.pendingIntervalData = savedData.pendingIntervalData || null;
 
-        console.log(`📏 Chargé ${this.intervals.length} intervalle(s)`);
+        console.log(`📏 Chargé ${this.intervals.length} intervalle(s) (instances Interval créées)`);
     }
 
     /**

@@ -114,11 +114,50 @@ class SnapPointManager {
     load(savedData) {
         if (!savedData) return;
 
-        this.snapPoints = savedData.snapPoints || [];
+        // CRITIQUE: Recréer les instances de la classe SnapPoint
+        this.snapPoints = [];
+        if (savedData.snapPoints && savedData.snapPoints.length > 0) {
+            savedData.snapPoints.forEach(data => {
+                const snapPoint = new SnapPoint(data.id, data.channelIndex, data.xValue, data.value);
+
+                // Restaurer TOUTES les propriétés
+                snapPoint.comment = data.comment || '';
+                snapPoint.offsetX = data.offsetX || 80;
+                snapPoint.offsetY = data.offsetY || -40;
+                snapPoint.visible = data.visible !== false;
+                snapPoint.color = data.color || '#4ECDC4';
+
+                // Formatage texte
+                snapPoint.fontSize = data.fontSize || window.chartFontSize;
+                snapPoint.fontWeight = data.fontWeight || 'normal';
+                snapPoint.fontStyle = data.fontStyle || 'normal';
+                snapPoint.textDecoration = data.textDecoration || 'none';
+                snapPoint.textAlign = data.textAlign || 'center';
+                snapPoint.textVerticalAlign = data.textVerticalAlign || 'middle';
+
+                // Apparence boîte
+                snapPoint.backgroundColor = data.backgroundColor || '#FFD93D';
+                snapPoint.backgroundOpacity = data.backgroundOpacity !== undefined ? data.backgroundOpacity : 0.9;
+                snapPoint.boxPaddingScale = data.boxPaddingScale || 1.0;
+                snapPoint.boxWidth = data.boxWidth || null;
+                snapPoint.boxHeight = data.boxHeight || null;
+
+                // Accrochage
+                snapPoint.anchorChannelIndex = data.anchorChannelIndex !== undefined ? data.anchorChannelIndex : data.channelIndex;
+
+                // Flèche
+                snapPoint.hasArrow = data.hasArrow || false;
+                snapPoint.arrowEndX = data.arrowEndX || 150;
+                snapPoint.arrowEndY = data.arrowEndY || -80;
+
+                this.snapPoints.push(snapPoint);
+            });
+        }
+
         this.nextSnapPointId = savedData.nextSnapPointId || 1;
         this.isCreating = savedData.isCreating || false;
 
-        console.log(`📌 Chargé ${this.snapPoints.length} marqueur(s)`);
+        console.log(`📌 Chargé ${this.snapPoints.length} marqueur(s) (instances SnapPoint créées)`);
     }
 
     /**

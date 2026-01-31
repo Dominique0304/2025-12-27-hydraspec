@@ -1,5 +1,30 @@
 // --- UTILITY FUNCTIONS ---
 
+// --- BOUTON TEST (TEMPORAIRE) ---
+function testButtonClick() {
+    const version = "V 25/01/2026";
+    const lastCommit = "92713cc - fix: Suppression du code legacy annotations inutilisé";
+    const branche = "claude/check-progress-eQYEt";
+    const timestamp = new Date().toLocaleString('fr-FR');
+
+    const message = `✅ Code synchronisé !
+
+Version: ${version}
+Branche: ${branche}
+Dernier commit: ${lastCommit}
+Heure: ${timestamp}
+
+Si vous voyez ce message, vous avez bien le dernier code !`;
+
+    alert(message);
+    console.log("🧪 Test Button - Code synchronisé :", {
+        version,
+        branche,
+        lastCommit,
+        timestamp
+    });
+}
+
 // --- FILE HANDLING ---
 function handleFileUpload(input) {
     console.log("📂 handleFileUpload() appelée");

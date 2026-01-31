@@ -532,22 +532,13 @@ function saveAllToolsState(project) {
     // SAUVEGARDER DEPUIS LES MANAGERS (POO)
     // ========================================
 
-    // Sauvegarder Intervals depuis le manager
-    if (project.intervalManager) {
-        const intervalData = project.intervalManager.save();
-        project.toolsState.intervals = intervalData.intervals;
-        project.toolsState.isCreatingInterval = intervalData.isCreating;
-        project.toolsState.nextIntervalId = intervalData.nextIntervalId;
-        project.toolsState.pendingIntervalData = intervalData.pendingIntervalData;
-    }
+    // NOTE: IntervalManager utilise son propre tableau this.intervals,
+    // MAIS intervals.js utilise le tableau global intervals[].
+    // On sauvegarde donc depuis le tableau GLOBAL (voir section "outils non encapsulés" plus bas)
 
-    // Sauvegarder SnapPoints depuis le manager
-    if (project.snapPointManager) {
-        const snapPointData = project.snapPointManager.save();
-        project.toolsState.snapPoints = snapPointData.snapPoints;
-        project.toolsState.nextSnapPointId = snapPointData.nextSnapPointId;
-        project.toolsState.isCreatingSnapPoint = snapPointData.isCreating;
-    }
+    // NOTE: SnapPointManager utilise son propre tableau this.snapPoints,
+    // MAIS snappoint-tool.js utilise le tableau global snapPoints[].
+    // On sauvegarde donc depuis le tableau GLOBAL (voir section "outils non encapsulés" plus bas)
 
     // Sauvegarder Diff Canal depuis le manager
     if (project.diffCanalManager) {
@@ -573,6 +564,22 @@ function saveAllToolsState(project) {
     // NOTE: Le code legacy "annotations" a été supprimé.
     // Les annotations de type texte libre sont maintenant gérées via SnapPoints (marqueurs)
     // avec anchorChannelIndex = -1 pour les annotations flottantes.
+
+    // Sauvegarder Intervals (depuis le tableau GLOBAL)
+    if (typeof intervals !== 'undefined') {
+        project.toolsState.intervals = JSON.parse(JSON.stringify(intervals));
+        project.toolsState.nextIntervalId = nextIntervalId;
+        project.toolsState.isCreatingInterval = isCreatingInterval;
+        console.log(`📐 ${intervals.length} intervalle(s) sauvegardé(s)`);
+    }
+
+    // Sauvegarder SnapPoints (depuis le tableau GLOBAL)
+    if (typeof snapPoints !== 'undefined') {
+        project.toolsState.snapPoints = JSON.parse(JSON.stringify(snapPoints));
+        project.toolsState.nextSnapPointId = nextSnapPointId;
+        project.toolsState.isCreatingSnapPoint = isCreatingSnapPoint;
+        console.log(`📌 ${snapPoints.length} marqueur(s) sauvegardé(s)`);
+    }
 
     // Sauvegarder Pan Tool
     if (typeof panState !== 'undefined') {

@@ -570,7 +570,9 @@ function saveAllToolsState(project) {
         project.toolsState.intervals = JSON.parse(JSON.stringify(intervals));
         project.toolsState.nextIntervalId = nextIntervalId;
         project.toolsState.isCreatingInterval = isCreatingInterval;
-        console.log(`📐 ${intervals.length} intervalle(s) sauvegardé(s)`);
+        console.log(`📐 ${intervals.length} intervalle(s) sauvegardé(s)`, intervals);
+    } else {
+        console.warn("⚠️ Variable globale 'intervals' non définie !");
     }
 
     // Sauvegarder SnapPoints (depuis le tableau GLOBAL)
@@ -578,7 +580,9 @@ function saveAllToolsState(project) {
         project.toolsState.snapPoints = JSON.parse(JSON.stringify(snapPoints));
         project.toolsState.nextSnapPointId = nextSnapPointId;
         project.toolsState.isCreatingSnapPoint = isCreatingSnapPoint;
-        console.log(`📌 ${snapPoints.length} marqueur(s) sauvegardé(s)`);
+        console.log(`📌 ${snapPoints.length} marqueur(s) sauvegardé(s)`, snapPoints);
+    } else {
+        console.warn("⚠️ Variable globale 'snapPoints' non définie !");
     }
 
     // Sauvegarder Pan Tool

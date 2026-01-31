@@ -260,13 +260,14 @@ async function performHSPSave(project, fileName, isNewFile) {
         channels: hspData.state.allColumnData.length,
         annotations: hspData.annotations.length,
         intervals: hspData.intervals.length,
+        snapPoints: hspData.snapPoints.length,
         diffCanal: hspData.diffCanal.intervals.length,
         views: hspData.views.length,
-        toolsState_annotations: project.toolsState.annotations?.length || 0,
-        toolsState_intervals: project.toolsState.intervals?.length || 0,
-        toolsState_diffCanal: project.toolsState.diffCanal?.intervals?.length || 0,
+        notes: hspData.notes.length,
         dataPoints: hspData.state.fullDataTime.length
     });
+    console.log("📌 SnapPoints sauvegardés:", hspData.snapPoints);
+    console.log("📐 Intervals sauvegardés:", hspData.intervals);
 
     // Créer le blob
     const blob = new Blob([JSON.stringify(hspData, null, 2)], { type: "application/json" });
@@ -449,7 +450,8 @@ async function loadHSPFromFile(file) {
 
             } catch (error) {
                 console.error("❌ Erreur chargement HSP:", error);
-                alert(t("dialogs.hsp_load_error"));
+                console.error("Stack trace:", error.stack);
+                alert(t("dialogs.hsp_load_error") + "\n\nDétails: " + error.message);
                 reject(error);
             }
         };

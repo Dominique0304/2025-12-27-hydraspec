@@ -3,7 +3,7 @@
 // --- BOUTON TEST (TEMPORAIRE) ---
 function testButtonClick() {
     const version = "V 25/01/2026";
-    const lastCommit = "92713cc - fix: Suppression du code legacy annotations inutilisé";
+    const lastCommit = "3af81b1 - fix: Sauvegarde SnapPoints/Intervals depuis tableaux globaux";
     const branche = "claude/check-progress-eQYEt";
     const timestamp = new Date().toLocaleString('fr-FR');
 

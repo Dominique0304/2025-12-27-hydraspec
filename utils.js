@@ -3,7 +3,7 @@
 // --- BOUTON TEST (TEMPORAIRE) ---
 function testButtonClick() {
     const version = "V 25/01/2026";
-    const lastCommit = "3af81b1 - fix: Sauvegarde SnapPoints/Intervals depuis tableaux globaux";
+    const lastCommit = "a6ecb6e - debug: Logs détaillés erreur chargement HSP";
     const branche = "claude/check-progress-eQYEt";
     const timestamp = new Date().toLocaleString('fr-FR');
 

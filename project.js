@@ -177,7 +177,10 @@ class Project {
                     x: { min: null, max: null },
                     y: {}
                 }
-            }
+            },
+
+            // Notes utilisateur
+            notes: ""
         };
 
         // Graphiques Chart.js isolés

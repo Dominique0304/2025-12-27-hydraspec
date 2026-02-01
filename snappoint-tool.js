@@ -677,8 +677,11 @@ function drawSnapPoints(chart) {
             ctx.restore();
         }
 
-        // Préparer le texte - uniquement le commentaire avec balises remplacées
+        // Préparer le texte - commencer par le numéro du marqueur
         const lines = [];
+
+        // Ajouter le numéro du marqueur en première ligne
+        lines.push(`N° ${snapPoint.id}`);
 
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
@@ -687,11 +690,6 @@ function drawSnapPoints(chart) {
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);
             }
-        }
-
-        // Si pas de lignes à afficher, afficher un texte par défaut pour que la boîte reste visible
-        if (lines.length === 0) {
-            lines.push('Marqueur');
         }
 
         // Calculer les dimensions de la boîte

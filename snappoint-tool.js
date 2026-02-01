@@ -33,7 +33,7 @@ class SnapPoint {
         this.channelIndex = channelIndex; // Index du canal dans channelConfig
         this.xValue = xValue; // Valeur X dans l'unité du canal X (secondes si X=Temps, bar si X=S1, etc.)
         this.value = value; // Valeur Y
-        this.comment = 'C$ Y$'; // Commentaire avec balises par défaut (sans point-virgule)
+        this.comment = 'N$ C$ Y$'; // Commentaire avec balises par défaut (N$ = numéro, C$ = canal, Y$ = valeur)
         this.offsetX = 80; // Offset de la boîte par rapport au point (en pixels)
         this.offsetY = -40;
         this.visible = true;
@@ -473,12 +473,23 @@ function distanceToLineSegment(px, py, x1, y1, x2, y2) {
 }
 
 // Fonction pour remplacer les balises dans le commentaire
-function replaceSnapPointTags(comment, snapPoint) {
+function replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
     if (!comment || comment.trim() === '') {
         return comment;
     }
 
     let result = comment;
+
+    // Calculer le numéro du marqueur (index + 1, ou trouver l'index si non fourni)
+    let markerNumber = snapPointIndex !== null ? (snapPointIndex + 1) : null;
+    if (markerNumber === null) {
+        // Si l'index n'est pas fourni, le chercher dans le tableau
+        const foundIndex = snapPoints.findIndex(sp => sp.id === snapPoint.id);
+        markerNumber = foundIndex !== -1 ? (foundIndex + 1) : snapPoint.id;
+    }
+
+    // Remplacer N$ par le numéro du marqueur (TOUJOURS, même sans canal d'accrochage)
+    result = result.replace(/N\$/g, markerNumber.toString());  // N$ → "1", "2", "3"...
 
     // Si un canal d'accrochage est défini, utiliser ses informations
     const hasAnchor = snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined;
@@ -530,7 +541,7 @@ function drawSnapPoints(chart) {
     ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
     ctx.clip();
 
-    snapPoints.forEach(snapPoint => {
+    snapPoints.forEach((snapPoint, index) => {
         if (!snapPoint.visible) return;
 
         // Déterminer si le marqueur est flottant (-1 = canal fantôme)
@@ -588,7 +599,7 @@ function drawSnapPoints(chart) {
             ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
             const lines = [];
             if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-                const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+                const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, index);
                 if (processedComment && processedComment.trim() !== '') {
                     const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                     lines.push(...commentLines);
@@ -677,14 +688,11 @@ function drawSnapPoints(chart) {
             ctx.restore();
         }
 
-        // Préparer le texte - commencer par le numéro du marqueur
+        // Préparer le texte avec le template du commentaire
         const lines = [];
 
-        // Ajouter le numéro du marqueur en première ligne
-        lines.push(`N° ${snapPoint.id}`);
-
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, index);
             if (processedComment && processedComment.trim() !== '') {
                 // Séparer le commentaire en lignes (par retour à la ligne ou par ';')
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
@@ -978,7 +986,7 @@ function updateSnapPointsList() {
         const xValueInfo = `${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`;
         const valueInfo = `${snapPoint.value.toFixed(1)} ${unit}`;
         // Traiter le commentaire avec les balises
-        const commentInfo = snapPoint.comment ? replaceSnapPointTags(snapPoint.comment, snapPoint) : '';
+        const commentInfo = snapPoint.comment ? replaceSnapPointTags(snapPoint.comment, snapPoint, index) : '';
 
         const isVisible = snapPoint.visible !== false;
         const eyeIcon = isVisible ? 'fa-eye' : 'fa-eye-slash';
@@ -1865,7 +1873,7 @@ function handleSnapPointMouseDown(event, chart) {
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
             // ET utiliser le MÊME split que dans drawSnapPoints pour avoir le même nombre de lignes !
-            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, i);
             if (processedComment.trim() !== '') {
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);
@@ -2222,7 +2230,7 @@ function handleSnapPointMouseMove(event, chart) {
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
             // ET utiliser le MÊME split que dans drawSnapPoints pour avoir le même nombre de lignes !
-            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint);
+            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, i);
             if (processedComment.trim() !== '') {
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);

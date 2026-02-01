@@ -489,7 +489,7 @@ function replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
     }
 
     // Remplacer N$ par le numéro du marqueur (TOUJOURS, même sans canal d'accrochage)
-    result = result.replace(/N\$/g, markerNumber.toString());  // N$ → "1", "2", "3"...
+    result = result.replace(/N\$/g, `(N°: ${markerNumber})`);  // N$ → "(N°: 1)", "(N°: 2)", "(N°: 3)"...
 
     // Si un canal d'accrochage est défini, utiliser ses informations
     const hasAnchor = snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined;

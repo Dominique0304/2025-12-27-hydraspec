@@ -898,8 +898,18 @@ function applyChannelConfig() {
         if (manualStepInput) {
             const stepValue = parseFloat(manualStepInput.value);
             if (stepValue > 0) {
-                project.state.timeIncrement = stepValue / 1000; // Convertir ms en secondes
-                console.log(`💾 Pas (ms) sauvegardé : ${stepValue} ms (${project.state.timeIncrement} s)`);
+                // CRUCIAL : Recalculer fullDataTime avec le nouveau pas
+                // Cela met à jour appState.fs, appState.fullDataTime, appState.timeIncrement
+                if (typeof updateFsFromStep === 'function') {
+                    updateFsFromStep();
+                }
+
+                // Synchroniser les valeurs recalculées dans project.state
+                project.state.timeIncrement = appState.timeIncrement;
+                project.state.fs = appState.fs;
+                project.state.fullDataTime = appState.fullDataTime;
+
+                console.log(`💾 Pas (ms) sauvegardé et recalculé : ${stepValue} ms (${project.state.timeIncrement} s, fs=${project.state.fs.toFixed(1)} Hz)`);
             }
         }
     }

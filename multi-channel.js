@@ -111,6 +111,14 @@ function openChannelConfig(silent = false) {
         filePreviewTextarea.value = appState.rawFilePreview || '';
     }
 
+    // Restaurer le pas (ms) depuis le projet
+    const manualStepInput = document.getElementById('manual-step-config');
+    if (manualStepInput && project && project.state.timeIncrement !== undefined) {
+        const stepMs = (project.state.timeIncrement * 1000).toFixed(2);
+        manualStepInput.value = stepMs;
+        console.log(`🔄 Pas (ms) restauré : ${stepMs} ms`);
+    }
+
     // Synchroniser les champs min(s) et max(s) avec l'axe X actuel
     syncZoomInputsWithChart();
 
@@ -868,6 +876,16 @@ function applyChannelConfig() {
         const configToSave = appState.channelConfig.filter(c => !c.isPhantom);
         project.state.channelConfig = JSON.parse(JSON.stringify(configToSave));
         console.log(`💾 Configuration sauvegardée dans le projet : ${project.name} (${configToSave.length} canaux, fantôme exclu)`);
+
+        // Sauvegarder le pas (ms) configuré manuellement
+        const manualStepInput = document.getElementById('manual-step-config');
+        if (manualStepInput) {
+            const stepValue = parseFloat(manualStepInput.value);
+            if (stepValue > 0) {
+                project.state.timeIncrement = stepValue / 1000; // Convertir ms en secondes
+                console.log(`💾 Pas (ms) sauvegardé : ${stepValue} ms (${project.state.timeIncrement} s)`);
+            }
+        }
     }
 
     updateTimeChart();

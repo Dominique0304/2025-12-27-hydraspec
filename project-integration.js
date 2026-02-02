@@ -1136,6 +1136,12 @@ function updateAllInterface(isInitialLoad = false) {
     if (document.getElementById('display-n-config')) {
         document.getElementById('display-n-config').textContent = project.state.fullDataTime.length;
     }
+    // CRITIQUE : Restaurer le pas (ms) dans le champ de saisie manuel
+    if (document.getElementById('manual-step-config')) {
+        const stepMs = (project.state.timeIncrement * 1000).toFixed(2);
+        document.getElementById('manual-step-config').value = stepMs;
+        console.log(`🔄 Pas (ms) restauré dans le champ manuel : ${stepMs} ms`);
+    }
 
     setStatus(`Interface mise à jour : ${project.name}`);
 }

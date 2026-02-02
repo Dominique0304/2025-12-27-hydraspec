@@ -1041,7 +1041,7 @@ function updateFsFromStep() {
 
         appState.fs = newFs;
         appState.fullDataTime = newTime;
-        appState.timeIncrement = s;
+        appState.timeIncrement = s / 1000; // Convertir ms en secondes
 
         document.getElementById('display-fs-config').textContent = newFs.toFixed(1) + " Hz";
         document.getElementById('display-increment-config').textContent = s.toFixed(2) + " ms";
@@ -1055,7 +1055,7 @@ function updateFsFromStep() {
     } else if (s > 0) {
         // Cas où il n'y a pas encore de données
         appState.fs = 1000/s;
-        appState.timeIncrement = s;
+        appState.timeIncrement = s / 1000; // Convertir ms en secondes
         document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
         document.getElementById('display-increment-config').textContent = s.toFixed(2) + " ms";
         setStatus(t("status.fs_configured", {fs: appState.fs.toFixed(1)}));

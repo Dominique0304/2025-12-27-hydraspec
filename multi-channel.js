@@ -116,7 +116,23 @@ function openChannelConfig(silent = false) {
     if (manualStepInput && project && project.state.timeIncrement !== undefined) {
         const stepMs = (project.state.timeIncrement * 1000).toFixed(2);
         manualStepInput.value = stepMs;
-        console.log(`🔄 Pas (ms) restauré : ${stepMs} ms`);
+
+        // Mettre à jour les champs d'affichage associés
+        const displayFsConfig = document.getElementById('display-fs-config');
+        const displayIncrementConfig = document.getElementById('display-increment-config');
+        const displayNConfig = document.getElementById('display-n-config');
+
+        if (displayFsConfig) {
+            displayFsConfig.textContent = project.state.fs.toFixed(1) + " Hz";
+        }
+        if (displayIncrementConfig) {
+            displayIncrementConfig.textContent = stepMs + " ms";
+        }
+        if (displayNConfig && project.state.fullDataTime) {
+            displayNConfig.textContent = project.state.fullDataTime.length;
+        }
+
+        console.log(`🔄 Pas (ms) restauré : ${stepMs} ms (Fs: ${project.state.fs.toFixed(1)} Hz, N: ${project.state.fullDataTime?.length})`);
     }
 
     // Synchroniser les champs min(s) et max(s) avec l'axe X actuel

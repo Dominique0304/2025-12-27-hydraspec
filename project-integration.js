@@ -540,12 +540,9 @@ function saveAllToolsState(project) {
     // MAIS snappoint-tool.js utilise le tableau global snapPoints[].
     // On sauvegarde donc depuis le tableau GLOBAL (voir section "outils non encapsulés" plus bas)
 
-    // Sauvegarder Diff Canal depuis le manager
-    if (project.diffCanalManager) {
-        const diffCanalData = project.diffCanalManager.save();
-        project.toolsState.diffCanal.intervals = diffCanalData.intervals;
-        project.toolsState.diffCanal.nextId = diffCanalData.nextId;
-    }
+    // NOTE: Diff Canal utilise également un tableau global diffCanalIntervals[]
+    // On ne sauvegarde PAS depuis le manager ici car il peut être désynchronisé.
+    // La sauvegarde se fait depuis le tableau GLOBAL dans la section "outils non encapsulés" ci-dessous.
 
     // ========================================
     // OUTILS NON ENCORE ENCAPSULÉS (ancien système)
@@ -583,6 +580,17 @@ function saveAllToolsState(project) {
         console.log(`📌 ${snapPoints.length} marqueur(s) sauvegardé(s)`, snapPoints);
     } else {
         console.warn("⚠️ Variable globale 'snapPoints' non définie !");
+    }
+
+    // Sauvegarder Diff Canal (depuis le tableau GLOBAL)
+    if (typeof diffCanalIntervals !== 'undefined') {
+        project.toolsState.diffCanal = {
+            intervals: JSON.parse(JSON.stringify(diffCanalIntervals)),
+            nextId: typeof nextDiffCanalId !== 'undefined' ? nextDiffCanalId : 1
+        };
+        console.log(`📏 ${diffCanalIntervals.length} diff/canal(aux) sauvegardé(s)`, diffCanalIntervals);
+    } else {
+        console.warn("⚠️ Variable globale 'diffCanalIntervals' non définie !");
     }
 
     // Sauvegarder Pan Tool

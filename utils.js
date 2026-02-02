@@ -2,7 +2,7 @@
 
 // --- BOUTON TEST (TEMPORAIRE) ---
 function testButtonClick() {
-    const version = "V 25/01/2026";
+    const version = "V 02/02/2026";
     const lastCommit = "dc84ad8 - fix: Managers recréent instances SnapPoint/Interval";
     const branche = "claude/check-progress-eQYEt";
     const timestamp = new Date().toLocaleString('fr-FR');

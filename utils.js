@@ -1,29 +1,5 @@
 // --- UTILITY FUNCTIONS ---
 
-// --- BOUTON TEST (TEMPORAIRE) ---
-function testButtonClick() {
-    const version = "V 02/02/2026";
-    const lastCommit = "dc84ad8 - fix: Managers recréent instances SnapPoint/Interval";
-    const branche = "claude/check-progress-eQYEt";
-    const timestamp = new Date().toLocaleString('fr-FR');
-
-    const message = `✅ Code synchronisé !
-
-Version: ${version}
-Branche: ${branche}
-Dernier commit: ${lastCommit}
-Heure: ${timestamp}
-
-Si vous voyez ce message, vous avez bien le dernier code !`;
-
-    alert(message);
-    console.log("🧪 Test Button - Code synchronisé :", {
-        version,
-        branche,
-        lastCommit,
-        timestamp
-    });
-}
 
 // --- FILE HANDLING ---
 function handleFileUpload(input) {

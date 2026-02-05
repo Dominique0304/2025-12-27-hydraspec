@@ -122,10 +122,15 @@ function toggleIntervalTool() {
             btn.style.background = 'var(--accent-blue)';
             btn.style.boxShadow = '';
         }
-        setStatus('Mode Interval désactivé - Vous pouvez maintenant déplacer les curseurs', 'info');
 
-        // NE PAS fermer l'accordéon - laisser visible pour voir et dragger les intervals
-        // L'utilisateur peut le fermer manuellement s'il le souhaite
+        // Fermer l'accordéon quand l'outil est désactivé
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+
+        setStatus('Mode Interval désactivé - Vous pouvez maintenant déplacer les curseurs', 'info');
     }
 }
 
@@ -146,7 +151,7 @@ function toggleIntervalMode() {
 
 // Gérer le clic sur le canvas pour créer un intervalle
 function handleIntervalClick(event, chart) {
-    if (!isCreatingInterval) return;
+    if (!isCreatingInterval) return false;
 
     const rect = chart.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -192,6 +197,8 @@ function handleIntervalClick(event, chart) {
             openIntervalCommentModal(intervals[intervals.length - 1]);
         }, 100);
     }
+
+    return true; // Le clic a été géré
 }
 
 // Créer un nouvel intervalle
@@ -240,6 +247,12 @@ function drawIntervals(chart) {
     const xScale = chart.scales.x;
 
     ctx.save();
+
+    // Clip to chart area to prevent overlap with axes
+    const chartArea = chart.chartArea;
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+    ctx.clip();
 
     intervals.forEach(interval => {
         if (!interval.visible) return;
@@ -300,52 +313,68 @@ function drawIntervals(chart) {
         const centerX = (startX + endX) / 2;
         const text = `Δt = ${duration.toFixed(3)}s`;
 
-        ctx.font = '12px Arial';
-        ctx.fillStyle = interval.color;
+        // Police bold sans-serif comme diff/canal
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
+        ctx.textBaseline = 'middle';
 
-        // Fond blanc pour meilleure lisibilité
+        // Mesurer le texte
         const textMetrics = ctx.measureText(text);
         const textWidth = textMetrics.width;
-        const textHeight = 12; // Réduit de 14 à 12 pour éviter chevauchement
+        const rectWidth = textWidth + 10; // 5px padding de chaque côté
+        const rectHeight = 20; // Hauteur fixe comme diff/canal
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.fillRect(centerX - textWidth / 2 - 4, y - textHeight - 6, textWidth + 8, textHeight + 2);
+        // Fond jaune
+        ctx.fillStyle = '#FFD93D';
+        ctx.fillRect(centerX - rectWidth / 2, y - 18 - rectHeight / 2, rectWidth, rectHeight);
 
-        // Texte de la durée
-        ctx.fillStyle = interval.color;
-        ctx.fillText(text, centerX, y - 6);
+        // Encadrement noir
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(centerX - rectWidth / 2, y - 18 - rectHeight / 2, rectWidth, rectHeight);
+
+        // Texte noir centré
+        ctx.fillStyle = '#000';
+        ctx.fillText(text, centerX, y - 18);
 
         // Afficher le commentaire si présent
         if (interval.comment && interval.comment.trim() !== '') {
             const commentText = interval.comment;
 
-            // Appliquer le formatage
-            const fontSize = interval.fontSize || 11;
-            const fontWeight = interval.fontWeight || 'normal';
+            // Utiliser la taille de police globale avec bold et sans-serif
+            const fontSize = window.chartFontSize;
+            const fontWeight = interval.fontWeight || 'bold'; // Par défaut bold
             const fontStyle = interval.fontStyle || 'normal';
 
-            ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px Arial`;
+            ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px sans-serif`;
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
+            ctx.textBaseline = 'middle';
 
             const commentMetrics = ctx.measureText(commentText);
             const commentWidth = commentMetrics.width;
+            const commentRectWidth = commentWidth + 10; // 5px padding de chaque côté
+            const commentRectHeight = 20; // Hauteur fixe
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillRect(centerX - commentWidth / 2 - 4, y + 6, commentWidth + 8, fontSize + 6);
+            // Fond jaune
+            ctx.fillStyle = '#FFD93D';
+            ctx.fillRect(centerX - commentRectWidth / 2, y + 8, commentRectWidth, commentRectHeight);
 
-            ctx.fillStyle = interval.color;
-            ctx.fillText(commentText, centerX, y + 8);
+            // Encadrement noir
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(centerX - commentRectWidth / 2, y + 8, commentRectWidth, commentRectHeight);
+
+            // Texte noir centré
+            ctx.fillStyle = '#000';
+            ctx.fillText(commentText, centerX, y + 8 + commentRectHeight / 2);
 
             // Appliquer le soulignement si nécessaire
             if (interval.textDecoration === 'underline') {
-                ctx.strokeStyle = interval.color;
+                ctx.strokeStyle = '#000';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(centerX - commentWidth / 2, y + 8 + fontSize + 1);
-                ctx.lineTo(centerX + commentWidth / 2, y + 8 + fontSize + 1);
+                ctx.moveTo(centerX - commentWidth / 2, y + 8 + commentRectHeight / 2 + fontSize / 2 + 1);
+                ctx.lineTo(centerX + commentWidth / 2, y + 8 + commentRectHeight / 2 + fontSize / 2 + 1);
                 ctx.stroke();
             }
         }
@@ -356,7 +385,7 @@ function drawIntervals(chart) {
 
 // Ouvrir la modale de commentaire pour un intervalle (legacy - utilisé après création)
 function openIntervalCommentModal(interval) {
-    const comment = prompt(`Commentaire pour cet intervalle (${interval.getDuration().toFixed(3)}s):`, interval.comment || '');
+    const comment = prompt(t('dialogs.comment_for_interval', {duration: interval.getDuration().toFixed(3)}), interval.comment || '');
 
     if (comment !== null) {
         interval.comment = comment;
@@ -378,7 +407,7 @@ function openIntervalEditModal(interval) {
 
     // Récupérer les éléments de la modale
     const modal = document.getElementById('interval-edit-modal');
-    const colorPicker = document.getElementById('interval-color-picker');
+    const colorPicker = document.getElementById('interval-color-picker-btn');
     const commentInput = document.getElementById('interval-comment-input');
     const infoTimes = document.getElementById('interval-info-times');
     const infoDuration = document.getElementById('interval-info-duration');
@@ -390,7 +419,11 @@ function openIntervalEditModal(interval) {
     if (!modal) return;
 
     // Remplir les valeurs
-    if (colorPicker) colorPicker.value = interval.color || '#4ECDC4';
+    if (colorPicker) {
+        const color = interval.color || '#4ECDC4';
+        colorPicker.dataset.colorValue = color;
+        colorPicker.style.backgroundColor = color;
+    }
     if (commentInput) commentInput.value = interval.comment || '';
 
     // Afficher les infos de temps
@@ -440,16 +473,25 @@ function closeIntervalEditModal() {
     currentEditingInterval = null;
 }
 
+// Mettre à jour la couleur depuis le picker (appelée par le callback)
+function updateIntervalColorFromPicker(color) {
+    if (currentEditingInterval) {
+        currentEditingInterval.color = color;
+        // Mettre à jour l'affichage du graphique
+        updateIntervalsDisplay();
+    }
+}
+
 // Confirmer l'édition de l'intervalle
 function confirmIntervalEdit() {
     if (!currentEditingInterval) return;
 
-    const colorPicker = document.getElementById('interval-color-picker');
+    const colorPicker = document.getElementById('interval-color-picker-btn');
     const commentInput = document.getElementById('interval-comment-input');
     const fmtSize = document.getElementById('int-fmt-size');
 
     // Appliquer les modifications
-    if (colorPicker) currentEditingInterval.color = colorPicker.value;
+    if (colorPicker) currentEditingInterval.color = colorPicker.dataset.colorValue;
     if (commentInput) currentEditingInterval.comment = commentInput.value;
     if (fmtSize) currentEditingInterval.fontSize = parseInt(fmtSize.value) || 11;
 
@@ -644,20 +686,19 @@ function deleteInterval(intervalId) {
     const interval = intervals.find(int => int.id === intervalId);
     if (!interval) return;
 
-    if (confirm(`Supprimer cet intervalle ?\n\nDurée: ${interval.getDuration().toFixed(3)}s\n${interval.comment || ''}`)) {
-        // Sauvegarder l'état pour l'historique
-        if (typeof saveState === 'function') {
-            saveState('Suppression interval');
-        }
-
-        const index = intervals.indexOf(interval);
-        if (index > -1) {
-            intervals.splice(index, 1);
-        }
-
-        updateIntervalsDisplay();
-        saveIntervals();
+    // Suppression directe sans confirmation
+    // Sauvegarder l'état pour l'historique
+    if (typeof saveState === 'function') {
+        saveState('Suppression interval');
     }
+
+    const index = intervals.indexOf(interval);
+    if (index > -1) {
+        intervals.splice(index, 1);
+    }
+
+    updateIntervalsDisplay();
+    saveIntervals();
 }
 
 // Mettre à jour le temps d'un intervalle (start ou end)
@@ -856,6 +897,45 @@ function loadIntervals() {
     }
 }
 
+// Charger les intervalles depuis les données d'un projet .hsp
+function loadIntervalsFromProject(savedIntervals) {
+    if (!savedIntervals || !Array.isArray(savedIntervals)) {
+        console.log("⚠️ No intervals to load from project");
+        return;
+    }
+
+    console.log("📥 Loading", savedIntervals.length, "intervals from project");
+
+    intervals = savedIntervals.map(item => {
+        const interval = new Interval(
+            item.id,
+            item.startTime,
+            item.endTime,
+            item.comment || '',
+            item.yPosition || 0.5
+        );
+        interval.color = item.color || '#4ECDC4';
+        interval.visible = item.visible !== false;
+
+        // Restaurer les propriétés de formatage
+        interval.fontSize = item.fontSize || 11;
+        interval.fontWeight = item.fontWeight || 'normal';
+        interval.fontStyle = item.fontStyle || 'normal';
+        interval.textDecoration = item.textDecoration || 'none';
+
+        // Mettre à jour nextIntervalId
+        const idNum = parseInt(item.id.replace('interval-', ''));
+        if (idNum >= nextIntervalId) {
+            nextIntervalId = idNum + 1;
+        }
+
+        return interval;
+    });
+
+    console.log("✅ Loaded", intervals.length, "intervals successfully");
+    updateIntervalsDisplay();
+}
+
 // Trouver l'intervalle à une position donnée
 function findIntervalAtPosition(x, y, chart) {
     if (!chart || intervals.length === 0) return null;
@@ -901,6 +981,7 @@ function getIntervalDragType(x, y, interval, chart) {
     if (!interval || !chart) return null;
 
     const xScale = chart.scales.x;
+    const yScale = chart.scales.y;
     const startTime = interval.getStartTime();
     const endTime = interval.getEndTime();
     const yPixel = interval.getYPixelPosition(chart);
@@ -909,21 +990,28 @@ function getIntervalDragType(x, y, interval, chart) {
     const endX = xScale.getPixelForValue(endTime * 1000);
     const centerX = (startX + endX) / 2;
 
-    const arrowTolerance = 15; // Zone de clic pour les flèches
+    const verticalTolerance = 10; // Zone de clic pour les lignes verticales (pointillés)
     const heightTolerance = 10; // Zone de clic pour la barre horizontale
 
-    // Vérifier si le clic est près de la flèche de gauche
-    if (Math.abs(x - startX) <= arrowTolerance && Math.abs(y - yPixel) <= heightTolerance) {
+    // Limites verticales du graphique
+    const chartTop = yScale.top || 0;
+    const chartBottom = yScale.bottom || chart.height;
+    const isInChartY = y >= chartTop && y <= chartBottom;
+
+    // Vérifier si le clic est près du curseur gauche (ligne verticale pointillée)
+    // On peut cliquer n'importe où le long de la ligne verticale
+    if (Math.abs(x - startX) <= verticalTolerance && isInChartY) {
         return 'start';
     }
 
-    // Vérifier si le clic est près de la flèche de droite
-    if (Math.abs(x - endX) <= arrowTolerance && Math.abs(y - yPixel) <= heightTolerance) {
+    // Vérifier si le clic est près du curseur droit (ligne verticale pointillée)
+    // On peut cliquer n'importe où le long de la ligne verticale
+    if (Math.abs(x - endX) <= verticalTolerance && isInChartY) {
         return 'end';
     }
 
     // Vérifier si le clic est sur la barre horizontale (milieu)
-    if (x > startX + arrowTolerance && x < endX - arrowTolerance && Math.abs(y - yPixel) <= heightTolerance) {
+    if (x > startX + verticalTolerance && x < endX - verticalTolerance && Math.abs(y - yPixel) <= heightTolerance) {
         return 'height';
     }
 

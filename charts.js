@@ -1,22 +1,39 @@
 const fftCache = new Map();
 
+// IMPORTANT : Variable globale pour stocker les graphiques Chart.js
+// Indépendante du Proxy appState pour garantir l'accessibilité
+window.globalCharts = {
+    time: null,
+    freq: null,
+    spectro: null
+};
+
+// Variable globale pour la taille de police des textes dans les graphiques
+window.chartFontSize = 12;
+
 // --- CHARTS INITIALIZATION ---
 function initCharts() {
     const commonOptions = {
-        responsive: true, 
-        maintainAspectRatio: false, 
+        responsive: true,
+        maintainAspectRatio: false,
         animation: false,
         layout: { padding: { top: 20, right: 10, bottom: 0, left: 0 } },
-        plugins: { legend: { display: false } },
-        scales: { 
-            x: { grid: { color: '#333' }, ticks: { color: '#aaa' } }, 
-            y: { grid: { color: '#333' }, ticks: { color: '#aaa' } } 
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                // Tooltips désactivés par défaut, activés/désactivés via le paramètre utilisateur
+                enabled: typeof uiState !== 'undefined' ? uiState.tooltipsEnabled : false
+            }
+        },
+        scales: {
+            x: { grid: { color: '#333' }, ticks: { color: '#aaa' } },
+            y: { grid: { color: '#333' }, ticks: { color: '#aaa' } }
         }
     };
 
 // Time Chart
 const ctxTime = document.getElementById('timeChart').getContext('2d');
-appState.charts.time = new Chart(ctxTime, {
+const timeChart = new Chart(ctxTime, {
     type: 'line',
     data: { 
         labels: [], 
@@ -38,7 +55,7 @@ appState.charts.time = new Chart(ctxTime, {
                 ticks: {
                     color: '#aaa',
                     font: {
-                        size: 12,
+                        size: window.chartFontSize,
                         weight: 'normal'
                     },
                     callback: function(v) {
@@ -51,7 +68,7 @@ appState.charts.time = new Chart(ctxTime, {
                 ticks: {
                     color: '#aaa',
                     font: {
-                        size: 12,
+                        size: window.chartFontSize,
                         weight: 'normal'
                     },
                     callback: function(value) {
@@ -65,7 +82,7 @@ appState.charts.time = new Chart(ctxTime, {
                     text: 'Pression (Bar)', // Valeur par défaut
                     color: '#aaa',
                     font: {
-                        size: 12,
+                        size: window.chartFontSize,
                         weight: 'normal'
                     }
                 }
@@ -81,7 +98,6 @@ appState.charts.time = new Chart(ctxTime, {
             if (typeof drawAnnotationConnectors === 'function') {
                 drawAnnotationConnectors(chart);
             }
-<<<<<<< HEAD
             // Mettre à jour les positions des boîtes d'annotation pour qu'elles suivent le graphique
             if (typeof updateAnnotationPositions === 'function') {
                 updateAnnotationPositions(chart);
@@ -121,15 +137,23 @@ appState.charts.time = new Chart(ctxTime, {
             if (typeof drawTrackCursor === 'function') {
                 drawTrackCursor(chart);
             }
-=======
->>>>>>> c3cfebf3d624be3b0f564aecf725c908a4385a16
+        }
+    }, {
+        id: 'snapPointTool',
+        afterDraw: (chart) => {
+            if (typeof drawSnapPoints === 'function') {
+                drawSnapPoints(chart);
+            }
         }
     }]
 });
+// Stocker dans globalCharts et appState.charts
+window.globalCharts.time = timeChart;
+appState.charts.time = timeChart;
 
     // Freq Chart
     const ctxFreq = document.getElementById('freqChart').getContext('2d');
-    appState.charts.freq = new Chart(ctxFreq, {
+    const freqChart = new Chart(ctxFreq, {
         type: 'line',
         data: { 
             labels: [], 
@@ -160,10 +184,13 @@ appState.charts.time = new Chart(ctxTime, {
             afterDatasetsDraw: (chart) => drawPeaks(chart)
         }]
     });
+    // Stocker dans globalCharts et appState.charts
+    window.globalCharts.freq = freqChart;
+    appState.charts.freq = freqChart;
 
     // Spectrogram Chart
     const ctxSpectro = document.getElementById('spectroChart').getContext('2d');
-    appState.charts.spectro = new Chart(ctxSpectro, {
+    const spectroChart = new Chart(ctxSpectro, {
         type: 'scatter',
         data: {
             datasets: [{
@@ -178,22 +205,43 @@ appState.charts.time = new Chart(ctxTime, {
             scales: {
                 x: {
                     type: 'linear',
-                    title: { display: true, text: 'Temps (s)', color: '#aaa' },
+                    title: {
+                        display: true,
+                        text: 'Temps (s)',
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    },
                     grid: { color: '#333' },
-                    ticks: { color: '#aaa' }
+                    ticks: {
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    }
                 },
                 y: {
                     type: 'linear',
-                    title: { display: true, text: '(Hz)', color: '#aaa' },
+                    title: {
+                        display: true,
+                        text: '(Hz)',
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    },
                     grid: { color: '#333' },
-                    ticks: { color: '#aaa' }
+                    ticks: {
+                        color: '#aaa',
+                        font: { size: window.chartFontSize }
+                    }
                 }
+            },
+            interaction: {
+                mode: 'nearest',  // Afficher seulement le point le plus proche
+                intersect: false
             },
             plugins: {
                 legend: {
                     display: false  // Masquer la légende "Spectrogram"
                 },
                 tooltip: {
+                    enabled: typeof uiState !== 'undefined' ? uiState.tooltipsEnabled : true,
                     callbacks: {
                         label: function(context) {
                             return `T: ${context.parsed.x.toFixed(2)}s, F: ${context.parsed.y.toFixed(1)}Hz, A: ${context.raw.v.toFixed(3)}`;
@@ -203,6 +251,9 @@ appState.charts.time = new Chart(ctxTime, {
             }
         }
     });
+    // Stocker dans globalCharts et appState.charts
+    window.globalCharts.spectro = spectroChart;
+    appState.charts.spectro = spectroChart;
 }
 
 // --- RESIZERS ---
@@ -302,7 +353,7 @@ function drawPeaks(chart) {
     ctx.textAlign = 'center';
     const theme = document.body.getAttribute('data-theme');
     ctx.fillStyle = theme === 'light' ? '#000000' : (theme === 'steampunk' ? '#d4af37' : '#e0e0e0');
-    ctx.font = 'bold 12px sans-serif';
+    ctx.font = `bold ${window.chartFontSize}px sans-serif`;
 
     const threshold = parseInt(document.getElementById('peak-threshold').value);
 
@@ -416,6 +467,20 @@ canvas.addEventListener('mousedown', (e) => {
         }
     }
 
+    // Priorité 2b2: Drag des marqueurs (SnapPoint)
+    if (typeof handleSnapPointMouseDown === 'function') {
+        if (handleSnapPointMouseDown(e, chart)) {
+            return; // Le drag d'un marqueur a commencé
+        }
+    }
+
+    // Priorité 2c: Outil Marqueur (création snappoint)
+    if (typeof handleSnapPointClick === 'function') {
+        if (handleSnapPointClick(e, chart)) {
+            return; // L'outil Marqueur a géré le clic
+        }
+    }
+
     // Priorité 3: Outil règle (mesurer)
     if (typeof handleRulerClick === 'function') {
         if (handleRulerClick(e, chart)) {
@@ -430,7 +495,14 @@ canvas.addEventListener('mousedown', (e) => {
         }
     }
 
-    // Priorité 5: Drag d'interval (AVANT les curseurs FFT!)
+    // Priorité 5a: Outil Interval (création)
+    if (typeof handleIntervalClick === 'function') {
+        if (handleIntervalClick(e, chart)) {
+            return; // L'outil Interval a géré le clic (création)
+        }
+    }
+
+    // Priorité 5b: Drag d'interval (AVANT les curseurs FFT!)
     if (typeof handleIntervalMouseDown === 'function') {
         if (handleIntervalMouseDown(e, chart)) {
             return; // Le drag d'interval a géré le clic
@@ -495,6 +567,21 @@ canvas.addEventListener('mousedown', (e) => {
     }
 });
 
+// Gestion du clic droit (menu contextuel)
+canvas.addEventListener('contextmenu', (e) => {
+    const chart = appState.charts.time;
+
+    // Priorité 1: Menu contextuel des marqueurs (SnapPoint)
+    if (typeof handleSnapPointContextMenu === 'function') {
+        if (handleSnapPointContextMenu(e, chart)) {
+            e.preventDefault(); // Empêcher le menu contextuel du navigateur
+            return;
+        }
+    }
+
+    // Autres outils pourraient avoir leur menu contextuel ici
+});
+
     // Gestion du déplacement souris
     canvas.addEventListener('mousemove', (e) => {
         const chart = appState.charts.time;
@@ -525,6 +612,11 @@ canvas.addEventListener('mousedown', (e) => {
             if (handleDiffCanalMouseMove(e, chart)) {
                 return; // Le drag d'un point Diff/Canal a géré le mouvement
             }
+        }
+
+        // Priorité 2.4: Gérer le drag des marqueurs (SnapPoint)
+        if (typeof handleSnapPointMouseMove === 'function') {
+            handleSnapPointMouseMove(e, chart);
         }
 
         // Priorité 2.5: Gérer le drag des intervals
@@ -650,6 +742,11 @@ canvas.addEventListener('mousedown', (e) => {
             handleDiffCanalMouseUp(e, appState.charts.time);
         }
 
+        // Priorité 2.4: Gérer le relâchement du drag des marqueurs (SnapPoint)
+        if (typeof handleSnapPointMouseUp === 'function') {
+            handleSnapPointMouseUp(e, appState.charts.time);
+        }
+
         // Priorité 2.5: Gérer le relâchement du drag d'interval
         if (typeof handleIntervalMouseUp === 'function') {
             handleIntervalMouseUp(e, appState.charts.time);
@@ -688,19 +785,36 @@ function handleZoom(chart, e) {
     const rangeX = chart.scales.x.max - chart.scales.x.min;
     const centerX = (chart.scales.x.min + chart.scales.x.max) / 2;
 
-    const zoomX = !e.ctrlKey;
-    const zoomY = !e.shiftKey;
+    // Détection des modificateurs
+    const zoomYTopOnly = e.altKey;           // Alt : zoom Y vers le haut uniquement (yMin fixe)
+    const zoomX = !e.ctrlKey && !e.altKey;  // Zoom X si ni Ctrl ni Alt
+    const zoomY = !e.shiftKey && !e.altKey; // Zoom Y normal si ni Shift ni Alt
 
     if (zoomX) {
+        // Récupérer la position de la souris sur le canvas
+        const rect = chart.canvas.getBoundingClientRect();
+        const mouseXPixel = e.clientX - rect.left;
+
+        // Convertir la position pixel en valeur de données X
+        const xScale = chart.scales.x;
+        const mouseXValue = xScale.getValueForPixel(mouseXPixel);
+
+        // Calculer la position relative de la souris dans la plage actuelle (0 = gauche, 1 = droite)
+        const ratio = (mouseXValue - xScale.min) / rangeX;
+
+        // Calculer la nouvelle plage
         const newRangeX = direction > 0 ? rangeX * zoomFactor : rangeX / zoomFactor;
+
         if(newRangeX > 0.000001) {
-            chart.options.scales.x.min = centerX - newRangeX / 2;
-            chart.options.scales.x.max = centerX + newRangeX / 2;
+            // Zoomer en gardant la position de la souris fixe
+            // Le point sous la souris reste au même endroit
+            chart.options.scales.x.min = mouseXValue - newRangeX * ratio;
+            chart.options.scales.x.max = mouseXValue + newRangeX * (1 - ratio);
         }
     }
 
     if (zoomY) {
-        // Zoomer sur TOUTES les échelles Y (y, y0, y1, y2...)
+        // Zoom Y centré (mode normal)
         Object.keys(chart.scales).forEach(scaleKey => {
             if (scaleKey.startsWith('y')) {
                 const scale = chart.scales[scaleKey];
@@ -711,6 +825,28 @@ function handleZoom(chart, e) {
                 if(newRangeY > 0.000001) {
                     chart.options.scales[scaleKey].min = centerY - newRangeY / 2;
                     chart.options.scales[scaleKey].max = centerY + newRangeY / 2;
+                }
+            }
+        });
+    }
+
+    if (zoomYTopOnly) {
+        // Zoom Y asymétrique : yMin reste fixe, seul yMax change
+        // Utilisé pour garder la base (ex: 0 ou valeur minimale) et zoomer vers le haut
+        Object.keys(chart.scales).forEach(scaleKey => {
+            if (scaleKey.startsWith('y')) {
+                const scale = chart.scales[scaleKey];
+                const yMin = scale.min;  // Valeur minimale actuelle (fixe)
+                const yMax = scale.max;  // Valeur maximale actuelle (variable)
+                const rangeY = yMax - yMin;
+
+                // Calculer le nouveau yMax (yMin reste inchangé)
+                const newRangeY = direction > 0 ? rangeY * zoomFactor : rangeY / zoomFactor;
+                const newYMax = yMin + newRangeY;
+
+                if(newRangeY > 0.000001) {
+                    chart.options.scales[scaleKey].min = yMin;  // yMin reste fixe
+                    chart.options.scales[scaleKey].max = newYMax;  // Seul yMax change
                 }
             }
         });
@@ -735,7 +871,41 @@ function handleFreqZoom(chart, e) {
 }
 
 // --- CHART DATA UPDATES ---
-function updateTimeChart() {
+function updateTimeChart(isInitialLoad = false) {
+    // Afficher les containers de graphiques (masqués par défaut)
+    const timeContainer = document.getElementById('time-container');
+    const freqContainer = document.getElementById('freq-container');
+    if (timeContainer) timeContainer.style.display = '';
+    if (freqContainer) freqContainer.style.display = '';
+
+    // Masquer Fréquence et Spectro par défaut UNIQUEMENT à l'ouverture initiale d'un fichier
+    // Ne pas fermer lors du changement de canal
+    if (isInitialLoad && typeof uiState !== 'undefined') {
+        if (uiState.freqVisible && typeof toggleFreqDomain === 'function') {
+            toggleFreqDomain();
+        }
+        if (uiState.spectroVisible && typeof toggleSpectrogram === 'function') {
+            toggleSpectrogram();
+        }
+    }
+
+    // Synchroniser le select du thème avec le thème actuel à l'ouverture
+    const currentTheme = document.body.getAttribute('data-theme') || 'light';
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = currentTheme;
+    }
+
+    // Désactiver les tooltips à l'ouverture (case décochée et fonction inactive)
+    if (typeof toggleTooltipsEnabled === 'function') {
+        const toggle = document.getElementById('tooltip-enabled-toggle');
+        if (toggle && toggle.checked) {
+            // Si les tooltips sont activés, les désactiver
+            toggle.checked = false;
+            toggleTooltipsEnabled();
+        }
+    }
+
     // Essayer le mode multi-canaux d'abord
     if (typeof updateTimeChartMultiChannel === 'function') {
         const multiChannelSuccess = updateTimeChartMultiChannel();
@@ -1094,7 +1264,7 @@ function updateFFTChartWithResults(fftResults) {
             ticks: {
                 color: fftData.config.color,
                 font: {
-                    size: 12,
+                    size: window.chartFontSize,
                     weight: 'normal'
                 }
             },
@@ -1103,9 +1273,14 @@ function updateFFTChartWithResults(fftResults) {
                 text: fftData.config.label + (fftData.config.unit ? ` (${fftData.config.unit})` : ''),
                 color: fftData.config.color,
                 font: {
-                    size: 13,
+                    size: window.chartFontSize,
                     weight: 'normal'
-                }
+                },
+                rotation: (() => {
+                    const rot = -270;  // -270° pour lire de bas en haut (tous les axes)
+                    console.log(`[FFT Chart] Axe Y "${fftData.config.label}" - Position: ${position} - Rotation: ${rot}°`);
+                    return rot;
+                })()
             }
         };
     });
@@ -1157,7 +1332,7 @@ function updateChartSizes() {
 function centerCursors() {
     console.log("🎯 centerCursors() called");
 
-    const chart = appState.charts.time;
+    const chart = window.globalCharts?.time;
     if (!chart || !appState.fullDataTime.length) {
         console.error("❌ Cannot center cursors: chart or data not ready");
         setStatus("Aucune donnée à centrer");
@@ -1249,4 +1424,92 @@ function centerCursors() {
     }
     
     console.log("DEBUG - Curseurs mis à jour:", appState.cursorStart, "s à", appState.cursorEnd, "s");
+}
+
+// Fonction pour mettre à jour la taille de police de tous les textes dans les graphiques
+function updateChartFontSize(value) {
+    const fontSize = parseInt(value);
+    if (isNaN(fontSize) || fontSize < 8 || fontSize > 24) {
+        console.warn("⚠️ Taille de police invalide:", value);
+        return;
+    }
+
+    // Mettre à jour la variable globale
+    window.chartFontSize = fontSize;
+    console.log(`✏️ Taille de police mise à jour: ${fontSize}px`);
+
+    // Mettre à jour Chart.js - Time Chart
+    if (window.globalCharts && window.globalCharts.time) {
+        const timeChart = window.globalCharts.time;
+
+        // Mettre à jour l'axe X
+        if (timeChart.options.scales.x.ticks.font) {
+            timeChart.options.scales.x.ticks.font.size = fontSize;
+        }
+
+        // Mettre à jour TOUS les axes Y (y, y-time0, y-time1, etc.)
+        Object.keys(timeChart.options.scales).forEach(scaleId => {
+            if (typeof scaleId === 'string' && scaleId.startsWith('y')) {
+                if (timeChart.options.scales[scaleId].ticks && timeChart.options.scales[scaleId].ticks.font) {
+                    timeChart.options.scales[scaleId].ticks.font.size = fontSize;
+                }
+                if (timeChart.options.scales[scaleId].title && timeChart.options.scales[scaleId].title.font) {
+                    timeChart.options.scales[scaleId].title.font.size = fontSize;
+                }
+            }
+        });
+
+        timeChart.update('none');
+    }
+
+    // Mettre à jour Chart.js - Frequency Chart
+    if (window.globalCharts && window.globalCharts.freq) {
+        const freqChart = window.globalCharts.freq;
+
+        // Mettre à jour tous les axes Y (y, y1, y2, y3...)
+        Object.keys(freqChart.options.scales).forEach(scaleId => {
+            if (typeof scaleId === 'string' && scaleId.startsWith('y')) {
+                if (freqChart.options.scales[scaleId].ticks && freqChart.options.scales[scaleId].ticks.font) {
+                    freqChart.options.scales[scaleId].ticks.font.size = fontSize;
+                }
+                if (freqChart.options.scales[scaleId].title && freqChart.options.scales[scaleId].title.display && freqChart.options.scales[scaleId].title.font) {
+                    freqChart.options.scales[scaleId].title.font.size = fontSize;
+                }
+            }
+        });
+
+        // Mettre à jour l'axe X
+        if (freqChart.options.scales.x && freqChart.options.scales.x.ticks && freqChart.options.scales.x.ticks.font) {
+            freqChart.options.scales.x.ticks.font.size = fontSize;
+        }
+
+        freqChart.update('none');
+    }
+
+    // Mettre à jour Chart.js - Spectrogram Chart
+    if (window.globalCharts && window.globalCharts.spectro) {
+        const spectroChart = window.globalCharts.spectro;
+        if (spectroChart.options.scales.x.ticks.font) {
+            spectroChart.options.scales.x.ticks.font.size = fontSize;
+        }
+        if (spectroChart.options.scales.x.title && spectroChart.options.scales.x.title.font) {
+            spectroChart.options.scales.x.title.font.size = fontSize;
+        }
+        if (spectroChart.options.scales.y.ticks.font) {
+            spectroChart.options.scales.y.ticks.font.size = fontSize;
+        }
+        if (spectroChart.options.scales.y.title && spectroChart.options.scales.y.title.font) {
+            spectroChart.options.scales.y.title.font.size = fontSize;
+        }
+
+        spectroChart.update('none');
+    }
+
+    // Sauvegarder dans le projet actif (via le Proxy appState)
+    if (typeof appState !== 'undefined') {
+        appState.chartFontSize = fontSize;
+        console.log(`💾 Taille de police sauvegardée dans le projet : ${fontSize}px`);
+    }
+
+    console.log("✅ Toutes les polices des graphiques mises à jour");
 }

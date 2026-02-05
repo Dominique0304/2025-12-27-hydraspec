@@ -68,7 +68,8 @@ function movingAverage(data, windowSize) {
 function updateSmoothingRealtime() {
     const sourceChannelIndex = parseInt(document.getElementById('smooth-source-channel').value);
     const windowSize = parseInt(document.getElementById('smooth-points').value);
-    const color = document.getElementById('smooth-channel-color').value;
+    const colorBtn = document.getElementById('smooth-channel-color-btn');
+    const color = colorBtn ? colorBtn.dataset.colorValue : '#FF6B00';
     const name = document.getElementById('smooth-channel-name').value.trim();
 
     // Si aucun canal source n'est sélectionné, ne rien faire
@@ -117,7 +118,8 @@ function updateSmoothingRealtime() {
 function createSmoothedChannel() {
     const sourceChannelIndex = parseInt(document.getElementById('smooth-source-channel').value);
     let name = document.getElementById('smooth-channel-name').value.trim();
-    const color = document.getElementById('smooth-channel-color').value;
+    const colorBtn = document.getElementById('smooth-channel-color-btn');
+    const color = colorBtn ? colorBtn.dataset.colorValue : '#FF6B00';
     const windowSize = parseInt(document.getElementById('smooth-points').value);
 
     // Si on est en mode édition, simplement sortir du mode édition
@@ -237,6 +239,11 @@ function createSmoothedChannel() {
     updateSmoothedChannelsList();
     updateTimeChart();
 
+    // Rafraîchir la liste des canaux sources dans l'outil Dérivée
+    if (typeof populateDerivativeSourceChannels === 'function') {
+        populateDerivativeSourceChannels();
+    }
+
     // Réinitialiser le formulaire
     document.getElementById('smooth-channel-name').value = '';
     document.getElementById('smooth-points').value = '50';
@@ -293,7 +300,7 @@ function updateSmoothedChannelsList() {
 function editSmoothedChannel(channelId) {
     const channel = appState.smoothedChannels.find(ch => ch.id === channelId);
     if (!channel) {
-        setStatus('⚠️ Canal lissé introuvable');
+        setStatus(t("status.smoothed_channel_not_found"));
         return;
     }
 
@@ -303,7 +310,11 @@ function editSmoothedChannel(channelId) {
     // Remplir le formulaire avec les valeurs actuelles
     document.getElementById('smooth-source-channel').value = channel.sourceIndex;
     document.getElementById('smooth-channel-name').value = channel.name;
-    document.getElementById('smooth-channel-color').value = channel.color;
+    const colorBtn = document.getElementById('smooth-channel-color-btn');
+    if (colorBtn) {
+        colorBtn.dataset.colorValue = channel.color;
+        colorBtn.style.backgroundColor = channel.color;
+    }
     document.getElementById('smooth-points').value = channel.windowSize;
     document.getElementById('smooth-points-value').textContent = channel.windowSize;
 
@@ -320,7 +331,7 @@ function editSmoothedChannel(channelId) {
 function deleteSmoothedChannel(channelId, silent = false) {
     const channelIndex = appState.smoothedChannels.findIndex(ch => ch.id === channelId);
     if (channelIndex === -1) {
-        if (!silent) setStatus('⚠️ Canal lissé introuvable');
+        if (!silent) setStatus(t("status.smoothed_channel_not_found"));
         return;
     }
 
@@ -361,6 +372,25 @@ function deleteSmoothedChannel(channelId, silent = false) {
     // Mettre à jour l'interface
     updateSmoothedChannelsList();
     updateTimeChart();
+    updateChannelConfigUI();
+
+    // Rafraîchir la liste des canaux sous l'accordéon "Canal"
+    if (typeof updateCanalQuickView === 'function') {
+        updateCanalQuickView();
+    }
+    if (typeof updateFFTCanalQuickView === 'function') {
+        updateFFTCanalQuickView();
+    }
+
+    // Mettre à jour la liste disponible des canaux (important!)
+    if (typeof updateAvailableChannelsList === 'function') {
+        updateAvailableChannelsList();
+    }
+
+    // Rafraîchir la liste des canaux sources dans l'outil Dérivée
+    if (typeof populateDerivativeSourceChannels === 'function') {
+        populateDerivativeSourceChannels();
+    }
 
     if (!silent) {
         setStatus(`🗑️ Canal lissé "${channelName}" supprimé`);
@@ -392,4 +422,68 @@ function populateSmoothedChannelSelector() {
 function initSmoothingSystem() {
     populateSmoothedChannelSelector();
     updateSmoothedChannelsList();
+}
+
+// Recréer un canal lissé à partir de ses paramètres sauvegardés
+function recreateSmoothedChannel(channel) {
+    console.log(`🔄 Recréation du canal lissé: ${channel.name}`);
+
+    // Vérifier que le canal source existe
+    if (!appState.allColumnData || !appState.allColumnData[channel.sourceIndex]) {
+        console.error(`⚠️ Canal source ${channel.sourceIndex} introuvable pour ${channel.name}`);
+        return;
+    }
+
+    // Obtenir les données du canal source
+    const sourceData = appState.allColumnData[channel.sourceIndex];
+    const sourceColumn = appState.availableColumns.find(col => col.index === channel.sourceIndex);
+
+    if (!sourceColumn) {
+        console.error(`⚠️ Informations du canal source introuvables pour ${channel.name}`);
+        return;
+    }
+
+    // Recalculer les données lissées
+    const smoothedData = movingAverage(Array.from(sourceData), channel.windowSize);
+
+    // Ajouter aux données de colonnes
+    const newIndex = appState.allColumnData.length;
+    appState.allColumnData.push(new Float32Array(smoothedData));
+    appState.availableColumns.push({
+        index: newIndex,
+        name: channel.name,
+        label: channel.label,
+        unit: sourceColumn.unit || '',
+        isSmoothed: true,
+        smoothedId: channel.id
+    });
+
+    // Trouver la config du canal source pour copier ses valeurs Y min/max
+    const sourceConfig = appState.channelConfig.find(cfg => cfg.index === channel.sourceIndex);
+    const sourceYMin = sourceConfig ? sourceConfig.yMin : null;
+    const sourceYMax = sourceConfig ? sourceConfig.yMax : null;
+
+    // Ajouter à la configuration des canaux
+    const yAxisIndex = appState.channelConfig.length;
+    appState.channelConfig.push({
+        index: newIndex,
+        name: channel.name,
+        label: channel.label,
+        unit: sourceColumn.unit || '',
+        color: channel.color,
+        visible: channel.visible !== undefined ? channel.visible : true,
+        lineWidth: 1.5,
+        yAxisPosition: 'right',
+        yMin: sourceYMin,
+        yMax: sourceYMax,
+        yAxisID: `y${yAxisIndex}`,
+        showFFT: false,
+        isSmoothed: true,
+        smoothedId: channel.id
+    });
+
+    // Mettre à jour les données du canal dans appState.smoothedChannels
+    channel.data = smoothedData;
+
+    console.log(`✅ Canal lissé recréé: ${channel.name}`);
 }

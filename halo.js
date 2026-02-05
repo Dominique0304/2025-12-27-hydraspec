@@ -2,7 +2,75 @@
 // HALO DE SOURIS - Indicateur visuel compatible tous outils
 // =====================================================
 
+// Variable globale pour activer/désactiver le halo
+let haloEnabled = true;
+
+// Fonction helper : distance d'un point à un segment de ligne
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+
+    if (lenSq !== 0) {
+        param = dot / lenSq;
+    }
+
+    let xx, yy;
+
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+
+    const dx = px - xx;
+    const dy = py - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Fonction globale pour basculer le halo
+function toggleHaloEnabled() {
+    const toggle = document.getElementById('halo-enabled-toggle');
+    haloEnabled = toggle ? toggle.checked : true;
+
+    // Sauvegarder dans localStorage
+    localStorage.setItem('haloEnabled', haloEnabled);
+
+    // Appliquer immédiatement
+    const halo = document.getElementById('mouse-halo');
+    if (halo && !haloEnabled) {
+        halo.style.opacity = '0';
+    }
+
+    console.log('Halo', haloEnabled ? 'activé' : 'désactivé');
+}
+
+// Charger la préférence au démarrage
+function loadHaloPreference() {
+    const saved = localStorage.getItem('haloEnabled');
+    if (saved !== null) {
+        haloEnabled = saved === 'true';
+        const toggle = document.getElementById('halo-enabled-toggle');
+        if (toggle) {
+            toggle.checked = haloEnabled;
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Charger la préférence
+    loadHaloPreference();
+
     // 1. Création de l'élément HTML du halo
     const halo = document.createElement('div');
     halo.id = 'mouse-halo';
@@ -141,6 +209,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     isNearCursor = true;
                     return;
                 }
+
+                // Lignes verticales pointillées (du haut en bas du graphique)
+                const chartTop = canvasRect.top;
+                const chartBottom = canvasRect.bottom;
+
+                // Ligne verticale gauche
+                const distToLeftLine = distanceToLineSegment(mouseX, mouseY, startX, chartTop, startX, chartBottom);
+                if (distToLeftLine <= magnetZone) {
+                    isNearCursor = true;
+                    return;
+                }
+
+                // Ligne verticale droite
+                const distToRightLine = distanceToLineSegment(mouseX, mouseY, endX, chartTop, endX, chartBottom);
+                if (distToRightLine <= magnetZone) {
+                    isNearCursor = true;
+                    return;
+                }
             }
         }
 
@@ -193,7 +279,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 6. ANNOTATIONS (si visibles et annotationsVisible activé)
+        // 6. MARQUEURS / SNAPPOINTS (si visibles)
+        if (typeof snapPoints !== 'undefined' && snapPoints && snapPoints.length > 0) {
+            for (const snapPoint of snapPoints) {
+                if (!snapPoint.visible) continue; // Ignorer si masqué
+
+                const pointPos = snapPoint.getPointPixelPosition(chart);
+                const boxPos = snapPoint.getBoxPixelPosition(chart);
+                if (!pointPos || !boxPos) continue;
+
+                const pointX = canvasRect.left + pointPos.x;
+                const pointY = canvasRect.top + pointPos.y;
+                const boxX = canvasRect.left + boxPos.x;
+                const boxY = canvasRect.top + boxPos.y;
+
+                // a) Distance au point d'ancrage
+                const distToAnchor = Math.sqrt((mouseX - pointX)**2 + (mouseY - pointY)**2);
+                if (distToAnchor <= magnetZone + 6) {
+                    isNearCursor = true;
+                    return;
+                }
+
+                // b) Distance au trait (ligne entre point et boîte)
+                if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
+                    const distToLine = distanceToLineSegment(mouseX, mouseY, pointX, pointY, boxX, boxY);
+                    if (distToLine <= magnetZone) {
+                        isNearCursor = true;
+                        return;
+                    }
+                }
+
+                // c) Distance à la zone de texte (boîte)
+                const boxWidth = snapPoint.boxWidth || 100;
+                const boxHeight = snapPoint.boxHeight || 40;
+                const boxLeft = boxX - boxWidth / 2;
+                const boxTop = boxY;
+                const boxRight = boxLeft + boxWidth;
+                const boxBottom = boxTop + boxHeight;
+
+                if (mouseX >= boxLeft && mouseX <= boxRight && mouseY >= boxTop && mouseY <= boxBottom) {
+                    isNearCursor = true;
+                    return;
+                }
+            }
+        }
+
+        // 6bis. ANNOTATIONS (si visibles et annotationsVisible activé)
         if (typeof annotations !== 'undefined' && annotations && annotations.length > 0 &&
             typeof annotationsVisible !== 'undefined' && annotationsVisible) {
 
@@ -215,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 7. OUTIL DIFF/CANAL - Points d'ancrage
+        // 7. OUTIL DIFF/CANAL - Points d'ancrage et zones de texte
         if (typeof diffCanalIntervals !== 'undefined' && diffCanalIntervals && diffCanalIntervals.length > 0) {
             for (const interval of diffCanalIntervals) {
                 if (!interval.visible) continue; // Ignorer si masqué
@@ -243,6 +374,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     isNearCursor = true;
                     return;
                 }
+
+                // Zones de texte (approximatives, basées sur les positions des labels)
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+                const textZoneSize = 80; // Taille approximative des zones de texte
+
+                // Zone de texte horizontal (ΔX) - au milieu horizontal, légèrement en dessous
+                const horizTextX = midX;
+                const horizTextY = Math.max(y1, y2) + 15;
+                const distToHorizText = Math.sqrt((mouseX - horizTextX)**2 + (mouseY - horizTextY)**2);
+                if (distToHorizText <= textZoneSize / 2) {
+                    isNearCursor = true;
+                    return;
+                }
+
+                // Zone de texte vertical (ΔY) - à droite, au milieu vertical
+                const vertTextX = Math.max(x1, x2) + 25;
+                const vertTextY = midY;
+                const distToVertText = Math.sqrt((mouseX - vertTextX)**2 + (mouseY - vertTextY)**2);
+                if (distToVertText <= textZoneSize / 2) {
+                    isNearCursor = true;
+                    return;
+                }
+
+                // Zone de texte diagonal (label principal) - au milieu de la ligne diagonale
+                const diagTextX = midX;
+                const diagTextY = midY - 10;
+                const distToDiagText = Math.sqrt((mouseX - diagTextX)**2 + (mouseY - diagTextY)**2);
+                if (distToDiagText <= textZoneSize / 2) {
+                    isNearCursor = true;
+                    return;
+                }
             }
         }
 
@@ -257,7 +420,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Vérifier si une modale est ouverte
         const configModal = document.getElementById('channel-config-modal');
-        const isModalOpen = configModal && configModal.style.display !== 'none';
+        const settingsModal = document.getElementById('settingsModal');
+        const helpModal = document.getElementById('helpModal');
+        const isModalOpen = (configModal && configModal.style.display === 'block') ||
+                           (settingsModal && settingsModal.style.display === 'block') ||
+                           (helpModal && helpModal.style.display === 'block');
 
         // Si une modale est ouverte, masquer le halo
         if (isModalOpen) {
@@ -279,9 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Vérifier la proximité avec les curseurs
         checkCursorProximity();
 
-        // Mettre à jour la visibilité
-        halo.style.opacity = isInTimeDomain ? '1' : '0';
-
+        // Mettre à jour la visibilité (géré dans updateHaloStyle)
         // Mettre à jour le style en fonction de l'état
         updateHaloStyle();
     });
@@ -343,14 +508,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 6. Fonction pour mettre à jour le style du halo
     function updateHaloStyle() {
+        // Vérifier si le halo est désactivé
+        if (!haloEnabled) {
+            halo.style.opacity = '0';
+            return;
+        }
+
         // Vérifier si une modale est ouverte
         const configModal = document.getElementById('channel-config-modal');
-        const isModalOpen = configModal && configModal.style.display !== 'none';
+        const settingsModal = document.getElementById('settingsModal');
+        const helpModal = document.getElementById('helpModal');
+        const isModalOpen = (configModal && configModal.style.display === 'block') ||
+                           (settingsModal && settingsModal.style.display === 'block') ||
+                           (helpModal && helpModal.style.display === 'block');
 
         if (!isInTimeDomain || isModalOpen) {
             halo.style.opacity = '0';
             return;
         }
+
+        // Déterminer l'opacité selon le thème
+        const theme = document.documentElement.getAttribute('data-theme');
+        const baseOpacity = (theme === 'light') ? '0.9' : '1';
+
+        // Appliquer l'opacité de base
+        halo.style.opacity = baseOpacity;
 
         // Vérifier si on est en train de dragger un outil
         const isDraggingTool =

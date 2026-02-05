@@ -43,7 +43,7 @@ function initChannelConfig() {
 }
 
 // Ouvrir la modale de configuration
-function openChannelConfig() {
+function openChannelConfig(silent = false) {
     const modal = document.getElementById('channel-config-modal');
     if (!modal) {
         console.error("❌ Modale de configuration non trouvée");
@@ -53,6 +53,9 @@ function openChannelConfig() {
     // Mettre à jour le contenu de la modale
     updateChannelConfigUI();
 
+    // Synchroniser les champs min(s) et max(s) avec l'axe X actuel
+    syncZoomInputsWithChart();
+
     // Initialiser les écouteurs d'événements pour les presets globaux
     initPresetListeners();
 
@@ -60,12 +63,26 @@ function openChannelConfig() {
     setupModalDrag();
 
     modal.style.display = 'flex';
+
+    // Mode silencieux : rendre invisible mais garder le DOM actif
+    if (silent) {
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+    } else {
+        modal.style.opacity = '1';
+        modal.style.pointerEvents = 'auto';
+    }
 }
 
 // Fermer la modale
-function closeChannelConfig() {
+function closeChannelConfig(silent = false) {
     const modal = document.getElementById('channel-config-modal');
     if (modal) {
+        // En mode silencieux, restaurer d'abord l'opacité avant de masquer
+        if (silent) {
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+        }
         modal.style.display = 'none';
     }
 }
@@ -137,21 +154,27 @@ function updateChannelConfigUI() {
 
         // Couleur
         const colorCell = document.createElement('td');
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.value = config.color;
-        colorInput.style.width = '50px';
-        colorInput.style.height = '30px';
-        colorInput.style.border = '2px solid var(--border-color)';
-        colorInput.style.borderRadius = '4px';
-        colorInput.style.cursor = 'pointer';
-        colorInput.style.padding = '2px';
-        colorInput.onchange = (e) => {
-            config.color = e.target.value;
-            updateTimeChart();
-            performAnalysis(); // Mettre à jour le graphique FFT
+        colorCell.style.textAlign = 'center';
+        colorCell.style.padding = '8px';
+
+        // Créer un bouton coloré au lieu d'un input type="color"
+        const colorBtn = document.createElement('div');
+        colorBtn.dataset.colorValue = config.color;
+        colorBtn.style.width = '50px';
+        colorBtn.style.height = '30px';
+        colorBtn.style.backgroundColor = config.color;
+        colorBtn.style.border = '2px solid var(--border-color)';
+        colorBtn.style.borderRadius = '4px';
+        colorBtn.style.cursor = 'pointer';
+        colorBtn.onclick = function() {
+            openAdvancedColorPicker(this.dataset.colorValue, (color) => {
+                this.dataset.colorValue = color;
+                config.color = color;
+                updateTimeChart();
+                performAnalysis(); // Mettre à jour le graphique FFT
+            }, this);
         };
-        colorCell.appendChild(colorInput);
+        colorCell.appendChild(colorBtn);
 
         // Checkbox L (Left)
         const leftCell = document.createElement('td');
@@ -491,13 +514,21 @@ function updateXAxisSelector() {
 // Appliquer la configuration et fermer
 function applyChannelConfig() {
     console.log("✅ Configuration des canaux appliquée");
+
+    // IMPORTANT : Sauvegarder la config dans le projet actif
+    const project = typeof getActiveProject === 'function' ? getActiveProject() : null;
+    if (project && appState.channelConfig) {
+        project.state.channelConfig = JSON.parse(JSON.stringify(appState.channelConfig));
+        console.log(`💾 Configuration sauvegardée dans le projet : ${project.name}`);
+    }
+
     updateTimeChart();
     closeChannelConfig();
 }
 
 // Réinitialiser la configuration par défaut
 function resetChannelConfig() {
-    if (!confirm('Réinitialiser la configuration des canaux à leur état par défaut ?')) {
+    if (!confirm(t('dialogs.confirm_reset_channels'))) {
         return;
     }
 
@@ -524,8 +555,12 @@ function updateTimeChartMultiChannel() {
     const visibleChannels = appState.channelConfig.filter(config => config.visible);
 
     if (visibleChannels.length === 0) {
-        console.log("⚠️ Aucun canal visible");
-        return false;
+        console.log("⚠️ Aucun canal visible - effacement du graphique");
+        // Effacer complètement le graphique
+        chart.data.labels = [];
+        chart.data.datasets = [];
+        chart.update('none');
+        return true; // Retourner true car on a bien géré le cas multi-canaux
     }
 
     // Déterminer les données de l'axe X
@@ -565,21 +600,13 @@ function updateTimeChartMultiChannel() {
         };
     });
 
-    // Configurer les échelles X
-    // Vérifier si l'utilisateur a défini des valeurs personnalisées
-    const zoomMinInput = document.getElementById('zoom-min');
-    const zoomMaxInput = document.getElementById('zoom-max');
-    const userMinX = zoomMinInput ? parseFloat(zoomMinInput.value) : NaN;
-    const userMaxX = zoomMaxInput ? parseFloat(zoomMaxInput.value) : NaN;
-
-    // Utiliser les valeurs utilisateur si valides, sinon utiliser les valeurs par défaut
-    if (!isNaN(userMinX) && !isNaN(userMaxX) && userMinX < userMaxX) {
-        chart.options.scales.x.min = userMinX * 1000; // Convertir s en ms
-        chart.options.scales.x.max = userMaxX * 1000;
-    } else {
-        chart.options.scales.x.min = downsampledX[0];
-        chart.options.scales.x.max = downsampledX[downsampledX.length - 1];
-    }
+    // ✅ CONSERVER LE ZOOM X ACTUEL (ne pas réinitialiser)
+    // On ne modifie pas chart.options.scales.x.min/max
+    // Le zoom actuel est déjà présent dans le graphique
+    console.log("✅ Zoom X conservé:", {
+        min: chart.options.scales.x.min,
+        max: chart.options.scales.x.max
+    });
 
     // Label de l'axe X
     if (appState.xAxisChannel === 0) {
@@ -589,7 +616,19 @@ function updateTimeChartMultiChannel() {
         chart.options.scales.x.title.text = xChannelConfig.label + (xChannelConfig.unit ? ` (${xChannelConfig.unit})` : '');
     }
 
-    // Supprimer les anciennes échelles Y (sauf 'y' qu'on va recréer pour compatibilité)
+    // 💾 SAUVEGARDER LES ZOOMS Y ACTUELS AVANT DE SUPPRIMER LES ÉCHELLES
+    const savedYZooms = {};
+    Object.keys(chart.options.scales).forEach(key => {
+        if (key !== 'x' && chart.options.scales[key]) {
+            savedYZooms[key] = {
+                min: chart.options.scales[key].min,
+                max: chart.options.scales[key].max
+            };
+        }
+    });
+    console.log("💾 Zooms Y sauvegardés:", savedYZooms);
+
+    // Supprimer les anciennes échelles Y
     const oldScales = Object.keys(chart.options.scales).filter(key => key !== 'x');
     oldScales.forEach(key => {
         delete chart.options.scales[key];
@@ -601,15 +640,27 @@ function updateTimeChartMultiChannel() {
 
         // Calculer min/max
         let yMin, yMax;
+
+        // ✅ PRIORITÉ 1: Valeurs définies par l'utilisateur (config modal)
         if (config.yMin !== null && config.yMax !== null) {
             yMin = config.yMin;
             yMax = config.yMax;
-        } else {
+            console.log(`✅ Utilisation valeurs config pour ${config.yAxisID}:`, {yMin, yMax});
+        }
+        // ✅ PRIORITÉ 2: Zoom sauvegardé (changement visibilité canal)
+        else if (savedYZooms[config.yAxisID]) {
+            yMin = savedYZooms[config.yAxisID].min;
+            yMax = savedYZooms[config.yAxisID].max;
+            console.log(`🔓 Zoom Y restauré pour ${config.yAxisID}:`, {yMin, yMax});
+        }
+        // ✅ PRIORITÉ 3: Calcul automatique
+        else {
             const dataMin = Math.min(...channelData);
             const dataMax = Math.max(...channelData);
             const range = dataMax - dataMin;
-            yMin = config.yMin !== null ? config.yMin : dataMin - range * 0.1;
-            yMax = config.yMax !== null ? config.yMax : dataMax + range * 0.1;
+            yMin = dataMin - range * 0.1;
+            yMax = dataMax + range * 0.1;
+            console.log(`📐 Calcul auto pour ${config.yAxisID}:`, {yMin, yMax});
         }
 
         // Créer l'échelle Y
@@ -626,7 +677,7 @@ function updateTimeChartMultiChannel() {
             ticks: {
                 color: config.color,
                 font: {
-                    size: 12,
+                    size: window.chartFontSize,
                     weight: 'normal'
                 }
             },
@@ -635,9 +686,14 @@ function updateTimeChartMultiChannel() {
                 text: config.label + (config.unit ? ` (${config.unit})` : ''),
                 color: config.color,
                 font: {
-                    size: 13,
+                    size: window.chartFontSize,
                     weight: 'normal'
-                }
+                },
+                rotation: (() => {
+                    const rot = -270;  // -270° pour lire de bas en haut (tous les axes)
+                    console.log(`[Multi-Channel] Axe Y "${config.label}" - Position: ${config.yAxisPosition} - Rotation: ${rot}°`);
+                    return rot;
+                })()
             }
         };
     });
@@ -888,6 +944,32 @@ function autoPresetYScales() {
     }
 }
 
+// Reset zoom complet : dézoomer X au maximum + Auto Groupé sur Y
+function resetZoomAndAutoGroup() {
+    console.log("🔄 Reset zoom complet : X + Auto Groupé");
+
+    // 1. Réinitialiser les champs de zoom X (important pour que updateTimeChart utilise la plage complète)
+    const zoomMinInput = document.getElementById('zoom-min');
+    const zoomMaxInput = document.getElementById('zoom-max');
+    if (zoomMinInput && zoomMaxInput && appState.fullDataTime.length) {
+        const t = appState.fullDataTime;
+        zoomMinInput.value = (t[0] / 1000).toFixed(3); // Convertir ms en s
+        zoomMaxInput.value = (t[t.length - 1] / 1000).toFixed(3);
+        console.log("🔍 Zoom X réinitialisé: " + zoomMinInput.value + " à " + zoomMaxInput.value + " sec");
+    }
+
+    // 2. Réinitialiser directement le zoom X du graphique
+    const chart = appState.charts.time;
+    if (chart && appState.fullDataTime.length) {
+        const t = appState.fullDataTime;
+        chart.options.scales.x.min = t[0];
+        chart.options.scales.x.max = t[t.length - 1];
+    }
+
+    // 3. Appliquer Auto Groupé sur les axes Y (cela appellera updateTimeChart qui utilisera les valeurs des inputs)
+    autoPresetYScales();
+}
+
 // Auto-preset intelligent par CANAL (applique individuellement à chaque canal)
 function autoPresetYScalesPerChannel() {
     console.log("🎯 Auto-Preset Canal: Analyse par canal individuel...");
@@ -1032,10 +1114,11 @@ function setupModalDrag() {
             // Limiter le déplacement pour garder la modale visible
             const maxX = window.innerWidth - 100; // Au moins 100px visible
             const maxY = window.innerHeight - 50; // Au moins 50px visible
+            const minY = -50; // Permettre de monter jusqu'à -50px (garder le header visible)
 
             if (currentX < -modalContent.offsetWidth + 100) currentX = -modalContent.offsetWidth + 100;
             if (currentX > maxX) currentX = maxX;
-            if (currentY < 0) currentY = 0;
+            if (currentY < minY) currentY = minY;
             if (currentY > maxY) currentY = maxY;
 
             setTranslate(currentX, currentY, modalContent);
@@ -1111,4 +1194,33 @@ function switchConfigTab(tabName) {
     }
 
     console.log(`✅ Onglet ${tabName} activé`);
+}
+
+// Synchroniser les champs min(s) et max(s) avec les valeurs actuelles de l'axe X
+function syncZoomInputsWithChart() {
+    const zoomMinInput = document.getElementById('zoom-min');
+    const zoomMaxInput = document.getElementById('zoom-max');
+
+    if (!zoomMinInput || !zoomMaxInput) {
+        console.warn('⚠️ Champs zoom-min ou zoom-max non trouvés');
+        return;
+    }
+
+    // Récupérer le graphique time
+    const chart = appState.charts?.time;
+    if (!chart || !chart.scales || !chart.scales.x) {
+        console.warn('⚠️ Graphique ou échelle X non disponible');
+        return;
+    }
+
+    // Récupérer les valeurs min et max de l'axe X (en ms)
+    const xScale = chart.scales.x;
+    const minMs = xScale.min;
+    const maxMs = xScale.max;
+
+    // Convertir en secondes et mettre à jour les champs
+    zoomMinInput.value = (minMs / 1000).toFixed(3);
+    zoomMaxInput.value = (maxMs / 1000).toFixed(3);
+
+    console.log(`✅ Champs zoom synchronisés: ${zoomMinInput.value}s - ${zoomMaxInput.value}s`);
 }

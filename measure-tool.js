@@ -14,6 +14,7 @@ let measureState = {
 function toggleMeasureTool() {
     const btn = document.getElementById('measure-diff-btn');
     const results = document.getElementById('measure-results');
+    const icon = document.getElementById('measure-accordion-icon');
 
     // Vérifier l'état AVANT de changer
     if (!measureState.active) {
@@ -47,12 +48,20 @@ function toggleMeasureTool() {
         measureState.active = true;
         btn.style.background = 'var(--accent-green)';
         results.style.display = 'block';
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
         setStatus("Outil de mesure activé - Cliquez sur le graphique pour placer les points");
     } else {
         // DÉSACTIVATION
         measureState.active = false;
         btn.style.background = 'var(--accent-blue)';
         results.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
         measureState.point1 = null;
         measureState.point2 = null;
         appState.charts.time.update('none');
@@ -110,7 +119,7 @@ function handleMeasureClick(event, chart) {
     // Sinon, placer un nouveau point (seulement si moins de 2 points)
     if (!measureState.point1) {
         measureState.point1 = { x: xValue, y: yValue };
-        setStatus("Point 1 placé - Cliquez pour placer le point 2");
+        setStatus(t("status.point1_placed"));
     } else if (!measureState.point2) {
         measureState.point2 = { x: xValue, y: yValue };
         updateMeasureResults();
@@ -220,7 +229,7 @@ function drawMeasurePoints(chart) {
 
         // Label
         ctx.fillStyle = '#FFF';
-        ctx.font = '12px sans-serif';
+        ctx.font = `${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillText('1', x1, y1 + 4);
     }
@@ -259,7 +268,7 @@ function drawMeasurePoints(chart) {
 
         // Label
         ctx.fillStyle = '#FFF';
-        ctx.font = '12px sans-serif';
+        ctx.font = `${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillText('2', x2, y2 + 4);
     }
@@ -294,7 +303,7 @@ function drawMeasurePoints(chart) {
         ctx.strokeRect(midX - 35, axisYPos - 10, 70, 20);
 
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         let dxText;
@@ -357,7 +366,7 @@ function drawMeasurePoints(chart) {
             ctx.strokeRect(-35, -10, 70, 20);
 
             ctx.fillStyle = '#000';
-            ctx.font = 'bold 11px sans-serif';
+            ctx.font = `bold ${window.chartFontSize}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             const dyText = 'Δy=' + dy.toFixed(2);

@@ -96,6 +96,152 @@ header {
 
 .status-bar { font-size: 0.8rem; color: var(--text-muted); margin-right: 10px; }
 
+/* PROJECT TABS BAR */
+.project-tabs-bar {
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    height: 45px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 99;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+[data-theme="steampunk"] .project-tabs-bar {
+    border-bottom: 2px solid #8b4513;
+    background-color: #2b2018;
+}
+
+.project-tabs-container {
+    display: flex;
+    gap: 5px;
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+}
+
+.project-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    position: relative;
+    min-width: 120px;
+    max-width: 200px;
+}
+
+.project-tab:hover {
+    background: var(--bg-app);
+    border-color: var(--accent-blue);
+    color: var(--text-main);
+}
+
+.project-tab.active {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+[data-theme="steampunk"] .project-tab {
+    background: #1a1410;
+    border-color: #8b4513;
+}
+
+[data-theme="steampunk"] .project-tab:hover {
+    background: #2b1f18;
+    border-color: #d4af37;
+}
+
+[data-theme="steampunk"] .project-tab.active {
+    background: #d4af37;
+    color: #1a1a1a;
+    border-color: #d4af37;
+    text-shadow: none;
+}
+
+.project-tab-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.project-tab-close {
+    margin-left: 4px;
+    color: var(--accent-red);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+}
+
+.project-tab-close:hover {
+    background: var(--accent-red);
+    color: white;
+}
+
+.project-tab.active .project-tab-close {
+    color: white;
+}
+
+.project-tab.active .project-tab-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.new-project-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #45a049 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.new-project-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #45a049 0%, var(--accent-green) 100%);
+}
+
+.new-project-btn:active {
+    transform: translateY(0);
+}
+
+[data-theme="steampunk"] .new-project-btn {
+    background: linear-gradient(135deg, #76ff03 0%, #64dd17 100%);
+    color: #1a1a1a;
+}
+
 /* Layout */
 .main-container {
     display: flex;
@@ -845,6 +991,30 @@ textarea {
     color: #666;
 }
 
+/* Style des en-têtes de section pour le thème light */
+[data-theme="light"] .control-group h3 {
+    background: linear-gradient(to bottom, #fafafa, #f0f0f0);
+    padding: 10px 14px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    margin-bottom: 12px;
+    position: relative;
+}
+
+/* Effet hover subtil pour les en-têtes cliquables */
+[data-theme="light"] .control-group h3[onclick]:hover {
+    background: linear-gradient(to bottom, #ffffff, #f5f5f5);
+    border-color: #c0c0c0;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
 [data-theme="steampunk"] .toggle-btn.active {
     background-image: linear-gradient(to bottom, #0277bd, #01579b);
     border-color: #0288d1;
@@ -1129,6 +1299,21 @@ button:focus, input:focus, select:focus {
 }
 
 /* Adaptation pour les thèmes */
+/* Thème clair - meilleure visibilité */
+[data-theme="light"] #mouse-halo {
+    mix-blend-mode: normal;
+    border-width: 3px;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6), inset 0 0 15px rgba(33, 150, 243, 0.4);
+}
+
+[data-theme="light"] #mouse-halo.visible {
+    /* L'opacité est gérée par JavaScript */
+}
+
+[data-theme="light"] #mouse-halo::after {
+    opacity: 1;
+}
+
 [data-theme="steampunk"] #mouse-halo {
     border-style: dashed;
 }
@@ -1712,4 +1897,460 @@ button:focus, input:focus, select:focus {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ========================================
+   SIDEBAR REPLIABLE
+   ======================================== */
+
+/* Bouton de collapse/expand du sidebar */
+.sidebar-toggle {
+    position: absolute;
+    top: 10px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    background: var(--accent-blue);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.sidebar-toggle:hover {
+    background: var(--accent-green);
+    transform: scale(1.1);
+}
+
+.sidebar-toggle i {
+    color: white;
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+/* Sidebar en mode réduit */
+.sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.sidebar.collapsed .sidebar-toggle {
+    right: -15px;
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Animation du contenu du sidebar */
+.sidebar .control-group {
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .control-group {
+    opacity: 0;
+}
+
+/* ========================================
+   BOUTONS DISABLED (HSP SYSTEM)
+   ======================================== */
+button:disabled,
+button[disabled] {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.dropdown-content button:disabled,
+.dropdown-content button[disabled] {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    color: var(--text-secondary) !important;
+}
+
+/* ========================================
+   COLOR PICKER AVANCÉ - DÉMO
+   ======================================== */
+#advanced-color-picker-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+
+.advanced-color-picker-content {
+    background: var(--bg-panel);
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0;
+    width: 280px;
+    max-width: 90vw;
+    max-height: 90vh;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    resize: both;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Onglets */
+.color-picker-tabs {
+    display: flex;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 4px 4px 0 0;
+}
+
+.color-picker-tab {
+    flex: 1;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 0.75em;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.color-picker-tab:hover {
+    background: var(--input-bg);
+    color: var(--text-main);
+}
+
+.color-picker-tab.active {
+    background: var(--bg-panel);
+    border-bottom-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.color-picker-tab-content {
+    display: none;
+    padding: 10px;
+}
+
+.color-picker-tab-content.active {
+    display: block;
+}
+
+.color-picker-section {
+    margin-bottom: 8px;
+}
+
+.color-picker-section-title {
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* Séparation entre palettes */
+.color-palette-separator {
+    height: 8px;
+    margin: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Grilles de couleurs */
+.colors-grid-container {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    margin-bottom: 5px;
+}
+
+.color-cell {
+    width: 100%;
+    aspect-ratio: 1.2;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+}
+
+.color-cell:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    z-index: 10;
+}
+
+/* Bouton reset pour couleurs personnalisées */
+.color-cell-reset {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px !important;
+    height: 8px !important;
+    max-width: 8px !important;
+    max-height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 12px !important;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+}
+
+.color-cell:hover .color-cell-reset {
+    display: flex;
+}
+
+/* Layout principal - sélecteur à gauche, inputs à droite */
+.color-picker-main {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.color-selector-wrapper {
+    flex-shrink: 0;
+}
+
+.color-selector-container {
+    display: flex;
+    gap: 6px;
+}
+
+#color-selector {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(to bottom, white, transparent),
+                linear-gradient(to bottom, transparent, black),
+                hsl(0, 100%, 50%);
+    border: 2px solid var(--border-color);
+    cursor: crosshair;
+    border-radius: 3px;
+}
+
+#color-cursor {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* Slider de teinte */
+#hue-slider {
+    position: relative;
+    width: 20px;
+    height: 150px;
+    background: linear-gradient(to bottom,
+        #ff0000 0%,
+        #ffff00 16.67%,
+        #00ff00 33.33%,
+        #00ffff 50%,
+        #0000ff 66.67%,
+        #ff00ff 83.33%,
+        #ff0000 100%
+    );
+    border: 2px solid var(--border-color);
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+#hue-cursor {
+    position: absolute;
+    left: -3px;
+    width: 26px;
+    height: 4px;
+    border: 2px solid white;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* Preview et inputs à droite */
+.color-inputs-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Layout vertical pour onglet Sélecteur */
+.color-picker-main-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Preview + RGB horizontal */
+.color-inputs-wrapper-horizontal {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.rgb-inputs-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+/* Grille inputs palettes (2 colonnes) */
+.palette-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+}
+
+#color-preview {
+    width: 80px;
+    height: auto;
+    min-height: 60px;
+    border: 2px solid var(--border-color);
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+#color-hex-display {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: var(--accent-blue);
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+/* Champs de saisie compacts */
+.input-group-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.input-group-compact label {
+    font-size: 0.7em;
+    color: var(--text-muted);
+    font-weight: 600;
+    min-width: 12px;
+}
+
+.input-group-compact input {
+    padding: 3px 4px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    color: var(--text-main);
+    font-size: 0.75em;
+    width: 100%;
+}
+
+.input-group-compact input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+/* Boutons d'action */
+.color-picker-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.color-picker-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75em;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.color-picker-btn-primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.color-picker-btn-primary:hover {
+    background: #1976D2;
+}
+
+.color-picker-btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.color-picker-btn-secondary:hover {
+    background: var(--input-bg);
+}
+
+.color-picker-btn-save {
+    background: var(--accent-green);
+    color: white;
+}
+
+.color-picker-btn-save:hover {
+    background: #388E3C;
+}
+
+.color-picker-ok-btn {
+    padding: 4px 16px;
+    font-size: 0.7em;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-picker-ok-btn:hover {
+    background: #1976D2;
+}
+
+/* =====================================
+   MODALES DRAGGABLES
+   ===================================== */
+
+.draggable-modal {
+    position: relative;
+    cursor: default;
+}
+
+.draggable-modal h2 {
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.draggable-modal.dragging {
+    opacity: 0.9;
 }

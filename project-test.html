@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Architecture POO - HydraSpec Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .test-section h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .tab.active {
+            background: rgba(76, 175, 80, 0.4);
+            border-bottom: 3px solid #4CAF50;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .close-tab {
+            margin-left: 10px;
+            color: #f44336;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .project-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+        }
+
+        .project-info strong {
+            color: #4CAF50;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
+        }
+
+        .log-entry.error {
+            border-left-color: #f44336;
+            color: #ff9999;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-label {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .success-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Architecture POO - Multi-Projets</h1>
+
+        <!-- Section 1 : Création de projets -->
+        <div class="test-section">
+            <h2>📂 Création de Projets</h2>
+            <div class="button-group">
+                <button class="success" onclick="testCreateGeneratedProject()">
+                    🎵 Créer Signal Généré (50Hz + 180Hz)
+                </button>
+                <button class="success" onclick="testCreateAnotherGeneratedProject()">
+                    🎵 Créer Signal Généré (120Hz)
+                </button>
+                <label for="csv-upload" class="file-upload-label">
+                    📂 Charger fichier CSV
+                </label>
+                <input type="file" id="csv-upload" accept=".csv" onchange="testLoadCSV(event)">
+            </div>
+        </div>
+
+        <!-- Section 2 : Onglets de projets -->
+        <div class="test-section">
+            <h2>📑 Projets Ouverts</h2>
+            <div id="project-tabs" class="tabs">
+                <div style="opacity: 0.5; padding: 10px;">Aucun projet ouvert</div>
+            </div>
+            <button class="danger" onclick="testCloseActiveProject()">❌ Fermer le projet actif</button>
+            <button class="danger" onclick="testCloseAllProjects()">🗑️ Fermer tous les projets</button>
+        </div>
+
+        <!-- Section 3 : Informations du projet actif -->
+        <div class="test-section">
+            <h2>📊 Projet Actif</h2>
+            <div id="project-info" class="project-info">
+                Aucun projet sélectionné
+            </div>
+        </div>
+
+        <!-- Section 4 : Statistiques globales -->
+        <div class="test-section">
+            <h2>📈 Statistiques Globales</h2>
+            <div id="stats" class="stats"></div>
+        </div>
+
+        <!-- Section 5 : Log des événements -->
+        <div class="test-section">
+            <h2>📋 Log des Événements</h2>
+            <div id="log" class="log">
+                <div class="log-entry">🚀 Système initialisé - Prêt pour les tests</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charger les modules -->
+    <script src="project.js"></script>
+    <script src="project-manager.js"></script>
+
+    <script>
+        // Initialiser le gestionnaire de projets
+        const manager = new ProjectManager();
+
+        // Fonction pour ajouter un log
+        function addLog(message, isError = false) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry' + (isError ? ' error' : '');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Fonction pour mettre à jour l'interface
+        function updateUI() {
+            updateTabs();
+            updateProjectInfo();
+            updateStats();
+        }
+
+        // Mettre à jour les onglets
+        function updateTabs() {
+            const tabsDiv = document.getElementById('project-tabs');
+            tabsDiv.innerHTML = '';
+
+            const projects = manager.getAllProjects();
+
+            if (projects.length === 0) {
+                tabsDiv.innerHTML = '<div style="opacity: 0.5; padding: 10px;">Aucun projet ouvert</div>';
+                return;
+            }
+
+            projects.forEach(project => {
+                const tab = document.createElement('div');
+                tab.className = 'tab' + (project.isActive ? ' active' : '');
+                tab.innerHTML = `
+                    ${project.name}
+                    <span class="close-tab" onclick="closeProject('${project.id}', event)">✕</span>
+                `;
+                tab.onclick = (e) => {
+                    if (!e.target.classList.contains('close-tab')) {
+                        switchToProject(project.id);
+                    }
+                };
+                tabsDiv.appendChild(tab);
+            });
+        }
+
+        // Mettre à jour les informations du projet actif
+        function updateProjectInfo() {
+            const infoDiv = document.getElementById('project-info');
+            const project = manager.getActive();
+
+            if (!project) {
+                infoDiv.innerHTML = 'Aucun projet sélectionné';
+                return;
+            }
+
+            const info = project.getInfo();
+            infoDiv.innerHTML = `
+                <strong>Nom :</strong> ${info.name}<br>
+                <strong>ID :</strong> ${info.id}<br>
+                <strong>Créé le :</strong> ${new Date(info.createdAt).toLocaleString()}<br>
+                <strong>Points de données :</strong> ${info.dataPoints.toLocaleString()}<br>
+                <strong>Durée :</strong> ${info.duration} s<br>
+                <strong>Fréquence d'échantillonnage :</strong> ${info.fs.toFixed(1)} Hz<br>
+                <strong>Canaux disponibles :</strong> ${info.channels}<br>
+                <strong>Curseur début :</strong> ${project.state.cursorStart.toFixed(3)} s<br>
+                <strong>Curseur fin :</strong> ${project.state.cursorEnd.toFixed(3)} s
+            `;
+        }
+
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const statsDiv = document.getElementById('stats');
+            const stats = manager.getStats();
+
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Projets ouverts</div>
+                    <div class="stat-value">${stats.projectCount}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Points de données totaux</div>
+                    <div class="stat-value">${stats.totalDataPoints.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Durée totale</div>
+                    <div class="stat-value">${stats.totalDuration} s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Projet actif</div>
+                    <div class="stat-value" style="font-size: 1.2em;">${stats.activeProject || 'Aucun'}</div>
+                </div>
+            `;
+        }
+
+        // Tests
+        function testCreateGeneratedProject() {
+            const project = manager.createProjectFromGenerator({
+                fs: 1000,
+                duration: 10,
+                noise: 0.1,
+                dc: 5,
+                frequencies: [
+                    { freq: 50, amp: 5, phase: 0 },
+                    { freq: 180, amp: 1.5, phase: 45 }
+                ]
+            });
+
+            addLog(`✅ Projet créé: ${project.name} (Signal 50Hz + 180Hz)`);
+            updateUI();
+        }
+
+        function testCreateAnotherGeneratedProject() {
+            const project = manager.createProjectFromGenerator({
+                fs: 2000,
+                duration: 5,
+                noise: 0.05,
+                dc: 3,
+                frequencies: [
+                    { freq: 120, amp: 3, phase: 0 }
+                ]
+            });
+
+            addLog(`✅ Projet créé: ${project.name} (Signal 120Hz)`);
+            updateUI();
+        }
+
+        async function testLoadCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                addLog(`📂 Chargement de ${file.name}...`);
+                const project = await manager.createProjectFromCSV(file);
+                addLog(`✅ Fichier CSV chargé: ${project.name}`);
+                updateUI();
+            } catch (error) {
+                addLog(`❌ Erreur: ${error.message}`, true);
+            }
+        }
+
+        function switchToProject(projectId) {
+            manager.switchTo(projectId);
+            addLog(`🔄 Basculé vers: ${manager.getActive().name}`);
+            updateUI();
+        }
+
+        function closeProject(projectId, event) {
+            event.stopPropagation();
+            const project = manager.getProject(projectId);
+            const name = project ? project.name : 'Inconnu';
+            manager.deleteProject(projectId);
+            addLog(`🗑️ Projet fermé: ${name}`);
+            updateUI();
+        }
+
+        function testCloseActiveProject() {
+            const project = manager.getActive();
+            if (!project) {
+                addLog('⚠️ Aucun projet actif', true);
+                return;
+            }
+
+            const name = project.name;
+            manager.deleteProject(project.id);
+            addLog(`🗑️ Projet actif fermé: ${name}`);
+            updateUI();
+        }
+
+        function testCloseAllProjects() {
+            const count = manager.getProjectCount();
+            manager.deleteAllProjects();
+            addLog(`🗑️ Tous les projets fermés (${count} projets)`);
+            updateUI();
+        }
+
+        // Enregistrer des listeners
+        manager.on('projectCreated', (project) => {
+            console.log('Event: projectCreated', project.name);
+        });
+
+        manager.on('projectDeleted', (data) => {
+            console.log('Event: projectDeleted', data.name);
+        });
+
+        manager.on('projectSwitched', (project) => {
+            console.log('Event: projectSwitched', project.name);
+        });
+
+        // Initialisation
+        updateUI();
+        addLog('🎯 ProjectManager prêt - Créez votre premier projet !');
+    </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ let trackState = {
 function toggleTrackTool() {
     const btn = document.getElementById('track-tool-btn');
     const results = document.getElementById('track-results');
+    const icon = document.getElementById('track-accordion-icon');
 
     // Vérifier l'état AVANT de changer
     if (!trackState.active) {
@@ -48,16 +49,24 @@ function toggleTrackTool() {
         trackState.active = true;
         btn.style.background = 'var(--accent-green)';
         results.style.display = 'block';
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
         setStatus("Outil Traquer activé - Déplacez la souris sur le graphique");
     } else {
         // DÉSACTIVATION
         trackState.active = false;
         btn.style.background = 'var(--accent-blue)';
         results.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
         trackState.currentX = null;
         trackState.values = {};
         appState.charts.time.update('none');
-        setStatus("Outil Traquer désactivé");
+        setStatus(t("status.track_tool_deactivated"));
     }
 }
 
@@ -424,7 +433,7 @@ function drawTrackCursor(chart) {
 
         // Texte dans la couleur du dataset
         ctx.fillStyle = data.color;
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = `bold ${window.chartFontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const valueText = data.value.toFixed(2);

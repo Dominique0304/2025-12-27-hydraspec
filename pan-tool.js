@@ -170,6 +170,12 @@ function handlePanDrag(event, chart, canvas) {
 function handlePanMouseUp() {
     if (panState.dragging) {
         panState.dragging = false;
+
+        // Sauvegarder l'état après le déplacement
+        if (typeof saveZoomState === 'function') {
+            saveZoomState();
+        }
+
         return true;
     }
     return false;
@@ -601,4 +607,61 @@ function drawGridZoomSelection(chart, canvas) {
     ctx.strokeStyle = 'rgba(0, 123, 255, 0.8)';
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
+}
+
+// =====================================
+// MISE À JOUR DES CHAMPS T MIN/T MAX
+// =====================================
+
+// Mettre à jour les champs T min et T max avec les valeurs actuelles du zoom
+function updateZoomInputs() {
+    const tMinInput = document.getElementById('zoom-t-min');
+    const tMaxInput = document.getElementById('zoom-t-max');
+
+    if (!tMinInput || !tMaxInput) return;
+
+    // Récupérer le graphique time
+    const chart = appState.charts?.time;
+    if (!chart) return;
+
+    // Récupérer l'échelle X (temps)
+    const xScale = chart.scales.x;
+    if (!xScale) return;
+
+    // Mettre à jour les champs avec les valeurs min et max en secondes (convertir de ms)
+    tMinInput.value = (xScale.min / 1000).toFixed(3);
+    tMaxInput.value = (xScale.max / 1000).toFixed(3);
+}
+
+// Appliquer le zoom depuis les champs T min et T max
+function applyPanToolZoom() {
+    const tMinInput = document.getElementById('zoom-t-min');
+    const tMaxInput = document.getElementById('zoom-t-max');
+
+    if (!tMinInput || !tMaxInput) return;
+
+    const minX = parseFloat(tMinInput.value);
+    const maxX = parseFloat(tMaxInput.value);
+
+    // Vérifier que les valeurs sont valides
+    if (isNaN(minX) || isNaN(maxX) || minX >= maxX) {
+        setStatus('Valeurs T min/T max invalides', 'error');
+        return;
+    }
+
+    // Récupérer le graphique time
+    const chart = appState.charts?.time;
+    if (!chart) return;
+
+    // Appliquer le zoom (convertir s en ms)
+    chart.options.scales.x.min = minX * 1000;
+    chart.options.scales.x.max = maxX * 1000;
+
+    chart.update('none');
+    setStatus(`Zoom appliqué: ${minX}s - ${maxX}s`, 'success');
+
+    // Sauvegarder l'état après le zoom manuel
+    if (typeof saveZoomState === 'function') {
+        saveZoomState();
+    }
 }

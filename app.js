@@ -1,721 +1,5 @@
 console.log("Chargement de l'application...");
-// --- TRANSLATIONS ---
-const i18n = {
-    fr: {
-        tools: "Outils",
-        load_csv: "Charger fichier .csv",
-        open_proj: "Ouvrir Projet (.hsp)",
-        save_proj: "Enregistrer Projet",
-        generator: "Générateur",
-        export_csv: "Exporter fichier .csv",
-        export_png: "Exporter PNG",
-        settings: "Paramètres",
-        help: "Aide",
-        acquisition: "Acquisition",
-        channel: "Canal:",
-        step_ms: "Pas (ms):",
-        fs_label: "Fs:",
-        points_n: "Points (N):",
-        stats_zone: "Stats (Zone Curseurs)",
-        min: "Min:",
-        max: "Max:",
-        mean: "Moyenne:",
-        std: "Écart Type:",
-        fft_params: "Paramètres FFT",
-        window: "Fenêtre:",
-        fft_pts: "Points FFT:",
-        peak_sens: "Sensibilité Pics:",
-        spectrogram: "Spectrogramme",
-        notes: "Annotations",
-        results: "Résultats",
-        freq_dom: "Fréq. Pic Principal:",
-        amp_max: "Amp. Pic Principal:",
-        rms_sel: "RMS Sélection:",
-        time_domain: "DOMAINE TEMPOREL",
-        freq_domain: "DOMAINE FRÉQUENTIEL",
-        dirac_spec: "(Spectre de Dirac/FFT)",
-        language: "Langue",
-        theme: "Thème",
-        help_title: "Aide & Détails Techniques - HydraSpec Pro V1.4.0",
-        help_text: `
-            <nav class="help-nav" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
-                <strong>Navigation Rapide:</strong>
-                <a href="#time-domain" style="color: var(--accent-blue); margin: 0 10px;">Temporel</a>
-                <a href="#freq-domain" style="color: var(--accent-blue); margin: 0 10px;">Fréquentiel</a>
-                <a href="#spectrogram" style="color: var(--accent-blue); margin: 0 10px;">Spectrogramme</a>
-                <a href="#generator" style="color: var(--accent-blue); margin: 0 10px;">Générateur</a>
-                <a href="#import-export" style="color: var(--accent-blue); margin: 0 10px;">Fichiers</a>
-                <a href="#settings" style="color: var(--accent-blue); margin: 0 10px;">Paramètres</a>
-            </nav>
-
-            <section id="time-domain">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-stopwatch"></i> Analyse Temporelle
-                </h4>
-                <p>L'analyse temporelle vous permet d'étudier l'évolution du signal pression/temps.</p>
-                
-                <h5>Curseurs de Sélection</h5>
-                <ul>
-                    <li><strong>Curseur Vert (Début) :</strong> Définir le début de la zone d'analyse</li>
-                    <li><strong>Curseur Rouge (Fin) :</strong> Définir la fin de la zone d'analyse</li>
-                    <li><strong>Déplacement :</strong> Cliquer-glisser sur un curseur pour le déplacer</li>
-                    <li><strong>Déplacement groupé :</strong> Shift + cliquer entre les curseurs pour les déplacer ensemble</li>
-                </ul>
-
-                <h5>Zoom et Navigation</h5>
-                <ul>
-                    <li><strong>Molette souris :</strong> Zoom X et Y simultané</li>
-                    <li><strong>Shift + Molette :</strong> Zoom vertical (Y) seulement</li>
-                    <li><strong>Ctrl + Molette :</strong> Zoom horizontal (X) seulement</li>
-                    <li><strong>Pan :</strong> Cliquer-glisser hors des curseurs pour naviguer</li>
-                    <li><strong>Zoom manuel :</strong> Utiliser les champs "Min/Max (s)" pour un zoom précis</li>
-                </ul>
-
-                <h5>Statistiques (Zone Sélectionnée)</h5>
-                <ul>
-                    <li><strong>Min/Max :</strong> Valeurs extrêmes du signal</li>
-                    <li><strong>Moyenne :</strong> Valeur moyenne arithmétique</li>
-                    <li><strong>Écart-type :</strong> Dispersion des valeurs autour de la moyenne</li>
-                    <li><strong>RMS :</strong> Valeur efficace (Root Mean Square)</li>
-                </ul>
-            </section>
-
-            <section id="freq-domain" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-wave-square"></i> Analyse Fréquentielle (FFT)
-                </h4>
-                <p>La Transformée de Fourier Rapide (FFT) révèle le contenu fréquentiel du signal.</p>
-
-                <h5>Paramètres FFT</h5>
-                <ul>
-                    <li><strong>Fenêtre :</strong>
-                        <ul>
-                            <li><strong>Rectangulaire :</strong> Pour transitoires commençant/finissant à zéro</li>
-                            <li><strong>Hanning (recommandé) :</strong> Standard pour l'analyse vibratoire</li>
-                            <li><strong>Hamming :</strong> Bonne séparation de fréquences proches</li>
-                            <li><strong>Blackman :</strong> Meilleure précision d'amplitude</li>
-                        </ul>
-                    </li>
-                    <li><strong>Points FFT :</strong> Définit la résolution fréquentielle
-                        <ul>
-                            <li>Résolution = Fs / N (ex: 1000Hz/4096pts = 0.24Hz)</li>
-                            <li>Plus de points = meilleure résolution mais calcul plus long</li>
-                        </ul>
-                    </li>
-                    <li><strong>Sensibilité Pics :</strong> Ajuste le seuil de détection des pics (échelle logarithmique)</li>
-                </ul>
-
-                <h5>Interprétation du Spectre</h5>
-                <ul>
-                    <li><strong>Fréquence Dominante :</strong> Pic le plus important du spectre</li>
-                    <li><strong>Amplitude Max :</strong> Amplitude du pic dominant</li>
-                    <li><strong>Pics secondaires :</strong> Harmoniques ou composantes additionnelles</li>
-                    <li><strong>Bruit de fond :</strong> Niveau de base entre les pics</li>
-                </ul>
-            </section>
-
-            <section id="spectrogram" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-chart-area"></i> Spectrogramme STFT
-                </h4>
-                <p>Le spectrogramme montre l'évolution des fréquences dans le temps (Short-Time Fourier Transform).</p>
-
-                <h5>Paramètres STFT</h5>
-                <ul>
-                    <li><strong>Fenêtre STFT :</strong> Taille de chaque segment analysé
-                        <ul>
-                            <li>Petite fenêtre = Bonne résolution temporelle, mauvaise résolution fréquentielle</li>
-                            <li>Grande fenêtre = Bonne résolution fréquentielle, mauvaise résolution temporelle</li>
-                        </ul>
-                    </li>
-                    <li><strong>Recouvrement :</strong> Pourcentage de chevauchement entre fenêtres
-                        <ul>
-                            <li>50-75% recommandé pour une visualisation fluide</li>
-                        </ul>
-                    </li>
-                    <li><strong>Échelle :</strong>
-                        <ul>
-                            <li><strong>Linéaire :</strong> Représentation directe de l'amplitude</li>
-                            <li><strong>Logarithmique :</strong> Meilleure dynamique pour petits signaux</li>
-                            <li><strong>dB :</strong> Échelle décibels pour l'acoustique</li>
-                        </ul>
-                    </li>
-                    <li><strong>Fréquence Max :</strong> Limite l'affichage aux basses fréquences</li>
-                </ul>
-
-                <h5>Applications Typiques</h5>
-                <ul>
-                    <li><strong>Transitoires :</strong> Chocs, impacts, démarrages</li>
-                    <li><strong>Modulations :</strong> Variation de fréquence dans le temps</li>
-                    <li><strong>Changements de régime :</strong> Évolution des vibrations machines</li>
-                    <li><strong>Analyse vocale :</strong> Formants et phonèmes</li>
-                </ul>
-            </section>
-
-            <section id="generator" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-wave-square"></i> Générateur de Signal
-                </h4>
-                <p>Créez des signaux synthétiques pour tester l'analyseur ou simuler des phénomènes.</p>
-
-                <h5>Paramètres de Base</h5>
-                <ul>
-                    <li><strong>Fs (Hz) :</strong> Fréquence d'échantillonnage</li>
-                    <li><strong>Durée (s) :</strong> Longueur du signal généré</li>
-                    <li><strong>Bruit (Bar) :</strong> Amplitude du bruit blanc ajouté</li>
-                    <li><strong>DC (Bar) :</strong> Composante continue (offset)</li>
-                </ul>
-
-                <h5>Composantes Sinusoïdales</h5>
-                <ul>
-                    <li><strong>Fréquence (Hz) :</strong> Fréquence de la sinusoïde</li>
-                    <li><strong>Amplitude (Bar) :</strong> Amplitude du signal</li>
-                    <li><strong>Phase (°) :</strong> Déphasage en degrés</li>
-                    <li><strong>Ajout/Suppression :</strong> Boutons +/- pour gérer les composantes</li>
-                </ul>
-            </section>
-
-            <section id="import-export" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-file-export"></i> Importation & Exportation
-                </h4>
-
-                <h5>Formats Supportés</h5>
-                <ul>
-                    <li><strong>.csv :</strong> Données format CSV (temps;valeur)</li>
-                    <li><strong>.hsp :</strong> Projet HydraSpec (données + paramètres)</li>
-                    <li><strong>.png :</strong> Capture d'écran des graphiques</li>
-                </ul>
-
-                <h5>Bonnes Pratiques</h5>
-                <ul>
-                    <li><strong>Données CSV :</strong> Format "Temps(ms);Valeur" avec en-tête</li>
-                    <li><strong>Fréquence d'échantillonnage :</strong> Calculée automatiquement à partir de l'incrément</li>
-                    <li><strong>Projets :</strong> Sauvegardez fréquemment pour ne pas perdre votre travail</li>
-                    <li><strong>Export PNG :</strong> Fermez les modales avant la capture</li>
-                </ul>
-            </section>
-
-            <section id="settings" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-cog"></i> Paramètres & Personnalisation
-                </h4>
-
-                <h5>Thèmes Visuels</h5>
-                <ul>
-                    <li><strong>Sombre :</strong> Par défaut, reposant pour les yeux</li>
-                    <li><strong>Clair :</strong> Meilleure lisibilité en conditions lumineuses</li>
-                    <li><strong>Steampunk :</strong> Thème décoratif rétro</li>
-                </ul>
-
-                <h5>Langues</h5>
-                <ul>
-                    <li><strong>Français :</strong> Interface complète</li>
-                    <li><strong>English :</strong> Full English interface</li>
-                    <li><strong>Deutsch :</strong> Deutsche Benutzeroberfläche</li>
-                </ul>
-            </section>
-
-            <section id="tips" style="margin-top: 25px; background: var(--input-bg); padding: 15px; border-radius: 5px;">
-                <h4 style="color: var(--accent-green); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-lightbulb"></i> Conseils Pratiques
-                </h4>
-                
-                <h5>Pour l'Analyse Vibratoire</h5>
-                <ul>
-                    <li>Utilisez la fenêtre <strong>Hanning</strong> pour les vibrations continues</li>
-                    <li>Choisissez <strong>4096 points FFT</strong> pour un bon compromis résolution/calcul</li>
-                    <li>Pour les chocs, utilisez la fenêtre <strong>Rectangulaire</strong></li>
-                    <li>Vérifiez que votre sélection temporelle contient des cycles complets</li>
-                </ul>
-
-                <h5>Dépannage Courant</h5>
-                <ul>
-                    <li><strong>Spectre plat :</strong> Vérifiez la sélection temporelle et le DC offset</li>
-                    <li><strong>Pics multiples :</strong> Ajustez la sensibilité des pics</li>
-                    <li><strong>Fuites spectrales :</strong> Changez de fenêtre ou augmentez les points FFT</li>
-                    <li><strong>Calculs lents :</strong> Réduisez les points FFT ou la durée d'analyse</li>
-                </ul>
-            </section>
-        `
-    },
-    en: {
-        tools: "Tools",
-        load_csv: "Load .csv File",
-        open_proj: "Open Project (.hsp)",
-        save_proj: "Save Project",
-        generator: "Generator",
-        export_csv: "Export .csv File",
-        export_png: "Export PNG",
-        settings: "Settings",
-        help: "Help",
-        acquisition: "Acquisition",
-        channel: "Channel:",
-        step_ms: "Step (ms):",
-        fs_label: "Fs:",
-        points_n: "Points (N):",
-        stats_zone: "Stats (Cursor Zone)",
-        min: "Min:",
-        max: "Max:",
-        mean: "Mean:",
-        std: "Std Dev:",
-        fft_params: "FFT Parameters",
-        window: "Window:",
-        fft_pts: "FFT Points:",
-        peak_sens: "Peak Sens:",
-        spectrogram: "Spectrogram",
-        notes: "Annotations",
-        results: "Results",
-        freq_dom: "Main Peak Freq:",
-        amp_max: "Main Peak Amp:",
-        rms_sel: "RMS Sel:",
-        time_domain: "TIME DOMAIN",
-        freq_domain: "FREQUENCY DOMAIN",
-        dirac_spec: "(Dirac Spectrum/FFT)",
-        language: "Language",
-        theme: "Theme",
-        help_title: "Help & Technical Details - HydraSpec Pro V1.4.0",
-        help_text: `
-            <nav class="help-nav" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
-                <strong>Quick Navigation:</strong>
-                <a href="#time-domain" style="color: var(--accent-blue); margin: 0 10px;">Time</a>
-                <a href="#freq-domain" style="color: var(--accent-blue); margin: 0 10px;">Frequency</a>
-                <a href="#spectrogram" style="color: var(--accent-blue); margin: 0 10px;">Spectrogram</a>
-                <a href="#generator" style="color: var(--accent-blue); margin: 0 10px;">Generator</a>
-                <a href="#import-export" style="color: var(--accent-blue); margin: 0 10px;">Files</a>
-                <a href="#settings" style="color: var(--accent-blue); margin: 0 10px;">Settings</a>
-            </nav>
-
-            <section id="time-domain">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-stopwatch"></i> Time Domain Analysis
-                </h4>
-                <p>Time domain analysis allows you to study the pressure signal evolution over time.</p>
-                
-                <h5>Selection Cursors</h5>
-                <ul>
-                    <li><strong>Green Cursor (Start):</strong> Define the beginning of the analysis zone</li>
-                    <li><strong>Red Cursor (End):</strong> Define the end of the analysis zone</li>
-                    <li><strong>Moving:</strong> Click and drag on a cursor to move it</li>
-                    <li><strong>Group Move:</strong> Shift + click between cursors to move both together</li>
-                </ul>
-
-                <h5>Zoom & Navigation</h5>
-                <ul>
-                    <li><strong>Mouse Wheel:</strong> Zoom X and Y simultaneously</li>
-                    <li><strong>Shift + Wheel:</strong> Vertical zoom (Y) only</li>
-                    <li><strong>Ctrl + Wheel:</strong> Horizontal zoom (X) only</li>
-                    <li><strong>Pan:</strong> Click and drag outside cursors to navigate</li>
-                    <li><strong>Manual Zoom:</strong> Use "Min/Max (s)" fields for precise zoom control</li>
-                </ul>
-
-                <h5>Statistics (Selected Zone)</h5>
-                <ul>
-                    <li><strong>Min/Max:</strong> Extreme values of the signal</li>
-                    <li><strong>Mean:</strong> Arithmetic average value</li>
-                    <li><strong>Std Dev:</strong> Dispersion of values around the mean</li>
-                    <li><strong>RMS:</strong> Root Mean Square value (effective value)</li>
-                </ul>
-            </section>
-
-            <section id="freq-domain" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-wave-square"></i> Frequency Analysis (FFT)
-                </h4>
-                <p>Fast Fourier Transform (FFT) reveals the frequency content of your signal.</p>
-
-                <h5>FFT Parameters</h5>
-                <ul>
-                    <li><strong>Window:</strong>
-                        <ul>
-                            <li><strong>Rectangular:</strong> For transients starting/ending at zero</li>
-                            <li><strong>Hanning (recommended):</strong> Industry standard for vibration analysis</li>
-                            <li><strong>Hamming:</strong> Better separation of close frequencies</li>
-                            <li><strong>Blackman:</strong> Best amplitude accuracy</li>
-                        </ul>
-                    </li>
-                    <li><strong>FFT Points:</strong> Defines frequency resolution
-                        <ul>
-                            <li>Resolution = Fs / N (ex: 1000Hz/4096pts = 0.24Hz)</li>
-                            <li>More points = better resolution but longer computation</li>
-                        </ul>
-                    </li>
-                    <li><strong>Peak Sensitivity:</strong> Adjusts peak detection threshold (logarithmic scale)</li>
-                </ul>
-
-                <h5>Spectrum Interpretation</h5>
-                <ul>
-                    <li><strong>Dominant Frequency:</strong> Most important peak in the spectrum</li>
-                    <li><strong>Max Amplitude:</strong> Amplitude of the dominant peak</li>
-                    <li><strong>Secondary Peaks:</strong> Harmonics or additional components</li>
-                    <li><strong>Background Noise:</strong> Baseline level between peaks</li>
-                </ul>
-            </section>
-
-            <section id="spectrogram" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-chart-area"></i> STFT Spectrogram
-                </h4>
-                <p>The spectrogram shows frequency evolution over time (Short-Time Fourier Transform).</p>
-
-                <h5>STFT Parameters</h5>
-                <ul>
-                    <li><strong>STFT Window:</strong> Size of each analyzed segment
-                        <ul>
-                            <li>Small window = Good time resolution, poor frequency resolution</li>
-                            <li>Large window = Good frequency resolution, poor time resolution</li>
-                        </ul>
-                    </li>
-                    <li><strong>Overlap:</strong> Percentage overlap between windows
-                        <ul>
-                            <li>50-75% recommended for smooth visualization</li>
-                        </ul>
-                    </li>
-                    <li><strong>Scale:</strong>
-                        <ul>
-                            <li><strong>Linear:</strong> Direct amplitude representation</li>
-                            <li><strong>Logarithmic:</strong> Better dynamic range for small signals</li>
-                            <li><strong>dB:</strong> Decibel scale for acoustic analysis</li>
-                        </ul>
-                    </li>
-                    <li><strong>Max Frequency:</strong> Limits display to lower frequencies</li>
-                </ul>
-
-                <h5>Typical Applications</h5>
-                <ul>
-                    <li><strong>Transients:</strong> Shocks, impacts, startups</li>
-                    <li><strong>Modulations:</strong> Frequency variations over time</li>
-                    <li><strong>Regime Changes:</strong> Machine vibration evolution</li>
-                    <li><strong>Speech Analysis:</strong> Formants and phonemes</li>
-                </ul>
-            </section>
-
-            <section id="generator" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-wave-square"></i> Signal Generator
-                </h4>
-                <p>Create synthetic signals to test the analyzer or simulate phenomena.</p>
-
-                <h5>Basic Parameters</h5>
-                <ul>
-                    <li><strong>Fs (Hz):</strong> Sampling frequency</li>
-                    <li><strong>Duration (s):</strong> Length of generated signal</li>
-                    <li><strong>Noise (Bar):</strong> Amplitude of added white noise</li>
-                    <li><strong>DC (Bar):</strong> Continuous component (offset)</li>
-                </ul>
-
-                <h5>Sinusoidal Components</h5>
-                <ul>
-                    <li><strong>Frequency (Hz):</strong> Sine wave frequency</li>
-                    <li><strong>Amplitude (Bar):</strong> Signal amplitude</li>
-                    <li><strong>Phase (°):</strong> Phase shift in degrees</li>
-                    <li><strong>Add/Remove:</strong> +/- buttons to manage components</li>
-                </ul>
-            </section>
-
-            <section id="import-export" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-file-export"></i> Import & Export
-                </h4>
-
-                <h5>Supported Formats</h5>
-                <ul>
-                    <li><strong>.csv:</strong> CSV format data (time;value)</li>
-                    <li><strong>.hsp:</strong> HydraSpec project (data + parameters)</li>
-                    <li><strong>.png:</strong> Screenshot of graphs</li>
-                </ul>
-
-                <h5>Best Practices</h5>
-                <ul>
-                    <li><strong>CSV data:</strong> "Time(ms);Value" format with header</li>
-                    <li><strong>Sampling frequency:</strong> Automatically calculated from increment</li>
-                    <li><strong>Projects:</strong> Save frequently to avoid losing work</li>
-                    <li><strong>Export PNG:</strong> Close modals before capture</li>
-                </ul>
-            </section>
-
-            <section id="settings" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-cog"></i> Settings & Customization
-                </h4>
-
-                <h5>Visual Themes</h5>
-                <ul>
-                    <li><strong>Dark:</strong> Default, easy on the eyes</li>
-                    <li><strong>Light:</strong> Better readability in bright conditions</li>
-                    <li><strong>Steampunk:</strong> Decorative retro theme</li>
-                </ul>
-
-                <h5>Languages</h5>
-                <ul>
-                    <li><strong>French:</strong> Complete interface</li>
-                    <li><strong>English:</strong> Full English interface</li>
-                    <li><strong>German:</strong> German user interface</li>
-                </ul>
-            </section>
-
-            <section id="tips" style="margin-top: 25px; background: var(--input-bg); padding: 15px; border-radius: 5px;">
-                <h4 style="color: var(--accent-green); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-lightbulb"></i> Practical Tips
-                </h4>
-                
-                <h5>For Vibration Analysis</h5>
-                <ul>
-                    <li>Use <strong>Hanning</strong> window for continuous vibrations</li>
-                    <li>Choose <strong>4096 FFT points</strong> for good resolution/computation balance</li>
-                    <li>For shocks, use <strong>Rectangular</strong> window</li>
-                    <li>Ensure your time selection contains complete cycles</li>
-                </ul>
-
-                <h5>Troubleshooting</h5>
-                <ul>
-                    <li><strong>Flat spectrum:</strong> Check time selection and DC offset</li>
-                    <li><strong>Multiple peaks:</strong> Adjust peak sensitivity</li>
-                    <li><strong>Spectral leakage:</strong> Change window or increase FFT points</li>
-                    <li><strong>Slow calculations:</strong> Reduce FFT points or analysis duration</li>
-                </ul>
-            </section>
-        `
-    },
-    de: {
-        tools: "Werkzeuge",
-        load_csv: ".csv Datei laden",
-        open_proj: "Projekt öffnen (.hsp)",
-        save_proj: "Projekt speichern",
-        generator: "Generator",
-        export_csv: ".csv exportieren",
-        export_png: "PNG exportieren",
-        settings: "Einstellungen",
-        help: "Hilfe",
-        acquisition: "Erfassung",
-        channel: "Kanal:",
-        step_ms: "Schritt (ms):",
-        fs_label: "Fs:",
-        points_n: "Punkte (N):",
-        stats_zone: "Statistik (Cursor)",
-        min: "Min:",
-        max: "Max:",
-        mean: "Mittelwert:",
-        std: "StdAbw:",
-        fft_params: "FFT Parameter",
-        window: "Fenster:",
-        fft_pts: "FFT Punkte:",
-        peak_sens: "Spitzen-Sens:",
-        spectrogram: "Spektrogramm",
-        notes: "Anmerkungen",
-        results: "Ergebnisse",
-        freq_dom: "Hauptpeak Frequenz:",
-        amp_max: "Hauptpeak Amplitude:",
-        rms_sel: "RMS Auswahl:",
-        time_domain: "ZEITBEREICH",
-        freq_domain: "FREQUENZBEREICH",
-        dirac_spec: "(Dirac Spektrum/FFT)",
-        language: "Sprache",
-        theme: "Thema",
-        help_title: "Hilfe & Technische Details - HydraSpec Pro V1.4.0",
-        help_text: `
-            <nav class="help-nav" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
-                <strong>Schnellnavigation:</strong>
-                <a href="#time-domain" style="color: var(--accent-blue); margin: 0 10px;">Zeitbereich</a>
-                <a href="#freq-domain" style="color: var(--accent-blue); margin: 0 10px;">Frequenzbereich</a>
-                <a href="#spectrogram" style="color: var(--accent-blue); margin: 0 10px;">Spektrogramm</a>
-                <a href="#generator" style="color: var(--accent-blue); margin: 0 10px;">Generator</a>
-                <a href="#import-export" style="color: var(--accent-blue); margin: 0 10px;">Dateien</a>
-                <a href="#settings" style="color: var(--accent-blue); margin: 0 10px;">Einstellungen</a>
-            </nav>
-
-            <section id="time-domain">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-stopwatch"></i> Zeitbereichsanalyse
-                </h4>
-                <p>Die Zeitbereichsanalyse ermöglicht die Untersuchung von Druckverläufen über die Zeit.</p>
-                
-                <h5>Auswahl-Cursor</h5>
-                <ul>
-                    <li><strong>Grüner Cursor (Start):</strong> Beginn des Analysebereichs definieren</li>
-                    <li><strong>Roter Cursor (Ende):</strong> Ende des Analysebereichs definieren</li>
-                    <li><strong>Bewegen:</strong> Klicken und Ziehen auf einen Cursor</li>
-                    <li><strong>Gruppenbewegung:</strong> Shift + Klick zwischen Cursorn für gemeinsame Bewegung</li>
-                </ul>
-
-<h5>Zoom et Navigation</h5>
-<ul>
-    <li><strong>Molette souris :</strong> Zoom X et Y simultané</li>
-    <li><strong>Shift + Molette :</strong> Zoom vertical (Y) seulement</li>
-    <li><strong>Ctrl + Molette :</strong> Zoom horizontal (X) seulement</li>
-    <li><strong>Pan :</strong> Cliquer-glisser hors des curseurs pour naviguer</li>
-    <li><strong>Zoom manuel :</strong> Utiliser les champs "Min/Max (s)" pour un zoom horizontal précis</li>
-    <li><strong>Zoom vertical manuel :</strong> Utiliser les champs "Min Y/Max Y (Bar)" pour un zoom vertical précis</li>
-</ul>
-                <h5>Statistiken (Ausgewählter Bereich)</h5>
-                <ul>
-                    <li><strong>Min/Max:</strong> Extremwerte des Signals</li>
-                    <li><strong>Mittelwert:</strong> Arithmetischer Durchschnitt</li>
-                    <li><strong>Standardabweichung:</strong> Streuung der Werte um den Mittelwert</li>
-                    <li><strong>RMS:</strong> Effektivwert (Root Mean Square)</li>
-                </ul>
-            </section>
-
-            <section id="freq-domain" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-wave-square"></i> Frequenzanalyse (FFT)
-                </h4>
-                <p>Die Fast Fourier Transform (FFT) enthüllt den Frequenzgehalt Ihres Signals.</p>
-
-                <h5>FFT-Parameter</h5>
-                <ul>
-                    <li><strong>Fenster:</strong>
-                        <ul>
-                            <li><strong>Rechteck:</strong> Für Transienten, die bei Null beginnen/enden</li>
-                            <li><strong>Hanning (empfohlen):</strong> Standard für Schwingungsanalyse</li>
-                            <li><strong>Hamming:</strong> Bessere Trennung naher Frequenzen</li>
-                            <li><strong>Blackman:</strong> Beste Amplitudengenauigkeit</li>
-                        </ul>
-                    </li>
-                    <li><strong>FFT-Punkte:</strong> Definiert Frequenzauflösung
-                        <ul>
-                            <li>Auflösung = Fs / N (z.B. 1000Hz/4096Punkte = 0,24Hz)</li>
-                            <li>Mehr Punkte = bessere Auflösung aber längere Berechnung</li>
-                        </ul>
-                    </li>
-                    <li><strong>Peak-Empfindlichkeit:</strong> Passt den Peak-Erkennungsschwellenwert an (logarithmische Skala)</li>
-                </ul>
-
-                <h5>Spektrum-Interpretation</h5>
-                <ul>
-                    <li><strong>Dominante Frequenz:</strong> Wichtigster Peak im Spektrum</li>
-                    <li><strong>Max Amplitude:</strong> Amplitude des dominanten Peaks</li>
-                    <li><strong>Sekundäre Peaks:</strong> Harmonische oder zusätzliche Komponenten</li>
-                    <li><strong>Hintergrundrauschen:</strong> Grundrauschen zwischen Peaks</li>
-                </ul>
-            </section>
-
-            <section id="spectrogram" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-chart-area"></i> STFT-Spektrogramm
-                </h4>
-                <p>Das Spektrogramm zeigt die Frequenzentwicklung über die Zeit (Short-Time Fourier Transform).</p>
-
-                <h5>STFT-Parameter</h5>
-                <ul>
-                    <li><strong>STFT-Fenster:</strong> Größe jedes analysierten Segments
-                        <ul>
-                            <li>Kleines Fenster = Gute Zeitauflösung, schlechte Frequenzauflösung</li>
-                            <li>Großes Fenster = Gute Frequenzauflösung, schlechte Zeitauflösung</li>
-                        </ul>
-                    </li>
-                    <li><strong>Überlappung:</strong> Prozentsatz der Fensterüberlappung
-                        <ul>
-                            <li>50-75% empfohlen für flüssige Darstellung</li>
-                        </ul>
-                    </li>
-                    <li><strong>Skala:</strong>
-                        <ul>
-                            <li><strong>Linear:</strong> Direkte Amplitudendarstellung</li>
-                            <li><strong>Logarithmisch:</strong> Besserer Dynamikbereich für kleine Signale</li>
-                            <li><strong>dB:</strong> Dezibelskala für Schallanalyse</li>
-                        </ul>
-                    </li>
-                    <li><strong>Max Frequenz:</strong> Begrenzt die Anzeige auf niedrigere Frequenzen</li>
-                </ul>
-
-                <h5>Typische Anwendungen</h5>
-                <ul>
-                    <li><strong>Transienten:</strong> Stöße, Impulse, Anlaufvorgänge</li>
-                    <li><strong>Modulationen:</strong> Frequenzänderungen über die Zeit</li>
-                    <li><strong>Regimewechsel:</strong> Entwicklung von Maschinenschwingungen</li>
-                    <li><strong>Sprachanalyse:</strong> Formanten und Phoneme</li>
-                </ul>
-            </section>
-
-            <section id="generator" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-wave-square"></i> Signalgenerator
-                </h4>
-                <p>Erstellen Sie synthetische Signale zum Testen des Analysators oder zur Simulation von Phänomenen.</p>
-
-                <h5>Grundparameter</h5>
-                <ul>
-                    <li><strong>Fs (Hz):</strong> Abtastfrequenz</li>
-                    <li><strong>Dauer (s):</strong> Länge des generierten Signals</li>
-                    <li><strong>Rauschen (Bar):</strong> Amplitude des hinzugefügten weißen Rauschens</li>
-                    <li><strong>DC (Bar):</strong> Gleichanteil (Offset)</li>
-                </ul>
-
-                <h5>Sinusförmige Komponenten</h5>
-                <ul>
-                    <li><strong>Frequenz (Hz):</strong> Frequenz der Sinuswelle</li>
-                    <li><strong>Amplitude (Bar):</strong> Signalamplitude</li>
-                    <li><strong>Phase (°):</strong> Phasenverschiebung in Grad</li>
-                    <li><strong>Hinzufügen/Entfernen:</strong> +/- Buttons zum Verwalten der Komponenten</li>
-                </ul>
-            </section>
-
-            <section id="import-export" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-file-export"></i> Import & Export
-                </h4>
-
-                <h5>Unterstützte Formate</h5>
-                <ul>
-                    <li><strong>.csv:</strong> CSV-Format-Daten (Zeit;Wert)</li>
-                    <li><strong>.hsp:</strong> HydraSpec-Projekt (Daten + Parameter)</li>
-                    <li><strong>.png:</strong> Screenshot der Graphen</li>
-                </ul>
-
-                <h5>Beste Praktiken</h5>
-                <ul>
-                    <li><strong>CSV-Daten:</strong> "Zeit(ms);Wert" Format mit Kopfzeile</li>
-                    <li><strong>Abtastfrequenz:</strong> Automatisch aus Inkrement berechnet</li>
-                    <li><strong>Projekte:</strong> Häufig speichern um Arbeitsverlust zu vermeiden</li>
-                    <li><strong>PNG-Export:</strong> Modals vor Aufnahme schließen</li>
-                </ul>
-            </section>
-
-            <section id="settings" style="margin-top: 25px;">
-                <h4 style="color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-cog"></i> Einstellungen & Anpassung
-                </h4>
-
-                <h5>Visuelle Themes</h5>
-                <ul>
-                    <li><strong>Dunkel:</strong> Standard, augenschonend</li>
-                    <li><strong>Hell:</strong> Bessere Lesbarkeit bei hellem Licht</li>
-                    <li><strong>Steampunk:</strong> Dekoratives Retro-Theme</li>
-                </ul>
-
-                <h5>Sprachen</h5>
-                <ul>
-                    <li><strong>Französisch:</strong> Vollständige Oberfläche</li>
-                    <li><strong>Englisch:</strong> Vollständige englische Oberfläche</li>
-                    <li><strong>Deutsch:</strong> Deutsche Benutzeroberfläche</li>
-                </ul>
-            </section>
-
-            <section id="tips" style="margin-top: 25px; background: var(--input-bg); padding: 15px; border-radius: 5px;">
-                <h4 style="color: var(--accent-green); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
-                    <i class="fas fa-lightbulb"></i> Praktische Tipps
-                </h4>
-                
-                <h5>Für Schwingungsanalyse</h5>
-                <ul>
-                    <li>Verwenden Sie <strong>Hanning</strong>-Fenster für kontinuierliche Schwingungen</li>
-                    <li>Wählen Sie <strong>4096 FFT-Punkte</strong> für gutes Auflösungs-/Berechnungsverhältnis</li>
-                    <li>Für Stöße verwenden Sie <strong>Rechteck</strong>-Fenster</li>
-                    <li>Stellen Sie sicher, dass Ihre Zeitauswahl vollständige Zyklen enthält</li>
-                </ul>
-
-                <h5>Fehlerbehebung</h5>
-                <ul>
-                    <li><strong>Flaches Spektrum:</strong> Zeitauswahl und DC-Offset prüfen</li>
-                    <li><strong>Mehrere Peaks:</strong> Peak-Empfindlichkeit anpassen</li>
-                    <li><strong>Spektrale Leckage:</strong> Fenster wechseln oder FFT-Punkte erhöhen</li>
-                    <li><strong>Langsame Berechnungen:</strong> FFT-Punkte oder Analysedauer reduzieren</li>
-                </ul>
-            </section>
-        `
-    }
-};
+// --- TRANSLATIONS MOVED TO i18n.js ---
 
 
 // Fonction debounce pour limiter les appels fréquents
@@ -783,15 +67,29 @@ let appState = {
 
 let uiState = {
     timeVisible: true,
-    freqVisible: true,
-    spectroVisible: true
+    freqVisible: false,
+    spectroVisible: false,
+    tooltipsEnabled: false  // Activer/désactiver les infos au survol
 };
 
 // Ajouter ces fonctions dans la section INIT (après window.onload)
 function initToggleButtons() {
+    // Initialiser l'état visuel des conteneurs selon uiState
+    const timeContainer = document.getElementById('time-container');
+    const freqContainer = document.getElementById('freq-container');
+    const spectroContainer = document.getElementById('spectro-container');
+    const fftParamsPanel = document.getElementById('fft-params-panel');
+    const spectroParamsPanel = document.getElementById('spectro-params-panel');
+
+    if (timeContainer) timeContainer.classList.toggle('hidden', !uiState.timeVisible);
+    if (freqContainer) freqContainer.classList.toggle('hidden', !uiState.freqVisible);
+    if (spectroContainer) spectroContainer.classList.toggle('hidden', !uiState.spectroVisible);
+    if (fftParamsPanel) fftParamsPanel.classList.toggle('hidden', !uiState.freqVisible);
+    if (spectroParamsPanel) spectroParamsPanel.classList.toggle('hidden', !uiState.spectroVisible);
+
     // Initialiser l'état des boutons
     updateToggleButtons();
-    
+
     // Ajouter un raccourci clavier pour basculer tous les graphiques
     document.addEventListener('keydown', function(e) {
         // Ctrl+Alt+T : Basculer temps
@@ -860,7 +158,7 @@ function toggleTimeDomain() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(uiState.timeVisible ? "Domaine temporel affiché" : "Domaine temporel masqué");
+    setStatus(uiState.timeVisible ? t("status.time_domain_shown") : t("status.time_domain_hidden"));
 }
 
 function toggleFreqDomain() {
@@ -900,7 +198,7 @@ function toggleFreqDomain() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(uiState.freqVisible ? "Domaine fréquentiel affiché" : "Domaine fréquentiel masqué");
+    setStatus(uiState.freqVisible ? t("status.freq_domain_shown") : t("status.freq_domain_hidden"));
 }
 
 function toggleSpectrogram() {
@@ -926,7 +224,7 @@ function toggleSpectrogram() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(uiState.spectroVisible ? "Spectrogramme affiché" : "Spectrogramme masqué");
+    setStatus(uiState.spectroVisible ? t("status.spectrogram_shown") : t("status.spectrogram_hidden"));
 }
 
 function toggleFFTParams() {
@@ -1037,6 +335,21 @@ function toggleAnnotations() {
     }
 }
 
+function toggleAcquisition() {
+    const content = document.getElementById('acquisition-content');
+    const icon = document.getElementById('acquisition-toggle-icon');
+
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+
 function toggleTools() {
     const content = document.getElementById('tools-content');
     const icon = document.getElementById('tools-toggle-icon');
@@ -1055,8 +368,109 @@ function toggleTools() {
     }
 }
 
+// Fonction pour activer/désactiver les tooltips
+function toggleTooltipsEnabled() {
+    const toggle = document.getElementById('tooltip-enabled-toggle');
+    uiState.tooltipsEnabled = toggle ? toggle.checked : true;
+
+    // Sauvegarder dans localStorage
+    localStorage.setItem('tooltipsEnabled', uiState.tooltipsEnabled);
+
+    // Appliquer aux graphiques existants
+    if (appState.charts.time) {
+        appState.charts.time.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.time.update('none');
+    }
+    if (appState.charts.freq) {
+        appState.charts.freq.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.freq.update('none');
+    }
+    if (appState.charts.spectro) {
+        appState.charts.spectro.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.spectro.update('none');
+    }
+
+    console.log('Tooltips', uiState.tooltipsEnabled ? 'activés' : 'désactivés');
+}
+
+// Charger la préférence des tooltips au démarrage
+function loadTooltipPreference() {
+    const saved = localStorage.getItem('tooltipsEnabled');
+    if (saved !== null) {
+        uiState.tooltipsEnabled = saved === 'true';
+    }
+
+    // Toujours initialiser la checkbox avec la valeur actuelle de uiState
+    const toggle = document.getElementById('tooltip-enabled-toggle');
+    if (toggle) {
+        toggle.checked = uiState.tooltipsEnabled;
+    }
+
+    // Appliquer l'état aux graphiques existants
+    if (appState.charts && appState.charts.time) {
+        appState.charts.time.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.time.update('none');
+    }
+    if (appState.charts && appState.charts.freq) {
+        appState.charts.freq.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.freq.update('none');
+    }
+    if (appState.charts && appState.charts.spectro) {
+        appState.charts.spectro.options.plugins.tooltip.enabled = uiState.tooltipsEnabled;
+        appState.charts.spectro.update('none');
+    }
+}
+
 // Désactiver tous les outils
 function deactivateAllTools() {
+    // Interval
+    if (typeof isCreatingInterval !== 'undefined' && isCreatingInterval) {
+        const btn = document.getElementById('btn-interval-main');
+        const content = document.getElementById('interval-content');
+        const icon = document.getElementById('interval-accordion-icon');
+
+        isCreatingInterval = false;
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Diff/Canal
+    if (typeof diffCanalState !== 'undefined' && diffCanalState.active) {
+        const btn = document.getElementById('diff-canal-btn');
+        const content = document.getElementById('diff-canal-content');
+        const icon = btn ? btn.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
+
+        diffCanalState.active = false;
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Marqueur (SnapPoint)
+    if (typeof snapPointState !== 'undefined' && snapPointState.active) {
+        const btn = document.getElementById('snappoint-btn');
+        const content = document.getElementById('snappoint-content');
+        const icon = btn ? btn.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
+
+        snapPointState.active = false;
+        if (typeof isCreatingSnapPoint !== 'undefined') {
+            isCreatingSnapPoint = false;
+        }
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
     // Mesure de différence
     if (typeof measureState !== 'undefined' && measureState.active) {
         measureState.active = false;
@@ -1108,6 +522,54 @@ function deactivateAllTools() {
 
 function deactivateOtherTools(currentTool) {
     // Désactiver tous les autres outils directement
+
+    // Interval - TOUJOURS désactiver quand un autre outil est activé
+    if (currentTool !== 'interval' && typeof isCreatingInterval !== 'undefined' && isCreatingInterval) {
+        const btn = document.getElementById('btn-interval-main');
+        const content = document.getElementById('interval-content');
+        const icon = document.getElementById('interval-accordion-icon');
+
+        isCreatingInterval = false;
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Diff/Canal - TOUJOURS désactiver quand un autre outil est activé
+    if (currentTool !== 'diffcanal' && typeof diffCanalState !== 'undefined' && diffCanalState.active) {
+        const btn = document.getElementById('diff-canal-btn');
+        const content = document.getElementById('diff-canal-content');
+        const icon = btn ? btn.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
+
+        diffCanalState.active = false;
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+
+    // Marqueur (SnapPoint) - TOUJOURS désactiver quand un autre outil est activé
+    if (currentTool !== 'snappoint' && typeof snapPointState !== 'undefined' && snapPointState.active) {
+        const btn = document.getElementById('snappoint-btn');
+        const content = document.getElementById('snappoint-content');
+        const icon = btn ? btn.querySelector('.fa-chevron-up, .fa-chevron-down') : null;
+
+        snapPointState.active = false;
+        if (typeof isCreatingSnapPoint !== 'undefined') {
+            isCreatingSnapPoint = false;
+        }
+        if (btn) btn.style.background = 'var(--accent-blue)';
+        if (content) content.style.display = 'none';
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
 
     // Mesure de différence
     if (currentTool !== 'measure' && typeof measureState !== 'undefined' && measureState.active) {
@@ -1197,7 +659,7 @@ function toggleAllGraphs() {
     updateToggleButtons();
     adjustPlotLayout();
     updateChartSizes();
-    setStatus(allVisible ? "Tous les graphiques affichés" : "Tous les graphiques masqués");
+    setStatus(allVisible ? t("status.all_graphs_shown") : t("status.all_graphs_hidden"));
 }
 
 function adjustPlotLayout() {
@@ -1260,39 +722,102 @@ function updateChartSizes() {
 // Ajouter l'appel à initToggleButtons dans window.onload
 window.onload = function() {
     console.time('Initialisation');
-    
+
     initCharts();
     setupResizers();
-    addFreqRow(50, 5, 0);   
-    addFreqRow(180, 1.5, 45); 
-    generateSignal(); 
     setupCanvasInteractions();
-    changeLanguage('fr');
     updateColorScale();
-     
-    
+
+
     // INITIALISER LES CHAMPS DE ZOOM
     setTimeout(updateZoomInputs, 500);
     setupSpectrogramAutoUpdate();
-    
-    // RÉINITIALISER L'AIDE
-    document.getElementById('help-content').innerHTML = i18n.fr.help_text;
-    
+
+    // RÉINITIALISER L'AIDE (désactivé - maintenant géré par help-loader.js)
+    // document.getElementById('help-content').innerHTML = i18n.fr.help_text;
+
     // Initialiser les boutons toggle
     initToggleButtons();
-    
+
+    // Ajuster la disposition des graphiques selon leur visibilité
+    adjustPlotLayout();
+
+    // Charger la préférence des tooltips
+    loadTooltipPreference();
+
     console.timeEnd('Initialisation');
-    setStatus("Application prête");
+
+    // Initialiser le système POO Multi-Projets
+    if (typeof initPOOSystem === 'function') {
+        initPOOSystem();
+        setStatus(t("status.ready_multi"));
+    } else {
+        setStatus(t("status.ready"));
+    }
+
+    // Charger la langue sauvegardée et appliquer les traductions
+    // Utiliser setTimeout pour s'assurer que tous les éléments dynamiques sont créés
+    setTimeout(() => {
+        const savedLanguage = localStorage.getItem('hydraspec_language') || 'fr';
+        changeLanguage(savedLanguage);
+    }, 200);
 };
 // --- TRANSLATION ---
 function changeLanguage(lang) {
     appState.lang = lang;
-    const texts = i18n[lang];
+
+    // Sauvegarder la préférence de langue
+    localStorage.setItem('hydraspec_language', lang);
+
+    // Mettre à jour le select de langue
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+        langSelect.value = lang;
+    }
+
+    // Vérifier que le système de traduction est chargé
+    if (typeof t !== 'function') {
+        console.error('❌ Système de traduction non chargé! Vérifiez que i18n.js est chargé.');
+        return;
+    }
+
+    // Textes standards (data-i18n)
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (texts[key]) el.textContent = texts[key];
+        const translated = t(key);
+        if (translated !== key) {
+            el.textContent = translated;
+        }
     });
-    document.getElementById('help-content').innerHTML = texts.help_text;
+
+    // Tooltips (data-i18n-title)
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        const translated = t(key);
+        if (translated !== key) {
+            el.title = translated;
+        }
+    });
+
+    // Placeholders (data-i18n-placeholder)
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        const translated = t(key);
+        if (translated !== key) {
+            el.placeholder = translated;
+        }
+    });
+
+    // Options de select (data-i18n dans les <option>)
+    document.querySelectorAll('option[data-i18n]').forEach(option => {
+        const key = option.getAttribute('data-i18n');
+        const translated = t(key);
+        if (translated !== key) {
+            option.textContent = translated;
+        }
+    });
+
+    console.log(`✅ Langue changée: ${lang}`);
 }
 
 // --- ZOOM TEMPOREL MANUEL ---
@@ -1334,45 +859,60 @@ function updateZoomInputs() {
 }
 
 function applyTimeZoom() {
-    const minX = parseFloat(document.getElementById('zoom-min').value);
-    const maxX = parseFloat(document.getElementById('zoom-max').value);
-    const minY = parseFloat(document.getElementById('zoom-y-min').value);
-    const maxY = parseFloat(document.getElementById('zoom-y-max').value);
-    
+    const minXInput = document.getElementById('zoom-min');
+    const maxXInput = document.getElementById('zoom-max');
+    const minYInput = document.getElementById('zoom-y-min');
+    const maxYInput = document.getElementById('zoom-y-max');
+
     const chart = appState.charts.time;
+    if (!chart) {
+        console.warn('applyTimeZoom: Chart non disponible');
+        return;
+    }
+
     let zoomApplied = false;
-    
-    // Appliquer le zoom horizontal si les valeurs sont valides
-    if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
-        chart.options.scales.x.min = minX * 1000; // Convertir en ms
-        chart.options.scales.x.max = maxX * 1000; // Convertir en ms
-        zoomApplied = true;
+
+    // Appliquer le zoom horizontal si les éléments et valeurs sont valides
+    if (minXInput && maxXInput) {
+        const minX = parseFloat(minXInput.value);
+        const maxX = parseFloat(maxXInput.value);
+
+        if (!isNaN(minX) && !isNaN(maxX) && minX < maxX) {
+            chart.options.scales.x.min = minX * 1000; // Convertir en ms
+            chart.options.scales.x.max = maxX * 1000; // Convertir en ms
+            zoomApplied = true;
+            console.log(`✅ Zoom X appliqué: ${minX}s à ${maxX}s (${minX * 1000}ms à ${maxX * 1000}ms)`);
+        }
     }
-    
-    // Appliquer le zoom vertical si les valeurs sont valides
-    if (!isNaN(minY) && !isNaN(maxY) && minY < maxY) {
-        chart.options.scales.y.min = minY;
-        chart.options.scales.y.max = maxY;
-        zoomApplied = true;
+
+    // Appliquer le zoom vertical si les éléments et valeurs sont valides
+    if (minYInput && maxYInput) {
+        const minY = parseFloat(minYInput.value);
+        const maxY = parseFloat(maxYInput.value);
+
+        if (!isNaN(minY) && !isNaN(maxY) && minY < maxY) {
+            chart.options.scales.y.min = minY;
+            chart.options.scales.y.max = maxY;
+            zoomApplied = true;
+            console.log(`✅ Zoom Y appliqué: ${minY} à ${maxY}`);
+        }
     }
-    
+
     if (zoomApplied) {
-        chart.update('none');
-        setStatus("Zoom appliqué");
+        chart.update(); // Forcer le rafraîchissement complet
+        setStatus(t("status.zoom_applied"));
+
+        // Sauvegarder l'état après le zoom dans le configurateur
+        if (typeof saveZoomState === 'function') {
+            saveZoomState();
+        }
     } else {
-        setStatus("Valeurs de zoom invalides");
-        updateZoomInputs(); // Réaffiche les valeurs actuelles
+        setStatus(t("status.invalid_zoom_values"));
+        if (minXInput && maxXInput) {
+            updateZoomInputs(); // Réaffiche les valeurs actuelles
+        }
     }
 }
-
-
-
-function resetTimeZoom() { 
-    updateTimeChart(); 
-    setTimeout(updateZoomInputs, 10);
-}
-
-
 // --- THEMES ---
 function changeTheme(theme) {
     document.body.setAttribute('data-theme', theme);
@@ -1408,8 +948,26 @@ function updateColorScale() {
 }
 
 // --- UTILS ---
-function openModal(id) { 
-    document.getElementById(id).style.display = 'block'; 
+function openModal(id) {
+    console.log('🔓 openModal appelé pour:', id);
+    const modal = document.getElementById(id);
+    console.log('📦 Modal trouvée:', modal);
+    modal.style.display = 'block';
+
+    // Initialiser draggable si la modale a la classe
+    const modalContent = modal.querySelector('.draggable-modal');
+    console.log('🔍 modalContent:', modalContent);
+    console.log('🔍 typeof makeModalDraggable:', typeof makeModalDraggable);
+
+    if (modalContent && typeof makeModalDraggable === 'function') {
+        console.log('✅ Appel de makeModalDraggable...');
+        makeModalDraggable(modalContent);
+    } else {
+        console.error('❌ Ne peut pas appeler makeModalDraggable:', {
+            modalContent: !!modalContent,
+            makeModalDraggableExists: typeof makeModalDraggable === 'function'
+        });
+    }
 }
 
 function closeModal(id) { 
@@ -1423,9 +981,39 @@ function setStatus(msg) {
     }, 3000); 
 }
 
-function resetTimeZoom() { 
-    updateTimeChart(); 
+function resetTimeZoom() {
+    const chart = appState.charts.time;
+    if (!chart || !appState.fullDataTime.length) {
+        setStatus(t("status.no_data_display"));
+        return;
+    }
+
+    // Réinitialiser le zoom horizontal à la plage complète des données
+    const t = appState.fullDataTime;
+    chart.options.scales.x.min = t[0];
+    chart.options.scales.x.max = t[t.length - 1];
+
+    // Réinitialiser le zoom vertical sur TOUTES les échelles Y
+    Object.keys(chart.scales).forEach(scaleKey => {
+        if (scaleKey.startsWith('y')) {
+            // Supprimer les limites personnalisées pour permettre l'auto-scaling
+            delete chart.options.scales[scaleKey].min;
+            delete chart.options.scales[scaleKey].max;
+        }
+    });
+
+    // Mettre à jour le graphique
+    chart.update('none');
+
+    // Mettre à jour les champs de zoom pour refléter les nouvelles valeurs
     setTimeout(updateZoomInputs, 10);
+
+    setStatus(t("status.zoom_reset"));
+
+    // Sauvegarder l'état après le reset
+    if (typeof saveZoomState === 'function') {
+        saveZoomState();
+    }
 }
 
 function resetFreqZoom() { 
@@ -1464,14 +1052,14 @@ function updateFsFromStep() {
         updateStats();
         performAnalysis();
         updateSpectrogram();
-        setStatus("Fs mis à jour à " + newFs.toFixed(1) + " Hz");
+        setStatus(t("status.fs_updated", {fs: newFs.toFixed(1)}));
     } else if (s > 0) {
         // Cas où il n'y a pas encore de données
         appState.fs = 1000/s;
         appState.timeIncrement = s;
         document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
         document.getElementById('display-increment-config').textContent = s.toFixed(2) + " ms";
-        setStatus("Fs configuré à " + appState.fs.toFixed(1) + " Hz");
+        setStatus(t("status.fs_configured", {fs: appState.fs.toFixed(1)}));
     }
 }
 
@@ -1671,3 +1259,141 @@ function toggleMouseHalo(enable) {
 // Exposer les fonctions globalement
 window.toggleMouseHalo = toggleMouseHalo;
 window.initMouseHalo = initMouseHalo;
+
+// ========================================
+// SIDEBAR REPLIABLE
+// ========================================
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn-header'); // Nouveau bouton dans le header
+    const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
+
+    if (sidebar.classList.contains('collapsed')) {
+        // Déplier
+        sidebar.classList.remove('collapsed');
+        if (icon) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+        }
+        console.log("✅ Sidebar dépliée");
+    } else {
+        // Replier
+        sidebar.classList.add('collapsed');
+        if (icon) {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+        console.log("✅ Sidebar repliée");
+    }
+
+    // Déclencher un redimensionnement des graphiques pour s'adapter au nouvel espace
+    setTimeout(() => {
+        if (window.globalCharts) {
+            if (window.globalCharts.time) window.globalCharts.time.resize();
+            if (window.globalCharts.freq) window.globalCharts.freq.resize();
+            if (window.globalCharts.spectro) window.globalCharts.spectro.resize();
+        }
+    }, 300); // Attendre la fin de l'animation CSS
+}
+
+window.toggleSidebar = toggleSidebar;
+// =====================================
+// MODALES DRAGGABLES
+// =====================================
+
+function makeModalDraggable(modalElement) {
+    console.log('🔧 makeModalDraggable appelé pour:', modalElement);
+
+    // Vérifier si déjà initialisé pour éviter les doublons
+    if (modalElement.dataset.draggableInitialized === 'true') {
+        console.log('⚠️ Modal déjà initialisée, skip');
+        return;
+    }
+    modalElement.dataset.draggableInitialized = 'true';
+
+    const header = modalElement.querySelector('h2');
+    if (!header) {
+        console.error('❌ Aucun h2 trouvé dans la modal');
+        return;
+    }
+    console.log('✅ Header trouvé:', header.textContent);
+
+    // Variables globales pour le drag
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    // Attacher l'événement au header
+    header.onmousedown = dragMouseDown;
+    console.log('✅ onmousedown attaché au header');
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        console.log('🎯 dragMouseDown appelé!');
+
+        // Obtenir la position initiale de la souris
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // Fixer la position de la modal
+        if (modalElement.style.position !== 'fixed') {
+            const rect = modalElement.getBoundingClientRect();
+            modalElement.style.position = 'fixed';
+            modalElement.style.left = rect.left + 'px';
+            modalElement.style.top = rect.top + 'px';
+            modalElement.style.margin = '0';
+        }
+
+        modalElement.classList.add('dragging');
+
+        console.log('📍 Position initiale souris:', pos3, pos4);
+
+        // Attacher les événements de mouvement
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+
+        // Calculer la nouvelle position
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        // Nouvelle position de la modal
+        let newTop = modalElement.offsetTop - pos2;
+        let newLeft = modalElement.offsetLeft - pos1;
+
+        // Limiter au viewport
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - modalElement.offsetWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - modalElement.offsetHeight));
+
+        // Appliquer la nouvelle position
+        modalElement.style.top = newTop + "px";
+        modalElement.style.left = newLeft + "px";
+
+        console.log('🔄 Dragging - Position:', newLeft, newTop);
+    }
+
+    function closeDragElement() {
+        console.log('✅ Drag terminé');
+        modalElement.classList.remove('dragging');
+
+        // Arrêter le mouvement
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+
+    console.log('📍 Modal draggable initialisée complètement');
+}
+
+// Initialiser les modales draggables au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    const draggableModals = document.querySelectorAll('.draggable-modal');
+    draggableModals.forEach(modal => makeModalDraggable(modal));
+    console.log('✅ Modales draggables initialisées:', draggableModals.length);
+});

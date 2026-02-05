@@ -1,72 +1,18 @@
 // --- UTILITY FUNCTIONS ---
 
-// --- SIGNAL GENERATOR ---
-function addFreqRow(f = 50, a = 1, p = 0) {
-    const div = document.createElement('div');
-    div.className = 'row-removable';
-    div.innerHTML = `<input type="number" class="gen-f" value="${f}"><input type="number" class="gen-a" value="${a}"><input type="number" class="gen-p" value="${p}"><button onclick="this.parentElement.remove()" class="btn-small" style="background:#f44336;">&times;</button>`;
-    document.getElementById('freq-inputs-container').appendChild(div);
-}
-
-function generateSignal() {
-    const fs = parseFloat(document.getElementById('gen-fs').value);
-    const duration = parseFloat(document.getElementById('gen-duration').value);
-    const noise = parseFloat(document.getElementById('gen-noise').value);
-    const dc = parseFloat(document.getElementById('gen-dc').value);
-
-    appState.fs = fs;
-    appState.timeIncrement = 1000 / fs; // Calcul de l'incrément
-    document.getElementById('display-fs-config').textContent = fs + " Hz";
-    document.getElementById('manual-step-config').value = (1000 / fs).toFixed(2);
-    document.getElementById('display-increment-config').textContent = appState.timeIncrement.toFixed(2) + " ms";
-
-    const n = Math.floor(fs * duration);
-    const t = new Float32Array(n);
-    const v = new Float32Array(n);
-    const rows = document.querySelectorAll('#freq-inputs-container .row-removable');
-
-    for (let i = 0; i < n; i++) {
-        const time = i / fs;
-        t[i] = time * 1000;
-        let val = dc;
-        rows.forEach(r => {
-            val += parseFloat(r.querySelector('.gen-a').value) * Math.sin(2 * Math.PI * parseFloat(r.querySelector('.gen-f').value) * time + parseFloat(r.querySelector('.gen-p').value) * Math.PI / 180);
-        });
-        v[i] = val + (Math.random() - 0.5) * 2 * noise;
-    }
-    appState.fullDataTime = t;
-    appState.fullDataPressure = v;
-    appState.cursorStart = duration * 0.2;
-    appState.cursorEnd = duration * 0.8;
-
-    // RÉINITIALISER LE LABEL POUR LES SIGNAUX GÉNÉRÉS
-    appState.yAxisLabel = "Pression (Bar)";
-
-    updateTimeChart();
-    updateStats();
-    performAnalysis();
-    updateSpectrogram();
-    closeModal('genModal');
-
-    // RÉINITIALISER LE SYSTÈME DE COLONNES
-    appState.availableColumns = [];
-    appState.currentColumnIndex = 0;
-    appState.allColumnData = [];
-    appState.yAxisLabel = "Pression (Bar)";
-
-    // MASQUER LE SÉLECTEUR DE COLONNES
-    const selectorRow = document.getElementById('column-selector-row');
-    if (selectorRow) selectorRow.style.display = 'none';
-
-    updateTimeChart();
-    updateStats();
-    performAnalysis();
-    updateSpectrogram();
-    closeModal('genModal');
-}
-
 // --- FILE HANDLING ---
 function handleFileUpload(input) {
+    console.log("📂 handleFileUpload() appelée");
+
+    // Vérifier si le système POO est actif
+    if (typeof projectManager !== 'undefined' && projectManager !== null) {
+        console.log("✅ Système POO actif - Utilisation de handleFileUpload_POO()");
+        return handleFileUpload_POO(input);
+    }
+
+    // ANCIEN CODE (fallback si POO non actif)
+    console.log("⚠️ Système POO inactif - Utilisation de l'ancien code");
+
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -76,7 +22,7 @@ function handleFileUpload(input) {
             const lines = content.split('\n').filter(l => l.trim());
 
             if (lines.length < 2) {
-                setStatus("Fichier CSV invalide");
+                setStatus(t("status.invalid_csv"));
                 return;
             }
 
@@ -135,199 +81,169 @@ function handleFileUpload(input) {
                 }
             }
 
- if (validLines > 1) {
-    // CONFIGURER L'ÉTAT
-    appState.columnNames = columnNames;
-    appState.allColumnData = allData;
-    appState.availableColumns = [];
-    
-    // Préparer les colonnes disponibles (sauf temps)
-    for (let i = 1; i < columnNames.length; i++) {
-        let label = columnNames[i].replace(/\[.*?\]/g, '').trim();
-        const unitMatch = columnNames[i].match(/\[(.*?)\]/);
-        if (unitMatch && !label.includes('(')) {
-            label += ` (${unitMatch[1]})`;
-        }
-        
-        appState.availableColumns.push({
-            index: i,
-            name: columnNames[i],
-            label: label
-        });
-    }
-    
-    appState.currentColumnIndex = 0;
-    
-    // Configurer les données temps
-    const timeData = allData[0];
-    
-    // Convertir secondes → millisecondes
-    const timeInMs = timeData.map(t => t * 1000);
-    appState.fullDataTime = new Float32Array(timeInMs);
-    
-    // CALCULER L'INCRÉMENT ET Fs
-    if (timeData.length >= 2) {
-        // Calcul de l'incrément moyen (en secondes)
-        let totalDiff = 0;
-        let count = 0;
-        
-        for (let i = 1; i < timeData.length; i++) {
-            const diff = timeData[i] - timeData[i-1];
-            if (diff > 0) {
-                totalDiff += diff;
-                count++;
-            }
-        }
-        
-        const avgIncrementSec = count > 0 ? totalDiff / count : 0.001;
-        const avgIncrementMs = avgIncrementSec * 1000;
-        
-        // Calculer Fs
-        appState.fs = 1000 / avgIncrementMs;
-        appState.timeIncrement = avgIncrementMs / 1000;
-        
-        // Mettre à jour l'interface
-        document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
-        document.getElementById('manual-step-config').value = avgIncrementMs.toFixed(1);
-        document.getElementById('display-increment-config').textContent = avgIncrementMs.toFixed(1) + " ms";
-    } else {
-        // Valeurs par défaut
-        appState.fs = 1000;
-        appState.timeIncrement = 0.001;
-        document.getElementById('display-fs-config').textContent = "1000.0 Hz";
-        document.getElementById('manual-step-config').value = "1.0";
-        document.getElementById('display-increment-config').textContent = "1.0 ms";
-    }
+            if (validLines > 1) {
+                // CONFIGURER L'ÉTAT
+                appState.columnNames = columnNames;
+                appState.allColumnData = allData;
+                appState.availableColumns = [];
 
-    document.getElementById('display-n-config').textContent = timeData.length;
-    
-    // Charger la première colonne
-    loadCurrentColumnData();
-    updateColumnSelector();
+                // Préparer les colonnes disponibles (sauf temps)
+                for (let i = 1; i < columnNames.length; i++) {
+                    let label = columnNames[i].replace(/\[.*?\]/g, '').trim();
+                    const unitMatch = columnNames[i].match(/\[(.*?)\]/);
+                    if (unitMatch && !label.includes('(')) {
+                        label += ` (${unitMatch[1]})`;
+                    }
 
-    // Initialiser la configuration multi-canaux
-    if (typeof initChannelConfig === 'function') {
-        initChannelConfig();
-        // Mettre à jour le graphique pour afficher tous les canaux immédiatement
-        if (typeof updateTimeChart === 'function') {
-            updateTimeChart();
-        }
+                    appState.availableColumns.push({
+                        index: i,
+                        name: columnNames[i],
+                        label: label
+                    });
+                }
 
-        // Ouvrir et fermer automatiquement le configurateur pour initialiser tous les paramètres
-        // (invisible pour l'utilisateur, se fait en quelques millisecondes)
-        if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
-            openChannelConfig();
-            setTimeout(() => closeChannelConfig(), 10); // Fermeture après 10ms
-        }
-    }
+                appState.currentColumnIndex = 0;
 
-    // Initialiser le système de lissage
-    if (typeof initSmoothingSystem === 'function') {
-        initSmoothingSystem();
-    }
+                // Configurer les données temps
+                const timeData = allData[0];
 
-    // Initialiser le système de canal calculé
-    if (typeof initCalculatedChannelSystem === 'function') {
-        initCalculatedChannelSystem();
-    }
+                // Convertir secondes → millisecondes
+                const timeInMs = timeData.map(t => t * 1000);
+                appState.fullDataTime = new Float32Array(timeInMs);
 
-    // Attendre que le graphique soit prêt avant d'effectuer les opérations
-    setTimeout(() => {
-        console.log("🔧 Post-load operations...");
+                // CALCULER L'INCRÉMENT ET Fs
+                if (timeData.length >= 2) {
+                    // Calcul de l'incrément moyen (en secondes)
+                    let totalDiff = 0;
+                    let count = 0;
 
-        // Effacer toutes les annotations existantes
-        if (typeof clearAnnotations === 'function') {
-            console.log("✅ Clearing annotations...");
-            clearAnnotations();
-        } else {
-            console.error("❌ clearAnnotations function not found!");
-        }
+                    for (let i = 1; i < timeData.length; i++) {
+                        const diff = timeData[i] - timeData[i - 1];
+                        if (diff > 0) {
+                            totalDiff += diff;
+                            count++;
+                        }
+                    }
 
-        // Effacer tous les intervalles existants
-        if (typeof clearAllIntervals === 'function') {
-            console.log("✅ Clearing intervals...");
-            clearAllIntervals();
-        } else {
-            console.error("❌ clearAllIntervals function not found!");
-        }
+                    const avgIncrementSec = count > 0 ? totalDiff / count : 0.001;
+                    const avgIncrementMs = avgIncrementSec * 1000;
 
-        // Centrer les curseurs automatiquement après que le chart soit mis à jour
-        setTimeout(() => {
-            if (typeof centerCursors === 'function') {
-                console.log("✅ Calling centerCursors...");
-                centerCursors();
+                    // Calculer Fs
+                    appState.fs = 1000 / avgIncrementMs;
+                    appState.timeIncrement = avgIncrementMs / 1000;
+
+                    // Mettre à jour l'interface
+                    document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
+                    document.getElementById('manual-step-config').value = avgIncrementMs.toFixed(1);
+                    document.getElementById('display-increment-config').textContent = avgIncrementMs.toFixed(1) + " ms";
+                } else {
+                    // Valeurs par défaut
+                    appState.fs = 1000;
+                    appState.timeIncrement = 0.001;
+                    document.getElementById('display-fs-config').textContent = "1000.0 Hz";
+                    document.getElementById('manual-step-config').value = "1.0";
+                    document.getElementById('display-increment-config').textContent = "1.0 ms";
+                }
+
+                // Charger la première colonne par défaut
+                loadColumnData(0);
+
             } else {
-                console.error("❌ centerCursors function not found!");
+                setStatus(t("status.not_enough_data"));
             }
-        }, 400); // Délai supplémentaire pour le chart.update()
-    }, 200); // Délai pour assurer que le chart est prêt
-
-    setStatus(`Fichier chargé: ${validLines} points, ${appState.availableColumns.length} colonnes, Fs: ${appState.fs.toFixed(1)} Hz`);
-    
-} else {
-    setStatus("Données insuffisantes");
-}
-        } catch (error) {
-            console.error("Erreur chargement CSV:", error);
-            setStatus("Erreur lors du chargement");
+        } catch (err) {
+            console.error("Erreur lors du parsing CSV:", err);
+            setStatus(t("status.file_load_error"));
         }
-    };
-    reader.onerror = function () {
-        setStatus("Erreur lecture fichier");
     };
     reader.readAsText(file);
-    input.value = '';
 }
 
-function handleProjectUpload(input) {
+/**
+ * Version POO du chargement CSV
+ * Crée un nouveau projet avec les données du fichier
+ */
+async function handleFileUpload_POO(input) {
+    console.log("📂 handleFileUpload_POO() - Chargement avec système POO");
+
     const file = input.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const d = JSON.parse(e.target.result);
-        appState.fs = d.appState.fs;
-        appState.cursorStart = d.appState.cursorStart;
-        appState.cursorEnd = d.appState.cursorEnd;
-        appState.timeIncrement = d.appState.timeIncrement || 1000 / appState.fs;
-        appState.fullDataTime = new Float32Array(d.data.time);
-        appState.fullDataPressure = new Float32Array(d.data.values);
-        document.getElementById('user-notes').value = d.notes || "";
-        document.getElementById('display-fs-config').textContent = appState.fs + " Hz";
-        document.getElementById('display-increment-config').textContent = appState.timeIncrement.toFixed(2) + " ms";
 
-        // Charger les annotations si présentes
-        if (d.appState.annotations && typeof loadAnnotations === 'function') {
-            console.log("📝 Loading annotations from project:", d.appState.annotations.length, "annotations");
-            loadAnnotations(d.appState.annotations);
+    try {
+        setStatus(t("status.loading_file", {name: file.name}));
+
+        console.log(`📂 Création du projet depuis : ${file.name}`);
+
+        // Créer un nouveau projet depuis le CSV
+        const project = await projectManager.createProjectFromCSV(file);
+
+        console.log(`✅ CSV chargé dans le projet : ${project.name}`);
+        console.log(`   - ${project.state.fullDataTime.length} points`);
+        console.log(`   - Fs: ${project.state.fs.toFixed(1)} Hz`);
+        console.log(`   - ${project.state.availableColumns.length} canaux`);
+
+        // Mettre à jour le titre de l'acquisition
+        setAcquisitionTitle(project.name);
+
+        // Mettre à jour l'interface
+        if (typeof updateAllInterface === 'function') {
+            updateAllInterface(true); // Chargement initial CSV = fermer freq/spectro
         } else {
-            console.log("⚠️ No annotations found in project file");
+            // Fallback
+            updateTimeChart(true); // Chargement initial CSV = fermer freq/spectro
+            updateStats();
+            performAnalysis();
+            updateSpectrogram();
         }
 
-        updateTimeChart();
-        updateStats();
-        performAnalysis();
-        updateSpectrogram();
-        setStatus("Projet chargé.");
-    };
-    reader.readAsText(file);
-    input.value = '';
+        // Ouvrir le configurateur, appliquer auto-groupé, puis fermer (invisible pour l'utilisateur)
+        setTimeout(() => {
+            if (typeof openChannelConfig === 'function' && typeof closeChannelConfig === 'function') {
+                console.log("🔧 Auto-config: Ouverture du configurateur...");
+                openChannelConfig();
+
+                // Attendre que le DOM soit prêt, puis appliquer auto-groupé PENDANT que c'est ouvert
+                setTimeout(() => {
+                    if (typeof autoPresetYScales === 'function') {
+                        console.log("📊 Application du preset 'Auto Groupé' (configurateur ouvert)...");
+                        autoPresetYScales();
+                    }
+
+                    // Centrer les curseurs
+                    setTimeout(() => {
+                        if (typeof centerCursors === 'function') {
+                            console.log("🎯 Centrage des curseurs...");
+                            centerCursors();
+                        }
+
+                        // Fermer le configurateur après tout
+                        setTimeout(() => {
+                            closeChannelConfig();
+                            console.log("✅ Auto-config terminée (configurateur fermé)");
+                        }, 100);
+                    }, 100);
+                }, 200);
+            }
+        }, 300);
+
+        setStatus(t("status.file_loaded", {name: project.name}));
+
+        return project;
+
+    } catch (error) {
+        console.error("❌ Erreur lors du chargement CSV :", error);
+        setStatus(t("status.error_msg", {msg: error.message}));
+    }
 }
 
+// ⚠️ REMOVED: handleProjectUpload - Now handled by loadHSP() in hsp-manager.js
+
 // --- EXPORT SYSTEM ---
-function initSaveProject() {
-    if (!appState.fullDataTime.length) {
-        alert("Aucune donnée.");
-        return;
-    }
-    appState.currentExportAction = 'save';
-    prepareFilename();
-    openModal('filenameModal');
-    setupExportButton(); // S'assurer que le bouton est configuré
-}
+// ⚠️ REMOVED: initSaveProject - Now handled by saveHSP()/exportToHSP() in hsp-manager.js
 
 function initExportData() {
     if (!appState.fullDataTime.length) {
-        alert("Aucune donnée.");
+        alert(t("dialogs.no_data"));
         return;
     }
     appState.currentExportAction = 'exportCsv';
@@ -338,7 +254,7 @@ function initExportData() {
 
 function initCaptureScreenshot() {
     if (!appState.fullDataTime.length) {
-        alert("Aucune donnée.");
+        alert(t("dialogs.no_data"));
         return;
     }
     appState.currentExportAction = 'exportPng';
@@ -382,22 +298,23 @@ function setupExportButton() {
 function handleExportConfirm() {
     const name = document.getElementById('export-filename').value;
     if (!name) {
-        setStatus("Veuillez entrer un nom de fichier");
+        setStatus(t("status.please_enter_filename"));
         return;
     }
 
     console.log("🔄 Début export - Action:", appState.currentExportAction, "Nom:", name);
 
     try {
-        if (appState.currentExportAction === 'save') {
-            performSaveProject(name);
-        } else if (appState.currentExportAction === 'exportCsv') {
+        // ⚠️ REMOVED: 'save' action - Now handled by hsp-manager.js
+        if (appState.currentExportAction === 'exportCsv') {
             performExportCsv(name);
         } else if (appState.currentExportAction === 'exportPng') {
             performCapture(name);
+        } else if (appState.currentExportAction === 'exportPdf') {
+            captureAsPDF(name);
         } else {
             console.error("❌ Action inconnue:", appState.currentExportAction);
-            setStatus("Erreur: type d'export inconnu");
+            setStatus(t("status.unknown_export_type"));
             return;
         }
 
@@ -406,54 +323,72 @@ function handleExportConfirm() {
 
     } catch (error) {
         console.error("❌ Erreur lors de l'export:", error);
-        setStatus("Erreur lors de l'export");
+        setStatus(t("status.export_error"));
     }
 }
 
-async function performSaveProject(filename) {
-    const annotationsToSave = appState.annotations || [];
-    console.log("💾 Saving project with", annotationsToSave.length, "annotations");
-
-    const projectData = {
-        version: "1.4.0",
-        date: new Date().toISOString(),
-        appState: {
-            fs: appState.fs,
-            cursorStart: appState.cursorStart,
-            cursorEnd: appState.cursorEnd,
-            timeIncrement: appState.timeIncrement,
-            annotations: annotationsToSave // Sauvegarder les annotations
-        },
-        data: {
-            time: Array.from(appState.fullDataTime),
-            values: Array.from(appState.fullDataPressure)
-        },
-        notes: document.getElementById('user-notes').value
-    };
-
-    console.log("💾 Project data prepared:", {
-        version: projectData.version,
-        annotationCount: projectData.appState.annotations.length,
-        dataPoints: projectData.data.time.length
-    });
-
-    const blob = new Blob([JSON.stringify(projectData)], { type: "application/json" });
-    await downloadBlob(blob, `${filename}.hsp`);
-    setStatus("Projet enregistré.");
-}
+// ⚠️ REMOVED: performSaveProject - Now handled by performHSPSave() in hsp-manager.js
 
 async function performExportCsv(filename) {
-    const startIdx = appState.fullDataTime.findIndex(t => t >= appState.cursorStart * 1000);
-    let endIdx = appState.fullDataTime.findIndex(t => t >= appState.cursorEnd * 1000);
-    if (endIdx === -1) endIdx = appState.fullDataTime.length;
+    // Exporter TOUTES les données (pas seulement entre les curseurs)
+    const startIdx = 0;
+    const endIdx = appState.fullDataTime.length;
 
-    let content = "Temps(ms);Valeur(Bar)\n";
-    for (let i = startIdx; i < endIdx; i++) {
-        content += `${appState.fullDataTime[i].toFixed(2)};${appState.fullDataPressure[i].toFixed(4)}\n`;
+    // Vérifier si nous avons des données multi-canaux
+    const hasMultiChannel = appState.allColumnData &&
+                           appState.availableColumns &&
+                           appState.availableColumns.length > 0;
+
+    let content = "";
+
+    if (hasMultiChannel) {
+        // MODE MULTI-CANAUX : Exporter toutes les colonnes
+        console.log(`📊 Export multi-canaux : ${appState.availableColumns.length} canaux`);
+
+        // Construire le header avec tous les noms de colonnes
+        const timeColName = "Zeit [s]";
+        const columnNames = appState.availableColumns.map(col => {
+            // Utiliser le label original de la colonne (ex: "S1: P1 [bar]")
+            return col.label + (col.unit ? ` [${col.unit}]` : '');
+        });
+
+        content = timeColName + ";" + columnNames.join(";") + "\n";
+
+        // Exporter les données ligne par ligne
+        for (let i = startIdx; i < endIdx; i++) {
+            // Temps en secondes avec format européen (virgule)
+            const timeInSeconds = (appState.fullDataTime[i] / 1000).toFixed(3).replace('.', ',');
+
+            // Toutes les valeurs des colonnes avec format européen
+            const values = appState.availableColumns.map(col => {
+                const value = appState.allColumnData[col.index][i];
+                return value.toFixed(2).replace('.', ',');
+            });
+
+            content += timeInSeconds + ";" + values.join(";") + "\n";
+        }
+
+        setStatus(t("status.csv_exported", {channels: appState.availableColumns.length, points: endIdx}));
+
+    } else {
+        // MODE MONO-CANAL : Export simple (compatibilité)
+        console.log("📊 Export mono-canal");
+
+        const timeColName = "Zeit [s]";
+        const pressureColName = appState.yAxisLabel || "S1: P1 [bar]";
+
+        content = `${timeColName};${pressureColName}\n`;
+
+        for (let i = startIdx; i < endIdx; i++) {
+            const timeInSeconds = (appState.fullDataTime[i] / 1000).toFixed(3).replace('.', ',');
+            const pressure = appState.fullDataPressure[i].toFixed(2).replace('.', ',');
+            content += `${timeInSeconds};${pressure}\n`;
+        }
+
+        setStatus(t("status.csv_exported_european"));
     }
 
     await downloadBlob(new Blob([content], { type: "text/csv;charset=utf-8" }), `${filename}.csv`);
-    setStatus("Fichier CSV exporté.");
 }
 
 function performCapture(filename) {
@@ -466,7 +401,7 @@ function performCapture(filename) {
         const mainContent = document.querySelector('.plots-area');
         const elementToCapture = mainContent || document.body;
         
-        setStatus("Préparation de la capture...");
+        setStatus(t("status.preparing_capture"));
         
         html2canvas(elementToCapture, {
             scale: 1.5,
@@ -476,11 +411,11 @@ function performCapture(filename) {
             // Convertir le canvas en Blob
             canvas.toBlob(blob => {
                 downloadBlob(blob, `${filename}.png`);
-                setStatus("Capture réussie!");
+                setStatus(t("status.capture_success"));
             }, 'image/png');
         }).catch(err => {
             console.error(err);
-            setStatus("Erreur: " + err.message);
+            setStatus(t("status.error_msg", {msg: err.message}));
         });
     }, 500);
 }
@@ -498,12 +433,12 @@ function attemptSimpleCapture(filename) {
         }).then(canvas => {
             canvas.toBlob(blob => {
                 downloadBlob(blob, `${filename}_simple.png`);
-                setStatus("Capture simplifiée effectuée");
+                setStatus(t("status.simplified_capture_done"));
             }, 'image/png');
         });
     } catch (error) {
         console.error("❌ Échec capture simplifiée:", error);
-        setStatus("Échec complet de la capture");
+        setStatus(t("status.capture_total_failure"));
     }
 }
 
@@ -522,6 +457,8 @@ async function downloadBlob(blob, name) {
                 accepts['text/csv'] = ['.csv'];
             } else if (extension === 'png') {
                 accepts['image/png'] = ['.png'];
+            } else if (extension === 'pdf') {
+                accepts['application/pdf'] = ['.pdf'];
             }
 
             // Afficher le dialogue "Enregistrer sous"
@@ -539,14 +476,14 @@ async function downloadBlob(blob, name) {
             await writable.close();
 
             console.log(`✅ Fichier sauvegardé avec succès: ${name}`);
-            setStatus(`Fichier sauvegardé: ${name}`);
-            return;
+            setStatus(t("status.file_saved", {name}));
+            return handle; // Retourner le fileHandle pour stockage
         } catch (err) {
             // Si l'utilisateur annule, ne rien faire
             if (err.name === 'AbortError') {
                 console.log('❌ Sauvegarde annulée par l\'utilisateur');
-                setStatus('Sauvegarde annulée');
-                return;
+                setStatus(t("status.save_cancelled"));
+                return null;
             }
             // Sinon, utiliser le fallback
             console.warn('⚠️ showSaveFilePicker a échoué, utilisation du fallback:', err);
@@ -563,6 +500,7 @@ async function downloadBlob(blob, name) {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     console.log(`📥 Fichier téléchargé (fallback): ${name}`);
+    return null; // Pas de fileHandle en mode fallback
 }
 
 // Initialiser au chargement
@@ -727,8 +665,12 @@ function deactivateOtherTools(currentTool) {
 // Fermer tous les accordéons d'outils sauf celui spécifié (pour exclusivité visuelle)
 function closeOtherToolAccordions(currentToolId) {
     const toolAccordions = [
+        { id: 'ruler', contentId: 'ruler-results', iconId: 'ruler-accordion-icon' },
+        { id: 'track', contentId: 'track-results', iconId: 'track-accordion-icon' },
+        { id: 'measure', contentId: 'measure-results', iconId: 'measure-accordion-icon' },
+        { id: 'snappoint', contentId: 'snappoint-content', iconId: 'snappoint-accordion-icon' },
         { id: 'interval', contentId: 'interval-content', iconId: 'interval-accordion-icon' },
-        { id: 'diffcanal', contentId: 'diff-canal-content', iconId: null },
+        { id: 'diffcanal', contentId: 'diff-canal-content', iconId: 'diff-canal-accordion-icon' },
         { id: 'smoothing', contentId: 'smoothing-content', iconId: 'smoothing-toggle-icon' },
         { id: 'calculated', contentId: 'calculated-channel-content', iconId: 'calculated-channel-toggle-icon' }
     ];
@@ -765,6 +707,7 @@ function closeAllMainAccordions(exceptTool) {
             // Sous-accordéons de Canal
             subAccordions: [
                 { contentId: 'smoothing-content', iconId: 'smoothing-toggle-icon' },
+                { contentId: 'derivative-content', iconId: 'derivative-toggle-icon' },
                 { contentId: 'calculated-channel-content', iconId: 'calculated-channel-toggle-icon' }
             ]
         },
@@ -822,4 +765,232 @@ function closeAllMainAccordions(exceptTool) {
             }
         }
     });
+}
+
+// =====================================
+// EXPORT PDF
+// =====================================
+
+function initCapturePDF() {
+    if (!appState.fullDataTime.length) {
+        alert(t("dialogs.no_data_export"));
+        return;
+    }
+    appState.currentExportAction = 'exportPdf';
+    prepareFilename();
+    openModal('filenameModal');
+    setupExportButton();
+}
+
+function captureAsPDF(filename) {
+    console.log("📄 Début de l'export PDF...");
+    setStatus(t("status.generating_pdf"));
+
+    // Initialiser jsPDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('landscape', 'mm', 'a4');
+
+    // Définir les métadonnées
+    pdf.setProperties({
+        title: `Analyse HydraSpec - ${filename}`,
+        subject: 'Analyse spectrale et temporelle',
+        author: 'HydraSpec Pro v1.4.0',
+        keywords: 'FFT, spectrogramme, analyse signal, HydraSpec',
+        creator: 'HydraSpec Pro'
+    });
+
+    // Page 1: Page de résumé
+    createPDFSummaryPage(pdf, filename);
+
+    // Page 2: Graphique temporel
+    pdf.addPage();
+    capturePDFTimeDomain(pdf, filename);
+}
+
+function createPDFSummaryPage(pdf, filename) {
+    // Titre principal
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('RAPPORT D\'ANALYSE SPECTRALE', 148.5, 20, { align: 'center' });
+
+    // Informations générales
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('fr-FR');
+    const timeStr = now.toLocaleTimeString('fr-FR');
+
+    let y = 40;
+    pdf.text(`Fichier: ${filename}`, 20, y);
+    y += 7;
+    pdf.text(`Date d'analyse: ${dateStr} à ${timeStr}`, 20, y);
+    y += 7;
+
+    // Informations sur les données
+    pdf.setFont('helvetica', 'bold');
+    y += 5;
+    pdf.text('CARACTÉRISTIQUES DES DONNÉES:', 20, y);
+    pdf.setFont('helvetica', 'normal');
+    y += 7;
+
+    pdf.text(`• Nombre d'échantillons: ${appState.fullDataTime.length}`, 25, y);
+    y += 6;
+
+    if (appState.fs) {
+        pdf.text(`• Fréquence d'échantillonnage: ${appState.fs.toFixed(2)} Hz`, 25, y);
+        y += 6;
+    }
+
+    const duration = (appState.fullDataTime[appState.fullDataTime.length - 1] - appState.fullDataTime[0]) / 1000;
+    pdf.text(`• Durée totale: ${duration.toFixed(3)} secondes`, 25, y);
+    y += 10;
+
+    // Notes utilisateur
+    const notesElement = document.getElementById('user-notes');
+    if (notesElement && notesElement.value.trim()) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('NOTES:', 20, y);
+        pdf.setFont('helvetica', 'normal');
+        y += 7;
+
+        const notes = notesElement.value.trim();
+        const lines = pdf.splitTextToSize(notes, 257);
+        pdf.text(lines, 25, y);
+    }
+
+    // Pied de page
+    pdf.setFontSize(8);
+    pdf.setTextColor(128, 128, 128);
+    pdf.text('HydraSpec Pro v1.4.0', 20, 200);
+    pdf.text(`Page 1/${pdf.internal.getNumberOfPages()}`, 270, 200);
+    pdf.setTextColor(0, 0, 0);
+}
+
+function capturePDFTimeDomain(pdf, filename) {
+    // Titre
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('DOMAINE TEMPOREL', 148.5, 15, { align: 'center' });
+
+    // Capturer le graphique temporel
+    const timeContainer = document.getElementById('time-container');
+    if (timeContainer && uiState.timeVisible) {
+        html2canvas(timeContainer, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 25, 277, 140);
+
+            // Ajouter les graphiques fréquentiels s'ils sont visibles
+            if (uiState.freqVisible) {
+                pdf.addPage();
+                capturePDFFrequencyDomain(pdf, filename);
+            } else if (uiState.spectroVisible) {
+                pdf.addPage();
+                capturePDFSpectrogram(pdf, filename);
+            } else {
+                // Finaliser et sauvegarder
+                finalizePDF(pdf, filename);
+            }
+        }).catch(err => {
+            console.error("❌ Erreur capture temps:", err);
+            setStatus(t("status.time_graph_capture_error"), 'error');
+        });
+    } else {
+        // Pas de graphique temporel, passer au suivant
+        if (uiState.freqVisible) {
+            capturePDFFrequencyDomain(pdf, filename);
+        } else if (uiState.spectroVisible) {
+            capturePDFSpectrogram(pdf, filename);
+        } else {
+            finalizePDF(pdf, filename);
+        }
+    }
+}
+
+function capturePDFFrequencyDomain(pdf, filename) {
+    // Titre
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('DOMAINE FRÉQUENTIEL (FFT)', 148.5, 15, { align: 'center' });
+
+    const freqContainer = document.getElementById('freq-container');
+    if (freqContainer) {
+        html2canvas(freqContainer, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 25, 277, 140);
+
+            // Ajouter le spectrogramme s'il est visible
+            if (uiState.spectroVisible) {
+                pdf.addPage();
+                capturePDFSpectrogram(pdf, filename);
+            } else {
+                finalizePDF(pdf, filename);
+            }
+        }).catch(err => {
+            console.error("❌ Erreur capture fréquence:", err);
+            if (uiState.spectroVisible) {
+                pdf.addPage();
+                capturePDFSpectrogram(pdf, filename);
+            } else {
+                finalizePDF(pdf, filename);
+            }
+        });
+    } else {
+        if (uiState.spectroVisible) {
+            capturePDFSpectrogram(pdf, filename);
+        } else {
+            finalizePDF(pdf, filename);
+        }
+    }
+}
+
+function capturePDFSpectrogram(pdf, filename) {
+    // Titre
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('SPECTROGRAMME STFT', 148.5, 15, { align: 'center' });
+
+    const spectroContainer = document.getElementById('spectro-container');
+    if (spectroContainer) {
+        html2canvas(spectroContainer, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: getComputedStyle(document.body).backgroundColor
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 25, 277, 140);
+
+            finalizePDF(pdf, filename);
+        }).catch(err => {
+            console.error("❌ Erreur capture spectrogramme:", err);
+            finalizePDF(pdf, filename);
+        });
+    } else {
+        finalizePDF(pdf, filename);
+    }
+}
+
+function finalizePDF(pdf, filename) {
+    // Ajouter les numéros de page sur toutes les pages
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(128, 128, 128);
+        pdf.text(`Page ${i}/${pageCount}`, 270, 200);
+    }
+
+    // Convertir le PDF en Blob et utiliser downloadBlob pour la boîte de dialogue native
+    const blob = pdf.output('blob');
+    downloadBlob(blob, `${filename}.pdf`);
+    setStatus(t("status.pdf_export_success"), 'success');
+    closeModal('filenameModal');
 }

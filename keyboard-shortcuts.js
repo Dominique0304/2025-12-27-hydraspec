@@ -29,13 +29,11 @@ const keyboardShortcuts = {
 let shortcutsEnabled = true;
 let helpModalVisible = false;
 
-// Initialiser les raccourcis clavier
+// Initialiser les raccourcis clavier (DÉSACTIVÉ)
 function initKeyboardShortcuts() {
-    document.addEventListener('keydown', handleKeyboardShortcut);
-    console.log('⌨️ Raccourcis clavier initialisés');
-
-    // Créer la modal d'aide
-    createKeyboardHelpModal();
+    // Raccourcis clavier désactivés par l'utilisateur
+    // Les raccourcis de zoom dans les graphiques restent actifs (gérés dans charts.js)
+    console.log('⌨️ Raccourcis clavier désactivés (zoom graphiques toujours actif)');
 }
 
 // Gérer les raccourcis clavier

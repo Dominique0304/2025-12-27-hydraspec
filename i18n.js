@@ -49,7 +49,7 @@ const i18nTranslations = {
         dirac_spec: "(Spectre de Dirac/FFT)",
         language: "Langue",
         theme: "Thème",
-        help_title: "Aide & Détails Techniques - HydraSpec Pro V 02/02/2026",
+        help_title: "Aide & Détails Techniques - HydraSpec Pro V 07/02/2026",
         spectrogram_title: "SPECTROGRAMME STFT",
 
         // ===== MENUS =====
@@ -658,7 +658,7 @@ const i18nTranslations = {
         dirac_spec: "(Dirac Spectrum/FFT)",
         language: "Language",
         theme: "Theme",
-        help_title: "Help & Technical Details - HydraSpec Pro V 02/02/2026",
+        help_title: "Help & Technical Details - HydraSpec Pro V 07/02/2026",
         spectrogram_title: "STFT SPECTROGRAM",
 
         // MENUS
@@ -1249,7 +1249,7 @@ const i18nTranslations = {
         dirac_spec: "(Dirac Spektrum/FFT)",
         language: "Sprache",
         theme: "Thema",
-        help_title: "Hilfe & Technische Details - HydraSpec Pro V 02/02/2026",
+        help_title: "Hilfe & Technische Details - HydraSpec Pro V 07/02/2026",
         spectrogram_title: "STFT-SPEKTROGRAMM",
 
         // MENUS

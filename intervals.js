@@ -848,83 +848,65 @@ function clearAllIntervals() {
 
 // Sauvegarder les intervalles dans le localStorage
 function saveIntervals() {
-    try {
-        const data = intervals.map(interval => ({
-            id: interval.id,
-            startTime: interval.startTime,
-            endTime: interval.endTime,
-            comment: interval.comment,
-            yPosition: interval.yPosition,
-            color: interval.color,
-            visible: interval.visible,
-            fontSize: interval.fontSize,
-            fontWeight: interval.fontWeight,
-            fontStyle: interval.fontStyle,
-            textDecoration: interval.textDecoration
-        }));
+    // ⚠️ DÉSACTIVÉ : Cette fonction legacy utilisait localStorage avec une clé globale
+    // qui causait des conflits entre projets (intervalles partagés entre fichiers).
+    // Le système multi-projets sauvegarde déjà les intervalles dans project.toolsState
+    // via saveAllToolsState() et project.intervalManager.
+    // Ne rien faire ici - la sauvegarde est gérée par le système de projets.
+    return;
 
-        localStorage.setItem('hydraspec_intervals', JSON.stringify(data));
-    } catch (e) {
-        console.error('Erreur sauvegarde intervalles:', e);
-    }
+    // CODE LEGACY DÉSACTIVÉ :
+    // try {
+    //     const data = intervals.map(interval => ({
+    //         id: interval.id,
+    //         startTime: interval.startTime,
+    //         endTime: interval.endTime,
+    //         comment: interval.comment,
+    //         yPosition: interval.yPosition,
+    //         color: interval.color,
+    //         visible: interval.visible,
+    //         fontSize: interval.fontSize,
+    //         fontWeight: interval.fontWeight,
+    //         fontStyle: interval.fontStyle,
+    //         textDecoration: interval.textDecoration
+    //     }));
+    //     localStorage.setItem('hydraspec_intervals', JSON.stringify(data));
+    // } catch (e) {
+    //     console.error('Erreur sauvegarde intervalles:', e);
+    // }
 }
 
 // Charger les intervalles depuis le localStorage
 function loadIntervals() {
-    try {
-        const saved = localStorage.getItem('hydraspec_intervals');
-        if (!saved) return;
+    // ⚠️ DÉSACTIVÉ : Cette fonction legacy chargeait depuis localStorage avec une clé globale
+    // qui causait des conflits entre projets (intervalles partagés entre fichiers).
+    // Le système multi-projets restaure déjà les intervalles depuis project.toolsState
+    // via restoreAllToolsState() et project.intervalManager.
+    // Ne rien faire ici - la restauration est gérée par le système de projets.
+    return;
 
-        const data = JSON.parse(saved);
-
-        // ✅ POO: Utiliser le manager au lieu de réaffecter la variable globale
-        const project = projectManager?.getActive();
-        if (project?.intervalManager) {
-            project.intervalManager.load({
-                intervals: data,
-                nextIntervalId: Math.max(...data.map(item => {
-                    const idNum = parseInt(item.id.replace('interval-', ''));
-                    return isNaN(idNum) ? 1 : idNum + 1;
-                }), 1)
-            });
-            // Synchroniser les variables globales depuis le manager
-            if (typeof syncGlobalVariablesWithManagers === 'function') {
-                syncGlobalVariablesWithManagers();
-            }
-        } else {
-            // Fallback : vider et remplir le tableau sans le réaffecter
-            intervals.length = 0;
-            data.forEach(item => {
-                const interval = new Interval(
-                    item.id,
-                    item.startTime,
-                    item.endTime,
-                    item.comment || '',
-                    item.yPosition || 0.5
-                );
-                interval.color = item.color || '#4ECDC4';
-                interval.visible = item.visible !== false;
-
-                // Restaurer les propriétés de formatage
-                interval.fontSize = item.fontSize || 11;
-                interval.fontWeight = item.fontWeight || 'normal';
-                interval.fontStyle = item.fontStyle || 'normal';
-                interval.textDecoration = item.textDecoration || 'none';
-
-                // Mettre à jour nextIntervalId
-                const idNum = parseInt(item.id.replace('interval-', ''));
-                if (idNum >= nextIntervalId) {
-                    nextIntervalId = idNum + 1;
-                }
-
-                intervals.push(interval);
-            });
-        }
-
-        updateIntervalsDisplay();
-    } catch (e) {
-        console.error('Erreur chargement intervalles:', e);
-    }
+    // CODE LEGACY DÉSACTIVÉ :
+    // try {
+    //     const saved = localStorage.getItem('hydraspec_intervals');
+    //     if (!saved) return;
+    //     const data = JSON.parse(saved);
+    //     const project = projectManager?.getActive();
+    //     if (project?.intervalManager) {
+    //         project.intervalManager.load({
+    //             intervals: data,
+    //             nextIntervalId: Math.max(...data.map(item => {
+    //                 const idNum = parseInt(item.id.replace('interval-', ''));
+    //                 return isNaN(idNum) ? 1 : idNum + 1;
+    //             }), 1)
+    //         });
+    //         if (typeof syncGlobalVariablesWithManagers === 'function') {
+    //             syncGlobalVariablesWithManagers();
+    //         }
+    //     }
+    //     updateIntervalsDisplay();
+    // } catch (e) {
+    //     console.error('Erreur chargement intervalles:', e);
+    // }
 }
 
 // Charger les intervalles depuis les données d'un projet .hsp

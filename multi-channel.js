@@ -218,7 +218,7 @@ function updateChannelConfigUI() {
                 updateFFTCanalQuickView();
             }
 
-            updateTimeChart();
+            updateTimeChartMultiChannel();
             performAnalysis(); // Mettre à jour le graphique FFT
         };
         visibleCell.appendChild(visibleCheck);
@@ -238,7 +238,7 @@ function updateChannelConfigUI() {
         nameInput.onchange = (e) => {
             config.label = e.target.value;
             config.name = e.target.value;
-            updateTimeChart();
+            updateTimeChartMultiChannel();
         };
         nameCell.appendChild(nameInput);
 
@@ -260,7 +260,7 @@ function updateChannelConfigUI() {
             openAdvancedColorPicker(this.dataset.colorValue, (color) => {
                 this.dataset.colorValue = color;
                 config.color = color;
-                updateTimeChart();
+                updateTimeChartMultiChannel();
                 performAnalysis(); // Mettre à jour le graphique FFT
             }, this);
         };
@@ -292,7 +292,7 @@ function updateChannelConfigUI() {
                 updateCanalQuickView();
             }
 
-            updateTimeChart();
+            updateTimeChartMultiChannel();
             performAnalysis();
         };
         leftCell.appendChild(leftCheck);
@@ -323,7 +323,7 @@ function updateChannelConfigUI() {
                 updateCanalQuickView();
             }
 
-            updateTimeChart();
+            updateTimeChartMultiChannel();
             performAnalysis();
         };
         rightCell.appendChild(rightCheck);
@@ -382,7 +382,7 @@ function updateChannelConfigUI() {
             }
 
             // Mettre à jour le graphique (appliquera Ymin/Ymax du canal X si nécessaire)
-            updateTimeChart();
+            updateTimeChartMultiChannel();
         };
         yMinCell.appendChild(yMinInput);
 
@@ -417,7 +417,7 @@ function updateChannelConfigUI() {
             }
 
             // Mettre à jour le graphique (appliquera Ymin/Ymax du canal X si nécessaire)
-            updateTimeChart();
+            updateTimeChartMultiChannel();
         };
         yMaxCell.appendChild(yMaxInput);
 
@@ -475,7 +475,7 @@ function updateChannelConfigUI() {
                 config.yMin = yMin;
                 config.yMax = yMax;
 
-                updateTimeChart();
+                updateTimeChartMultiChannel();
             }
         };
 
@@ -869,7 +869,7 @@ function updateXAxisSelector() {
         toggleFFTVisibility(xInfo.isTime);
 
         // Mettre à jour le graphique (appliquera Ymin/Ymax du canal X si nécessaire)
-        updateTimeChart();
+        updateTimeChartMultiChannel();
 
         console.log(`📊 Canal X changé: ${xInfo.label} (${xInfo.unit})`);
     };
@@ -914,7 +914,7 @@ function applyChannelConfig() {
         }
     }
 
-    updateTimeChart();
+    updateTimeChartMultiChannel();
     closeChannelConfig();
 }
 
@@ -927,7 +927,7 @@ function resetChannelConfig() {
     // Réinitialiser
     initChannelConfig();
     updateChannelConfigUI();
-    updateTimeChart();
+    updateTimeChartMultiChannel();
 
     console.log("🔄 Configuration réinitialisée");
 }
@@ -1333,7 +1333,7 @@ function updateChannelsWithPreset(presetNum) {
     });
 
     // Mettre à jour le graphique
-    updateTimeChart();
+    updateTimeChartMultiChannel();
 }
 
 // Auto-preset intelligent des échelles Y selon les unités
@@ -1499,7 +1499,7 @@ function autoPresetYScales() {
 
     // Mettre à jour le graphique
     if (barChannels.length > 0 || maChannels.length > 0) {
-        updateTimeChart();
+        updateTimeChartMultiChannel();
         setStatus(`✅ Auto-Preset appliqué : ${barChannels.length} canaux bar, ${maChannels.length} canaux mA`);
     } else {
         setStatus('ℹ️ Auto-Preset : Aucun canal éligible (vérifiez que les canaux sont visibles et sans preset)', 'warning');
@@ -1618,7 +1618,7 @@ function autoPresetYScalesPerChannel() {
 
     // Mettre à jour le graphique
     if (barCount > 0 || maCount > 0) {
-        updateTimeChart();
+        updateTimeChartMultiChannel();
         setStatus(`✅ Auto-Preset Canal appliqué : ${barCount} canaux bar, ${maCount} canaux mA (individuellement)`);
     } else {
         setStatus('ℹ️ Auto-Preset Canal : Aucun canal éligible', 'warning');
@@ -1727,7 +1727,7 @@ function updateGlobalLineWidth() {
     });
 
     // Mettre à jour le graphique temporel
-    updateTimeChart();
+    updateTimeChartMultiChannel();
 
     // Mettre à jour le graphique FFT
     performAnalysis();

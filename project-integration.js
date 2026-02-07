@@ -688,7 +688,7 @@ function restoreAllToolsState(project) {
 
     // Restaurer Intervals depuis le manager
     if (project.intervalManager && project.toolsState.intervals) {
-        // Charger dans le manager
+        // Charger dans le manager (crée automatiquement les instances Interval)
         project.intervalManager.load({
             intervals: project.toolsState.intervals,
             nextIntervalId: project.toolsState.nextIntervalId,
@@ -696,17 +696,11 @@ function restoreAllToolsState(project) {
             pendingIntervalData: project.toolsState.pendingIntervalData
         });
 
-        // Recréer les instances de la classe Interval
-        project.intervalManager.intervals = project.toolsState.intervals.map(data => {
-            const interval = new Interval(data.id, data.startTime, data.endTime, data.comment, data.yPosition);
-            interval.color = data.color;
-            interval.visible = data.visible;
-            interval.fontSize = data.fontSize;
-            interval.fontWeight = data.fontWeight;
-            interval.fontStyle = data.fontStyle;
-            interval.textDecoration = data.textDecoration;
-            return interval;
-        });
+        // CRITIQUE : Synchroniser window.intervals avec le tableau du manager
+        // Nécessaire car .load() réassigne this.intervals à un nouveau tableau
+        if (typeof syncGlobalVariablesWithManagers === 'function') {
+            syncGlobalVariablesWithManagers();
+        }
 
         // Mettre à jour l'affichage
         if (typeof updateIntervalsList === 'function') {
@@ -716,15 +710,17 @@ function restoreAllToolsState(project) {
 
     // Restaurer SnapPoints depuis le manager
     if (project.snapPointManager && project.toolsState.snapPoints) {
-        // Charger dans le manager
+        // Charger dans le manager (crée automatiquement les instances SnapPoint)
         project.snapPointManager.load({
             snapPoints: project.toolsState.snapPoints,
             nextSnapPointId: project.toolsState.nextSnapPointId,
             isCreating: project.toolsState.isCreatingSnapPoint
         });
 
-        // Recréer les instances de la classe SnapPoint (si nécessaire)
-        // Note: snapPoints est déjà un tableau d'objets avec toutes les propriétés
+        // CRITIQUE : Synchroniser window.snapPoints avec le tableau du manager
+        if (typeof syncGlobalVariablesWithManagers === 'function') {
+            syncGlobalVariablesWithManagers();
+        }
 
         // Mettre à jour l'affichage
         if (typeof updateSnapPointsList === 'function') {
@@ -740,15 +736,15 @@ function restoreAllToolsState(project) {
             nextId: project.toolsState.diffCanal.nextId
         });
 
+        // CRITIQUE : Synchroniser window.diffCanalIntervals avec le tableau du manager
+        if (typeof syncGlobalVariablesWithManagers === 'function') {
+            syncGlobalVariablesWithManagers();
+        }
+
         // Mettre à jour l'affichage
         if (typeof updateDiffCanalList === 'function') {
             updateDiffCanalList();
         }
-    }
-
-    // CRITIQUE : Synchroniser les variables globales avec les managers
-    if (typeof syncGlobalVariablesWithManagers === 'function') {
-        syncGlobalVariablesWithManagers();
     }
 
     // Restaurer Measure Tool

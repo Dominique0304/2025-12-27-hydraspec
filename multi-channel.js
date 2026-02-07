@@ -360,19 +360,26 @@ function updateChannelConfigUI() {
         yMinInput.value = config.yMin !== null ? config.yMin : '';
         yMinInput.style.width = '60px';
         yMinInput.onchange = (e) => {
-            config.yMin = e.target.value === '' ? null : parseFloat(e.target.value);
+            const newValue = e.target.value === '' ? null : parseFloat(e.target.value);
+            config.yMin = newValue;
+            console.log(`📊 Y Min modifié pour ${config.label}: ${newValue}`);
 
             // Vérifier si les valeurs correspondent encore à un preset
             let matchesPreset = false;
             for (let i = 1; i <= 5; i++) {
-                const presetYMin = parseFloat(document.getElementById(`preset${i}-ymin`).value);
-                const presetYMax = parseFloat(document.getElementById(`preset${i}-ymax`).value);
-                const currentYMin = config.yMin;
-                const currentYMax = config.yMax;
+                const presetYMinElem = document.getElementById(`preset${i}-ymin`);
+                const presetYMaxElem = document.getElementById(`preset${i}-ymax`);
 
-                if (currentYMin === presetYMin && currentYMax === presetYMax) {
-                    matchesPreset = true;
-                    break;
+                if (presetYMinElem && presetYMaxElem) {
+                    const presetYMin = parseFloat(presetYMinElem.value);
+                    const presetYMax = parseFloat(presetYMaxElem.value);
+                    const currentYMin = config.yMin;
+                    const currentYMax = config.yMax;
+
+                    if (currentYMin === presetYMin && currentYMax === presetYMax) {
+                        matchesPreset = true;
+                        break;
+                    }
                 }
             }
 
@@ -395,19 +402,26 @@ function updateChannelConfigUI() {
         yMaxInput.value = config.yMax !== null ? config.yMax : '';
         yMaxInput.style.width = '60px';
         yMaxInput.onchange = (e) => {
-            config.yMax = e.target.value === '' ? null : parseFloat(e.target.value);
+            const newValue = e.target.value === '' ? null : parseFloat(e.target.value);
+            config.yMax = newValue;
+            console.log(`📊 Y Max modifié pour ${config.label}: ${newValue}`);
 
             // Vérifier si les valeurs correspondent encore à un preset
             let matchesPreset = false;
             for (let i = 1; i <= 5; i++) {
-                const presetYMin = parseFloat(document.getElementById(`preset${i}-ymin`).value);
-                const presetYMax = parseFloat(document.getElementById(`preset${i}-ymax`).value);
-                const currentYMin = config.yMin;
-                const currentYMax = config.yMax;
+                const presetYMinElem = document.getElementById(`preset${i}-ymin`);
+                const presetYMaxElem = document.getElementById(`preset${i}-ymax`);
 
-                if (currentYMin === presetYMin && currentYMax === presetYMax) {
-                    matchesPreset = true;
-                    break;
+                if (presetYMinElem && presetYMaxElem) {
+                    const presetYMin = parseFloat(presetYMinElem.value);
+                    const presetYMax = parseFloat(presetYMaxElem.value);
+                    const currentYMin = config.yMin;
+                    const currentYMax = config.yMax;
+
+                    if (currentYMin === presetYMin && currentYMax === presetYMax) {
+                        matchesPreset = true;
+                        break;
+                    }
                 }
             }
 
@@ -1292,8 +1306,13 @@ function initPresetListeners() {
 
         if (yMinInput && yMaxInput) {
             // Éviter d'ajouter plusieurs fois les mêmes écouteurs
-            yMinInput.onchange = () => updateChannelsWithPreset(i);
-            yMaxInput.onchange = () => updateChannelsWithPreset(i);
+            // Utiliser une IIFE pour capturer correctement la valeur de i
+            yMinInput.onchange = ((presetNum) => {
+                return () => updateChannelsWithPreset(presetNum);
+            })(i);
+            yMaxInput.onchange = ((presetNum) => {
+                return () => updateChannelsWithPreset(presetNum);
+            })(i);
         }
     }
 }

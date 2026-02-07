@@ -1583,13 +1583,11 @@
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
                             U
                         </button>
-                        <select onchange="setIntervalFontSize(this.value)" id="int-fmt-size" data-i18n-title="labels.text_size" title="Taille du texte"
-                                style="padding: 5px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                            <option value="10"><span data-i18n="labels.small">Petit</span></option>
-                            <option value="11" selected<span data-i18n="labels.normal">Normal</span></option>
-                            <option value="13"><span data-i18n="labels.large">Grand</span></option>
-                            <option value="15"><span data-i18n="labels.very_large">Très grand</span></option>
-                        </select>
+                        <input type="number" min="8" max="24" step="1" value="11" id="int-fmt-size"
+                               onchange="setIntervalFontSize(this.value)"
+                               data-i18n-title="labels.text_size" title="Taille du texte"
+                               style="width: 50px; padding: 5px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; font-size: 0.85em; text-align: center;">
+                        <span style="font-size: 0.75em; color: var(--text-muted); margin-left: 2px;">px</span>
                     </div>
                 </div>
                 <textarea id="interval-comment-input" rows="3"
@@ -1652,13 +1650,11 @@
                                 style="padding: 5px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; text-decoration: underline;">
                             U
                         </button>
-                        <select onchange="setSnapPointFontSize(this.value)" id="snap-fmt-size" data-i18n-title="labels.text_size" title="Taille du texte"
-                                style="padding: 5px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer; font-size: 0.85em;">
-                            <option value="10" style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.small">Petit</span></option>
-                            <option value="11" selected style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.normal">Normal</span></option>
-                            <option value="13" style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.large">Grand</span></option>
-                            <option value="15" style="color: var(--text-main); background: var(--input-bg);"<span data-i18n="labels.very_large">Très grand</span></option>
-                        </select>
+                        <input type="number" min="8" max="24" step="1" value="11" id="snap-fmt-size"
+                               onchange="setSnapPointFontSize(this.value)"
+                               data-i18n-title="labels.text_size" title="Taille du texte"
+                               style="width: 50px; padding: 5px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 3px; font-size: 0.85em; text-align: center;">
+                        <span style="font-size: 0.75em; color: var(--text-muted); margin-left: 2px;">px</span>
                     </div>
                 </div>
                 <textarea id="snappoint-comment-input" rows="3"

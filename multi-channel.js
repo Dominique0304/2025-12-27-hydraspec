@@ -1587,36 +1587,58 @@ function autoPresetYScalesPerChannel() {
     let barCount = 0;
     let maCount = 0;
 
+    console.log(`🔍 Nombre total de canaux: ${appState.channelConfig.length}`);
+
     appState.channelConfig.forEach((config, globalIndex) => {
         // Ignorer les canaux fantômes (pas dans le tableau UI)
-        if (config.isPhantom) return;
+        if (config.isPhantom) {
+            console.log(`\n👻 Canal ${globalIndex}: Fantôme ignoré`);
+            return;
+        }
+
+        console.log(`\n🔎 Canal ${globalIndex}: ${config.name || config.label}`);
+        console.log(`  Label: "${config.label}"`);
 
         // Trouver la ligne correspondante via data-global-index
         const table = document.getElementById('channel-config-tbody');
-        if (!table) return;
+        if (!table) {
+            console.log(`  ❌ Table non trouvée`);
+            return;
+        }
 
         const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
-        if (!row) return;
+        if (!row) {
+            console.log(`  ❌ Ligne non trouvée pour globalIndex ${globalIndex}`);
+            return;
+        }
 
         const visibleCheckbox = row.querySelector('input[type="checkbox"]');
         const presetSelect = row.querySelector('select');
 
+        console.log(`  Checkbox trouvée: ${!!visibleCheckbox}, Checked: ${visibleCheckbox?.checked}`);
+        console.log(`  Select trouvé: ${!!presetSelect}, Valeur: "${presetSelect?.value}"`);
+
         const isVisible = visibleCheckbox && visibleCheckbox.checked;
         const hasNoPreset = presetSelect && (presetSelect.value === '--' || presetSelect.value === '');
+
+        console.log(`  isVisible: ${isVisible}, hasNoPreset: ${hasNoPreset}`);
 
         if (isVisible && hasNoPreset) {
             // Extraire l'unité du label
             const unit = extractUnit(config.label || config.name || '');
+            console.log(`  ✅ Canal éligible! Unité extraite = "${unit}"`);
 
             if (unit === 'bar' || unit === 'mA') {
                 // Trouver la valeur max pour CE canal spécifique
                 const data = appState.allColumnData[config.index];
+                console.log(`  Données du canal: ${data ? data.length + ' points' : 'AUCUNE'}`);
+
                 if (data && data.length > 0) {
                     const channelMax = Math.max(...data);
                     const thresholds = (unit === 'bar') ? barThresholds : maThresholds;
                     const yMax = findAppropriateYMax(channelMax, thresholds);
 
-                    console.log(`📊 Canal ${config.name}: unité=${unit}, max=${channelMax.toFixed(2)}, Ymax appliqué=${yMax}`);
+                    console.log(`  📊 Canal ${config.name}: unité=${unit}, max=${channelMax.toFixed(2)}, Ymax appliqué=${yMax}`);
 
                     // Appliquer Ymin=0 et Ymax à CE canal
                     config.yMin = 0;
@@ -1630,16 +1652,28 @@ function autoPresetYScalesPerChannel() {
 
                     if (unit === 'bar') barCount++;
                     else maCount++;
+
+                    console.log(`  ✅ Appliqué: yMin=0, yMax=${yMax}`);
+                } else {
+                    console.log(`  ⚠️ Pas de données pour ce canal`);
                 }
+            } else {
+                console.log(`  ⚠️ Unité "${unit}" non reconnue (ni bar ni mA)`);
             }
+        } else {
+            console.log(`  ❌ Canal non éligible (visible=${isVisible}, noPreset=${hasNoPreset})`);
         }
     });
 
+    console.log(`\n📊 Résumé: ${barCount} canaux bar, ${maCount} canaux mA traités`);
+
     // Mettre à jour le graphique
     if (barCount > 0 || maCount > 0) {
+        console.log(`🔄 Mise à jour du graphique...`);
         updateTimeChart();
         setStatus(`✅ Auto-Preset Canal appliqué : ${barCount} canaux bar, ${maCount} canaux mA (individuellement)`);
     } else {
+        console.log(`⚠️ Aucun canal éligible trouvé`);
         setStatus('ℹ️ Auto-Preset Canal : Aucun canal éligible', 'warning');
     }
 }

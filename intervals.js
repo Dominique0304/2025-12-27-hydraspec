@@ -809,9 +809,20 @@ function updateIntervalFromModal(type, value) {
 
 // Effacer tous les intervalles (utilisé lors du chargement d'un nouveau fichier)
 function clearAllIntervals() {
-    intervals = [];
-    pendingIntervalData = null;
-    isCreatingInterval = false;
+    // ✅ POO: Utiliser le manager au lieu de réaffecter la variable globale
+    const project = projectManager?.getActive();
+    if (project?.intervalManager) {
+        project.intervalManager.deleteAll();
+        // Synchroniser les variables globales depuis le manager
+        if (typeof syncGlobalVariablesWithManagers === 'function') {
+            syncGlobalVariablesWithManagers();
+        }
+    } else {
+        // Fallback si POO non actif : vider le tableau sans le réaffecter
+        intervals.length = 0;
+        pendingIntervalData = null;
+        isCreatingInterval = false;
+    }
 
     // Réinitialiser le bouton si nécessaire
     const btn = document.getElementById('btn-interval-main');
@@ -865,7 +876,84 @@ function loadIntervals() {
         if (!saved) return;
 
         const data = JSON.parse(saved);
-        intervals = data.map(item => {
+
+        // ✅ POO: Utiliser le manager au lieu de réaffecter la variable globale
+        const project = projectManager?.getActive();
+        if (project?.intervalManager) {
+            project.intervalManager.load({
+                intervals: data,
+                nextIntervalId: Math.max(...data.map(item => {
+                    const idNum = parseInt(item.id.replace('interval-', ''));
+                    return isNaN(idNum) ? 1 : idNum + 1;
+                }), 1)
+            });
+            // Synchroniser les variables globales depuis le manager
+            if (typeof syncGlobalVariablesWithManagers === 'function') {
+                syncGlobalVariablesWithManagers();
+            }
+        } else {
+            // Fallback : vider et remplir le tableau sans le réaffecter
+            intervals.length = 0;
+            data.forEach(item => {
+                const interval = new Interval(
+                    item.id,
+                    item.startTime,
+                    item.endTime,
+                    item.comment || '',
+                    item.yPosition || 0.5
+                );
+                interval.color = item.color || '#4ECDC4';
+                interval.visible = item.visible !== false;
+
+                // Restaurer les propriétés de formatage
+                interval.fontSize = item.fontSize || 11;
+                interval.fontWeight = item.fontWeight || 'normal';
+                interval.fontStyle = item.fontStyle || 'normal';
+                interval.textDecoration = item.textDecoration || 'none';
+
+                // Mettre à jour nextIntervalId
+                const idNum = parseInt(item.id.replace('interval-', ''));
+                if (idNum >= nextIntervalId) {
+                    nextIntervalId = idNum + 1;
+                }
+
+                intervals.push(interval);
+            });
+        }
+
+        updateIntervalsDisplay();
+    } catch (e) {
+        console.error('Erreur chargement intervalles:', e);
+    }
+}
+
+// Charger les intervalles depuis les données d'un projet .hsp
+function loadIntervalsFromProject(savedIntervals) {
+    if (!savedIntervals || !Array.isArray(savedIntervals)) {
+        console.log("⚠️ No intervals to load from project");
+        return;
+    }
+
+    console.log("📥 Loading", savedIntervals.length, "intervals from project");
+
+    // ✅ POO: Utiliser le manager au lieu de réaffecter la variable globale
+    const project = projectManager?.getActive();
+    if (project?.intervalManager) {
+        project.intervalManager.load({
+            intervals: savedIntervals,
+            nextIntervalId: Math.max(...savedIntervals.map(item => {
+                const idNum = parseInt(item.id.replace('interval-', ''));
+                return isNaN(idNum) ? 1 : idNum + 1;
+            }), 1)
+        });
+        // Synchroniser les variables globales depuis le manager
+        if (typeof syncGlobalVariablesWithManagers === 'function') {
+            syncGlobalVariablesWithManagers();
+        }
+    } else {
+        // Fallback : vider et remplir le tableau sans le réaffecter
+        intervals.length = 0;
+        savedIntervals.forEach(item => {
             const interval = new Interval(
                 item.id,
                 item.startTime,
@@ -888,49 +976,9 @@ function loadIntervals() {
                 nextIntervalId = idNum + 1;
             }
 
-            return interval;
+            intervals.push(interval);
         });
-
-        updateIntervalsDisplay();
-    } catch (e) {
-        console.error('Erreur chargement intervalles:', e);
     }
-}
-
-// Charger les intervalles depuis les données d'un projet .hsp
-function loadIntervalsFromProject(savedIntervals) {
-    if (!savedIntervals || !Array.isArray(savedIntervals)) {
-        console.log("⚠️ No intervals to load from project");
-        return;
-    }
-
-    console.log("📥 Loading", savedIntervals.length, "intervals from project");
-
-    intervals = savedIntervals.map(item => {
-        const interval = new Interval(
-            item.id,
-            item.startTime,
-            item.endTime,
-            item.comment || '',
-            item.yPosition || 0.5
-        );
-        interval.color = item.color || '#4ECDC4';
-        interval.visible = item.visible !== false;
-
-        // Restaurer les propriétés de formatage
-        interval.fontSize = item.fontSize || 11;
-        interval.fontWeight = item.fontWeight || 'normal';
-        interval.fontStyle = item.fontStyle || 'normal';
-        interval.textDecoration = item.textDecoration || 'none';
-
-        // Mettre à jour nextIntervalId
-        const idNum = parseInt(item.id.replace('interval-', ''));
-        if (idNum >= nextIntervalId) {
-            nextIntervalId = idNum + 1;
-        }
-
-        return interval;
-    });
 
     console.log("✅ Loaded", intervals.length, "intervals successfully");
     updateIntervalsDisplay();

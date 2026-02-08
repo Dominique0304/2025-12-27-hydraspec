@@ -67,6 +67,7 @@ const i18nTranslations = {
             export_png: "Exporter PNG",
             export_pdf: "Exporter PDF",
             copy: "Copier",
+            copy_png: "Copier png",
             copied: "Copié !"
         },
 
@@ -262,6 +263,9 @@ const i18nTranslations = {
             copy_cancelled: "Copie annulée",
             copy_failed: "Échec de la copie",
             chart_downloaded: "✅ Graphiques téléchargés",
+            exporting_png: "Export PNG en cours...",
+            png_exported: "✅ {count} graphique(s) exporté(s) en PNG transparent !",
+            export_failed: "Échec de l'export PNG",
 
             // Outil Marqueur (SnapPoint)
             marker_activated: "Outil Marqueur activé - Cliquez sur un point du graphique",
@@ -373,6 +377,7 @@ const i18nTranslations = {
             no_chart: "Graphique temporel non disponible",
             clipboard_failed: "Impossible de copier dans le presse-papier.\n\nVoulez-vous télécharger l'image à la place ?",
             copy_error: "Erreur lors de la copie du graphique",
+            export_error: "Erreur lors de l'export PNG",
             download_failed: "Impossible de télécharger l'image",
 
             // Confirmations
@@ -608,6 +613,7 @@ const i18nTranslations = {
             settings: "Paramètres",
             help: "Aide",
             copy_charts: "Copier les graphiques visibles dans le presse-papier",
+            copy_charts_png: "Exporter en PNG avec transparence (pixels blancs transparents)",
             toggle_arrow: "Activer/Désactiver la flèche (disponible uniquement sans canal d'accrochage)",
             formula_help: "Aide sur les formules",
             reset_zoom_auto_grouped: "Reset Zoom + Auto Groupé",
@@ -682,6 +688,7 @@ const i18nTranslations = {
             export_png: "Export PNG",
             export_pdf: "Export PDF",
             copy: "Copy",
+            copy_png: "Copy png",
             copied: "Copied!"
         },
 
@@ -877,6 +884,9 @@ const i18nTranslations = {
             copy_cancelled: "Copy cancelled",
             copy_failed: "Copy failed",
             chart_downloaded: "✅ Charts downloaded",
+            exporting_png: "Exporting PNG...",
+            png_exported: "✅ {count} chart(s) exported to transparent PNG!",
+            export_failed: "PNG export failed",
 
             marker_activated: "Marker tool activated - Click on a graph point",
             marker_deactivated: "Marker tool deactivated",
@@ -973,6 +983,7 @@ const i18nTranslations = {
             no_chart: "Time chart not available",
             clipboard_failed: "Unable to copy to clipboard.\n\nWould you like to download the image instead?",
             copy_error: "Error copying chart",
+            export_error: "Error exporting PNG",
             download_failed: "Unable to download image",
 
             confirm_reset_channels: "Reset channel configuration to default?",
@@ -1205,6 +1216,7 @@ const i18nTranslations = {
             settings: "Settings",
             help: "Help",
             copy_charts: "Copy visible charts to clipboard",
+            copy_charts_png: "Export to PNG with transparency (white pixels transparent)",
             toggle_arrow: "Enable/Disable arrow (available only without anchor channel)",
             formula_help: "Formula help",
             reset_zoom_auto_grouped: "Reset Zoom + Auto Grouped",
@@ -1279,6 +1291,7 @@ const i18nTranslations = {
             export_png: "PNG exportieren",
             export_pdf: "PDF exportieren",
             copy: "Kopieren",
+            copy_png: "PNG kopieren",
             copied: "Kopiert!"
         },
 
@@ -1474,6 +1487,9 @@ const i18nTranslations = {
             copy_cancelled: "Kopieren abgebrochen",
             copy_failed: "Kopieren fehlgeschlagen",
             chart_downloaded: "✅ Diagramme heruntergeladen",
+            exporting_png: "PNG wird exportiert...",
+            png_exported: "✅ {count} Diagramm(e) als transparentes PNG exportiert!",
+            export_failed: "PNG-Export fehlgeschlagen",
 
             marker_activated: "Markierungswerkzeug aktiviert - Klicken Sie auf einen Diagrammpunkt",
             marker_deactivated: "Markierungswerkzeug deaktiviert",
@@ -1570,6 +1586,7 @@ const i18nTranslations = {
             no_chart: "Zeitdiagramm nicht verfügbar",
             clipboard_failed: "Kopieren in die Zwischenablage nicht möglich.\n\nMöchten Sie stattdessen das Bild herunterladen?",
             copy_error: "Fehler beim Kopieren des Diagramms",
+            export_error: "Fehler beim Exportieren von PNG",
             download_failed: "Bild kann nicht heruntergeladen werden",
 
             confirm_reset_channels: "Kanalkonfiguration auf Standard zurücksetzen?",
@@ -1802,6 +1819,7 @@ const i18nTranslations = {
             settings: "Einstellungen",
             help: "Hilfe",
             copy_charts: "Sichtbare Diagramme in Zwischenablage kopieren",
+            copy_charts_png: "Als PNG mit Transparenz exportieren (weiße Pixel transparent)",
             toggle_arrow: "Pfeil aktivieren/deaktivieren (nur verfügbar ohne Ankerkanal)",
             formula_help: "Formelhilfe",
             reset_zoom_auto_grouped: "Zoom zurücksetzen + Auto gruppiert",

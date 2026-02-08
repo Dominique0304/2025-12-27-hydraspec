@@ -1266,6 +1266,161 @@ async function copyChartsToClipboard() {
 }
 
 /**
+ * Exporte les graphiques visibles en PNG avec les pixels blancs rendus transparents
+ * Permet de superposer plusieurs courbes par transparence
+ */
+async function exportChartsToPNG() {
+    try {
+        // Vérifier qu'il y a des données
+        if (!appState.fullDataTime || appState.fullDataTime.length === 0) {
+            alert(t("dialogs.no_data") || "Aucune donnée à exporter");
+            return;
+        }
+
+        setStatus(t("status.exporting_png") || "Export PNG en cours...");
+
+        // Identifier les conteneurs visibles
+        const timeContainer = document.getElementById('time-container');
+        const freqContainer = document.getElementById('freq-container');
+        const spectroContainer = document.getElementById('spectro-container');
+
+        const visibleContainers = [];
+        if (timeContainer && !timeContainer.classList.contains('hidden')) {
+            visibleContainers.push({ element: timeContainer, name: 'Temps' });
+        }
+        if (freqContainer && !freqContainer.classList.contains('hidden')) {
+            visibleContainers.push({ element: freqContainer, name: 'Fréquence' });
+        }
+        if (spectroContainer && !spectroContainer.classList.contains('hidden')) {
+            visibleContainers.push({ element: spectroContainer, name: 'Spectrogramme' });
+        }
+
+        if (visibleContainers.length === 0) {
+            alert(t("dialogs.no_chart") || "Aucun graphique visible");
+            return;
+        }
+
+        console.log(`📊 Export PNG de ${visibleContainers.length} graphique(s) : ${visibleContainers.map(c => c.name).join(', ')}`);
+
+        // Capturer chaque conteneur visible avec html2canvas (fond transparent)
+        const captures = [];
+        for (const container of visibleContainers) {
+            try {
+                const canvas = await html2canvas(container.element, {
+                    backgroundColor: null, // Pas de fond pour permettre la transparence
+                    scale: 2, // Qualité 2x pour meilleure résolution
+                    logging: false,
+                    useCORS: true
+                });
+                captures.push(canvas);
+                console.log(`✅ Capturé : ${container.name} (${canvas.width}x${canvas.height})`);
+            } catch (err) {
+                console.error(`❌ Erreur capture ${container.name}:`, err);
+            }
+        }
+
+        if (captures.length === 0) {
+            throw new Error("Aucun graphique n'a pu être capturé");
+        }
+
+        // Créer un canvas composite qui combine toutes les captures verticalement
+        const compositeCanvas = document.createElement('canvas');
+        const ctx = compositeCanvas.getContext('2d');
+
+        // Calculer dimensions du canvas composite
+        const maxWidth = Math.max(...captures.map(c => c.width));
+        const totalHeight = captures.reduce((sum, c) => sum + c.height, 0);
+        compositeCanvas.width = maxWidth;
+        compositeCanvas.height = totalHeight;
+
+        // Dessiner chaque capture l'une au-dessus de l'autre (sans fond)
+        let yOffset = 0;
+        for (const canvas of captures) {
+            ctx.drawImage(canvas, 0, yOffset);
+            yOffset += canvas.height;
+        }
+
+        console.log(`✅ Canvas composite créé : ${compositeCanvas.width}x${compositeCanvas.height}`);
+
+        // Ajouter les notes si elles existent
+        const finalCanvas = await addNotesToCanvas(compositeCanvas);
+
+        // Rendre les pixels blancs transparents
+        const finalCtx = finalCanvas.getContext('2d');
+        const imageData = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
+        const data = imageData.data;
+
+        // Seuil de tolérance pour détecter le blanc (0-255)
+        const whiteThreshold = 250;
+
+        // Parcourir tous les pixels
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Si le pixel est blanc (ou proche du blanc), le rendre transparent
+            if (r >= whiteThreshold && g >= whiteThreshold && b >= whiteThreshold) {
+                data[i + 3] = 0; // Canal alpha à 0 (transparent)
+            }
+        }
+
+        // Remettre les données modifiées dans le canvas
+        finalCtx.putImageData(imageData, 0, 0);
+
+        console.log(`✅ Pixels blancs rendus transparents`);
+
+        // Convertir le canvas final en Blob PNG et télécharger
+        finalCanvas.toBlob((blob) => {
+            if (!blob) {
+                throw new Error("Impossible de créer le Blob PNG");
+            }
+
+            // Créer un nom de fichier avec horodatage
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const filename = `hydraspec-transparent-${timestamp}.png`;
+
+            // Créer un lien de téléchargement temporaire
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            const graphCount = visibleContainers.length;
+            setStatus(
+                t("status.png_exported")?.replace('{count}', graphCount) ||
+                `✅ ${graphCount} graphique(s) exporté(s) en PNG transparent !`,
+                'success'
+            );
+
+            // Feedback visuel temporaire sur le bouton
+            const exportBtn = document.querySelector('[onclick="exportChartsToPNG()"]');
+            if (exportBtn) {
+                const originalHTML = exportBtn.innerHTML;
+                const originalColor = exportBtn.style.color;
+                exportBtn.innerHTML = '<i class="fas fa-check"></i> <span>Exporté !</span>';
+                exportBtn.style.color = 'var(--accent-green)';
+
+                setTimeout(() => {
+                    exportBtn.innerHTML = originalHTML;
+                    exportBtn.style.color = originalColor;
+                }, 2000);
+            }
+
+        }, 'image/png', 1.0); // Qualité PNG maximale
+
+    } catch (error) {
+        console.error("❌ Erreur lors de l'export PNG:", error);
+        alert((t("dialogs.export_error") || "Erreur lors de l'export PNG") + ":\n" + error.message);
+        setStatus(t("status.export_failed") || "Échec de l'export PNG");
+    }
+}
+
+/**
  * Fallback : télécharge l'image composite si la copie dans le presse-papier échoue
  */
 async function fallbackDownloadCharts() {

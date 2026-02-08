@@ -1386,6 +1386,22 @@
                             </div>
                         </div>
 
+                        <!-- Information sur l'ajout d'unités -->
+                        <div style="margin-top:15px; padding:12px; background:var(--bg-panel); border-left:3px solid var(--accent-blue); border-radius:4px;">
+                            <h5 style="margin-top:0; margin-bottom:8px; color:var(--text-main);">
+                                <i class="fas fa-info-circle"></i> <span data-i18n="labels.add_units_title">Ajouter des unités aux colonnes</span>
+                            </h5>
+                            <p style="font-size:0.85em; margin:0 0 8px 0; color:var(--text-main); line-height:1.5;">
+                                <span data-i18n="labels.add_units_info">Pour profiter pleinement des fonctions Auto Canal et Auto Groupé, ajoutez l'unité de chaque colonne entre parenthèses dans l'en-tête du CSV :</span>
+                            </p>
+                            <div style="background:var(--input-bg); padding:8px; border-radius:4px; font-family:monospace; font-size:0.8em; margin-bottom:8px; color:var(--text-main);">
+                                <span data-i18n="labels.add_units_example">Exemple : Pression (bar), Courant (mA), Temperature (°C)</span>
+                            </div>
+                            <p style="font-size:0.8em; margin:0; color:var(--text-muted); line-height:1.4;">
+                                <i class="fas fa-lightbulb"></i> <span data-i18n="labels.add_units_tip">Modifiez l'en-tête dans l'aperçu ci-dessous, puis cliquez sur "Réimporter" pour appliquer les changements.</span>
+                            </p>
+                        </div>
+
                         <!-- Aperçu des premières lignes du fichier CSV -->
                         <div id="csv-preview-section" style="margin-top:15px; display:none;">
                             <h5 style="margin-top:0; margin-bottom:8px; color:var(--text-main);">

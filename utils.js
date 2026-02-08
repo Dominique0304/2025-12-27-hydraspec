@@ -1164,7 +1164,7 @@ async function copyChartsToClipboard() {
         for (const container of visibleContainers) {
             try {
                 const canvas = await html2canvas(container.element, {
-                    backgroundColor: getComputedStyle(document.body).backgroundColor,
+                    backgroundColor: null, // Pas de fond pour permettre la transparence
                     scale: 2, // Qualité 2x pour meilleure résolution
                     logging: false,
                     useCORS: true
@@ -1190,11 +1190,7 @@ async function copyChartsToClipboard() {
         compositeCanvas.width = maxWidth;
         compositeCanvas.height = totalHeight;
 
-        // Remplir le fond avec la couleur de fond du document
-        ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
-        ctx.fillRect(0, 0, maxWidth, totalHeight);
-
-        // Dessiner chaque capture l'une au-dessus de l'autre
+        // Dessiner chaque capture l'une au-dessus de l'autre (sans fond)
         let yOffset = 0;
         for (const canvas of captures) {
             ctx.drawImage(canvas, 0, yOffset);
@@ -1205,6 +1201,31 @@ async function copyChartsToClipboard() {
 
         // Ajouter les notes si elles existent
         const finalCanvas = await addNotesToCanvas(compositeCanvas);
+
+        // Rendre les pixels blancs transparents
+        const finalCtx = finalCanvas.getContext('2d');
+        const imageData = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
+        const data = imageData.data;
+
+        // Seuil de tolérance pour détecter le blanc (0-255)
+        const whiteThreshold = 250;
+
+        // Parcourir tous les pixels
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            // Si le pixel est blanc (ou proche du blanc), le rendre transparent
+            if (r >= whiteThreshold && g >= whiteThreshold && b >= whiteThreshold) {
+                data[i + 3] = 0; // Canal alpha à 0 (transparent)
+            }
+        }
+
+        // Remettre les données modifiées dans le canvas
+        finalCtx.putImageData(imageData, 0, 0);
+
+        console.log(`✅ Pixels blancs rendus transparents`);
 
         // Convertir le canvas final en Blob PNG
         finalCanvas.toBlob(async (blob) => {

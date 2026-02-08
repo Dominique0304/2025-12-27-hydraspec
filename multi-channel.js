@@ -111,6 +111,12 @@ function openChannelConfig(silent = false) {
         filePreviewTextarea.value = appState.rawFilePreview || '';
     }
 
+    // Gérer l'affichage du conteneur "Ajouter des unités aux colonnes" (uniquement pour fichiers CSV)
+    const unitsInfoSection = document.getElementById('units-info-section');
+    if (unitsInfoSection) {
+        unitsInfoSection.style.display = isCSV ? 'block' : 'none';
+    }
+
     // Restaurer le pas (ms) depuis le projet
     const manualStepInput = document.getElementById('manual-step-config');
     if (manualStepInput && project && project.state.timeIncrement !== undefined) {

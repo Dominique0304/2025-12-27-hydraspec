@@ -1371,6 +1371,9 @@ function autoPresetYScales() {
     // Définir les seuils pour les canaux en "mA"
     const maThresholds = [1000, 1500, 2000, 2500];
 
+    // Définir les seuils génériques pour les canaux sans unité spécifique
+    const defaultThresholds = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+
     // Fonction pour trouver le Ymax approprié selon les seuils
     function findAppropriateYMax(maxValue, thresholds) {
         for (let threshold of thresholds) {
@@ -1385,6 +1388,7 @@ function autoPresetYScales() {
     // Grouper les canaux par unité
     const barChannels = [];
     const maChannels = [];
+    const otherChannels = [];
 
     console.log(`🔍 Nombre total de canaux: ${appState.channelConfig.length}`);
 
@@ -1434,7 +1438,9 @@ function autoPresetYScales() {
                 maChannels.push({ config, globalIndex });
                 console.log(`  📊 Ajouté aux canaux mA`);
             } else {
-                console.log(`  ⚠️ Unité "${unit}" non reconnue (ni bar ni mA)`);
+                // Ajouter aux canaux génériques (sans unité spécifique)
+                otherChannels.push({ config, globalIndex });
+                console.log(`  📊 Ajouté aux canaux sans unité spécifique (sera traité avec seuils par défaut)`);
             }
         } else {
             console.log(`  ❌ Canal non éligible (visible=${isVisible}, noPreset=${hasNoPreset})`);
@@ -1443,6 +1449,7 @@ function autoPresetYScales() {
 
     console.log(`📊 Canaux bar trouvés: ${barChannels.length}`);
     console.log(`📊 Canaux mA trouvés: ${maChannels.length}`);
+    console.log(`📊 Canaux sans unité spécifique trouvés: ${otherChannels.length}`);
 
     // Traiter les canaux "bar"
     if (barChannels.length > 0) {
@@ -1516,10 +1523,51 @@ function autoPresetYScales() {
         });
     }
 
+    // Traiter les canaux sans unité spécifique
+    if (otherChannels.length > 0) {
+        // Trouver la valeur max parmi tous les canaux sans unité
+        let maxOtherValue = 0;
+        otherChannels.forEach(({ config }) => {
+            const data = appState.allColumnData[config.index];
+            if (data && data.length > 0) {
+                const channelMax = Math.max(...data);
+                if (channelMax > maxOtherValue) {
+                    maxOtherValue = channelMax;
+                }
+            }
+        });
+
+        const yMax = findAppropriateYMax(maxOtherValue, defaultThresholds);
+        console.log(`✅ Canaux sans unité: Max mesuré = ${maxOtherValue.toFixed(2)}, Ymax appliqué = ${yMax}`);
+
+        // Appliquer Ymin=0 et Ymax à tous les canaux sans unité
+        otherChannels.forEach(({ config, globalIndex }) => {
+            config.yMin = 0;
+            config.yMax = yMax;
+
+            // Mettre à jour l'interface
+            const table = document.getElementById('channel-config-tbody');
+            if (table) {
+                const row = Array.from(table.rows).find(r => r.getAttribute('data-global-index') === globalIndex.toString());
+                if (row) {
+                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                    if (yMinInput) yMinInput.value = 0;
+                    if (yMaxInput) yMaxInput.value = yMax;
+                }
+            }
+        });
+    }
+
     // Mettre à jour le graphique
-    if (barChannels.length > 0 || maChannels.length > 0) {
+    const totalChannels = barChannels.length + maChannels.length + otherChannels.length;
+    if (totalChannels > 0) {
         updateTimeChart();
-        setStatus(`✅ Auto-Preset appliqué : ${barChannels.length} canaux bar, ${maChannels.length} canaux mA`);
+        const statusParts = [];
+        if (barChannels.length > 0) statusParts.push(`${barChannels.length} bar`);
+        if (maChannels.length > 0) statusParts.push(`${maChannels.length} mA`);
+        if (otherChannels.length > 0) statusParts.push(`${otherChannels.length} sans unité`);
+        setStatus(`✅ Auto-Preset appliqué : ${statusParts.join(', ')}`);
     } else {
         setStatus('ℹ️ Auto-Preset : Aucun canal éligible (vérifiez que les canaux sont visibles et sans preset)', 'warning');
     }
@@ -1573,6 +1621,9 @@ function autoPresetYScalesPerChannel() {
     // Définir les seuils pour les canaux en "mA"
     const maThresholds = [1000, 1500, 2000, 2500];
 
+    // Définir les seuils génériques pour les canaux sans unité spécifique
+    const defaultThresholds = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+
     // Fonction pour trouver le Ymax approprié selon les seuils
     function findAppropriateYMax(maxValue, thresholds) {
         for (let threshold of thresholds) {
@@ -1586,6 +1637,7 @@ function autoPresetYScalesPerChannel() {
 
     let barCount = 0;
     let maCount = 0;
+    let otherCount = 0;
 
     console.log(`🔍 Nombre total de canaux: ${appState.channelConfig.length}`);
 
@@ -1628,50 +1680,63 @@ function autoPresetYScalesPerChannel() {
             const unit = extractUnit(config.label || config.name || '');
             console.log(`  ✅ Canal éligible! Unité extraite = "${unit}"`);
 
-            if (unit === 'bar' || unit === 'mA') {
-                // Trouver la valeur max pour CE canal spécifique
-                const data = appState.allColumnData[config.index];
-                console.log(`  Données du canal: ${data ? data.length + ' points' : 'AUCUNE'}`);
+            // Trouver la valeur max pour CE canal spécifique
+            const data = appState.allColumnData[config.index];
+            console.log(`  Données du canal: ${data ? data.length + ' points' : 'AUCUNE'}`);
 
-                if (data && data.length > 0) {
-                    const channelMax = Math.max(...data);
-                    const thresholds = (unit === 'bar') ? barThresholds : maThresholds;
-                    const yMax = findAppropriateYMax(channelMax, thresholds);
+            if (data && data.length > 0) {
+                const channelMax = Math.max(...data);
 
-                    console.log(`  📊 Canal ${config.name}: unité=${unit}, max=${channelMax.toFixed(2)}, Ymax appliqué=${yMax}`);
-
-                    // Appliquer Ymin=0 et Ymax à CE canal
-                    config.yMin = 0;
-                    config.yMax = yMax;
-
-                    // Mettre à jour l'interface
-                    const yMinInput = row.querySelectorAll('input[type="number"]')[0];
-                    const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
-                    if (yMinInput) yMinInput.value = 0;
-                    if (yMaxInput) yMaxInput.value = yMax;
-
-                    if (unit === 'bar') barCount++;
-                    else maCount++;
-
-                    console.log(`  ✅ Appliqué: yMin=0, yMax=${yMax}`);
+                // Déterminer les seuils à utiliser selon l'unité
+                let thresholds;
+                if (unit === 'bar') {
+                    thresholds = barThresholds;
+                } else if (unit === 'mA') {
+                    thresholds = maThresholds;
                 } else {
-                    console.log(`  ⚠️ Pas de données pour ce canal`);
+                    thresholds = defaultThresholds;
                 }
+
+                const yMax = findAppropriateYMax(channelMax, thresholds);
+
+                console.log(`  📊 Canal ${config.name}: unité=${unit || 'aucune'}, max=${channelMax.toFixed(2)}, Ymax appliqué=${yMax}`);
+
+                // Appliquer Ymin=0 et Ymax à CE canal
+                config.yMin = 0;
+                config.yMax = yMax;
+
+                // Mettre à jour l'interface
+                const yMinInput = row.querySelectorAll('input[type="number"]')[0];
+                const yMaxInput = row.querySelectorAll('input[type="number"]')[1];
+                if (yMinInput) yMinInput.value = 0;
+                if (yMaxInput) yMaxInput.value = yMax;
+
+                // Compter les canaux traités
+                if (unit === 'bar') barCount++;
+                else if (unit === 'mA') maCount++;
+                else otherCount++;
+
+                console.log(`  ✅ Appliqué: yMin=0, yMax=${yMax}`);
             } else {
-                console.log(`  ⚠️ Unité "${unit}" non reconnue (ni bar ni mA)`);
+                console.log(`  ⚠️ Pas de données pour ce canal`);
             }
         } else {
             console.log(`  ❌ Canal non éligible (visible=${isVisible}, noPreset=${hasNoPreset})`);
         }
     });
 
-    console.log(`\n📊 Résumé: ${barCount} canaux bar, ${maCount} canaux mA traités`);
+    console.log(`\n📊 Résumé: ${barCount} canaux bar, ${maCount} canaux mA, ${otherCount} canaux sans unité traités`);
 
     // Mettre à jour le graphique
-    if (barCount > 0 || maCount > 0) {
+    const totalCount = barCount + maCount + otherCount;
+    if (totalCount > 0) {
         console.log(`🔄 Mise à jour du graphique...`);
         updateTimeChart();
-        setStatus(`✅ Auto-Preset Canal appliqué : ${barCount} canaux bar, ${maCount} canaux mA (individuellement)`);
+        const statusParts = [];
+        if (barCount > 0) statusParts.push(`${barCount} bar`);
+        if (maCount > 0) statusParts.push(`${maCount} mA`);
+        if (otherCount > 0) statusParts.push(`${otherCount} sans unité`);
+        setStatus(`✅ Auto-Preset Canal appliqué : ${statusParts.join(', ')} (individuellement)`);
     } else {
         console.log(`⚠️ Aucun canal éligible trouvé`);
         setStatus('ℹ️ Auto-Preset Canal : Aucun canal éligible', 'warning');

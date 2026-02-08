@@ -1043,6 +1043,15 @@ function updateFsFromStep() {
         appState.fullDataTime = newTime;
         appState.timeIncrement = s / 1000; // Convertir ms en secondes
 
+        // CRITIQUE : Synchroniser avec le projet actif
+        const project = getActiveProject();
+        if (project) {
+            project.state.fs = newFs;
+            project.state.fullDataTime = newTime;
+            project.state.timeIncrement = s / 1000;
+            console.log(`💾 Pas (ms) synchronisé dans le projet : ${s} ms`);
+        }
+
         document.getElementById('display-fs-config').textContent = newFs.toFixed(1) + " Hz";
         document.getElementById('display-increment-config').textContent = s.toFixed(2) + " ms";
 
@@ -1056,6 +1065,15 @@ function updateFsFromStep() {
         // Cas où il n'y a pas encore de données
         appState.fs = 1000/s;
         appState.timeIncrement = s / 1000; // Convertir ms en secondes
+
+        // CRITIQUE : Synchroniser avec le projet actif
+        const project = getActiveProject();
+        if (project) {
+            project.state.fs = 1000/s;
+            project.state.timeIncrement = s / 1000;
+            console.log(`💾 Pas (ms) synchronisé dans le projet : ${s} ms`);
+        }
+
         document.getElementById('display-fs-config').textContent = appState.fs.toFixed(1) + " Hz";
         document.getElementById('display-increment-config').textContent = s.toFixed(2) + " ms";
         setStatus(t("status.fs_configured", {fs: appState.fs.toFixed(1)}));

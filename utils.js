@@ -1022,7 +1022,7 @@ async function addNotesToCanvas(sourceCanvas) {
     const tempCtx = tempCanvas.getContext('2d');
 
     // Configuration du texte
-    const fontSize = 48; // Taille de police pour lisibilité dans Word (équivalent ~18pt)
+    const fontSize = 44; // Taille de police pour lisibilité dans Word (équivalent ~16.5pt)
     const lineHeight = fontSize * 1.4;
     const padding = 40;
     const maxWidth = sourceCanvas.width - (padding * 2);

@@ -1022,7 +1022,7 @@ async function addNotesToCanvas(sourceCanvas) {
     const tempCtx = tempCanvas.getContext('2d');
 
     // Configuration du texte
-    const fontSize = 24; // Taille de police adaptée pour scale 2
+    const fontSize = 48; // Taille de police augmentée pour meilleure lisibilité
     const lineHeight = fontSize * 1.4;
     const padding = 40;
     const maxWidth = sourceCanvas.width - (padding * 2);
@@ -1199,8 +1199,8 @@ async function copyChartsToClipboard() {
 
         console.log(`✅ Canvas composite créé : ${compositeCanvas.width}x${compositeCanvas.height}`);
 
-        // Ajouter les notes si elles existent
-        const finalCanvas = await addNotesToCanvas(compositeCanvas);
+        // Ne pas ajouter les notes lors de la copie
+        const finalCanvas = compositeCanvas;
 
         // Rendre les pixels blancs transparents
         const finalCtx = finalCanvas.getContext('2d');

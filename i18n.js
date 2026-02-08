@@ -498,7 +498,7 @@ const i18nTranslations = {
             reimport_csv: "Réimporter avec ces modifications",
             csv_preview_warning: "Modifiez l'en-tête ou les données, puis cliquez Réimporter. Le fichier original n'est pas modifié.",
             add_units_title: "Ajouter des unités aux colonnes",
-            add_units_info: "Pour profiter pleinement des fonctions Auto Canal et Auto Groupé, ajoutez l'unité de chaque colonne entre parenthèses dans l'en-tête du CSV :",
+            add_units_info: "Pour votre confort, ajoutez l'unité de chaque colonne entre parenthèses dans l'en-tête du CSV :",
             add_units_example: "Exemple : Pression (bar), Courant (mA), Temperature (°C)",
             add_units_tip: "Modifiez l'en-tête dans l'aperçu ci-dessous, puis cliquez sur \"Réimporter\" pour appliquer les changements.",
             view_help_full: "Consultez cette aide à tout moment",

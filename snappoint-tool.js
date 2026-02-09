@@ -160,9 +160,18 @@ class SnapPointTool {
     }
 
     toggleSnapPointTool() {
+    console.log('🔍 SnapPointTool.toggleSnapPointTool() appelée');
+    console.log('🔍 État actuel:', {
+        active: this.state.active,
+        isCreating: this.isCreating,
+        snapPoints: this.snapPoints.length
+    });
+
     const btn = document.getElementById('snappoint-btn');
     const content = document.getElementById('snappoint-content');
     const icon = document.getElementById('snappoint-accordion-icon');
+
+    console.log('🔍 Éléments DOM:', { btn: !!btn, content: !!content, icon: !!icon });
 
     if (!this.state.active) {
         // ACTIVATION
@@ -208,6 +217,11 @@ class SnapPointTool {
         }
 
         setStatus(t("status.marker_tool_activated"));
+        console.log('✅ Outil marqueur activé - État:', {
+            active: this.state.active,
+            isCreating: this.isCreating,
+            mode: this.state.mode
+        });
     } else {
         // DÉSACTIVATION
         this.state.active = false;
@@ -226,6 +240,7 @@ class SnapPointTool {
         }
 
         setStatus(t("status.marker_tool_deactivated"));
+        console.log('✅ Outil marqueur désactivé');
     }
     }
 
@@ -272,10 +287,19 @@ class SnapPointTool {
     }
 
     handleSnapPointClick(event, chart) {
+    console.log('🔍 handleSnapPointClick appelée', {
+        active: this.state.active,
+        isCreating: this.isCreating,
+        mode: this.state.mode
+    });
+
     // Ne créer que si l'outil est actif ET en mode création
     if (!this.state.active || !this.isCreating || this.state.mode !== 'create') {
+        console.log('⚠️ Outil non actif ou pas en mode création - Ignorer le clic');
         return false;
     }
+
+    console.log('✅ Conditions OK - Création du marqueur...');
 
     const rect = chart.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -315,9 +339,12 @@ class SnapPointTool {
     }
 
     if (!closestChannel) {
+        console.log('⚠️ Aucun canal trouvé à cette position');
         setStatus("Aucun canal trouvé à cette position");
         return false;
     }
+
+    console.log('📍 Canal le plus proche trouvé:', closestChannel);
 
     // Créer le marqueur
     const snapPoint = new SnapPoint(
@@ -326,13 +353,18 @@ class SnapPointTool {
         xValue,
         closestChannel.value
     );
+    console.log('✨ Nouveau marqueur créé:', snapPoint);
+
     this.snapPoints.push(snapPoint);
+    console.log('📊 Nombre total de marqueurs:', this.snapPoints.length);
+    console.log('📊 Liste des marqueurs:', this.snapPoints);
 
     // Mettre à jour l'affichage
     this.updateSnapPointsList();
     chart.update('none');
 
     setStatus(`Marqueur créé sur ${snapPoint.getChannelLabel()}`);
+    console.log('✅ Marqueur créé avec succès sur', snapPoint.getChannelLabel());
 
     return true;
     }
@@ -2422,12 +2454,21 @@ class SnapPointTool {
 // =====================================
 
 const snapPointTool = new SnapPointTool();
+console.log('✅ snapPointTool instancié avec succès:', snapPointTool);
+console.log('✅ snapPointTool.toggleSnapPointTool:', typeof snapPointTool.toggleSnapPointTool);
 
 // =====================================
 // FONCTIONS DE COMPATIBILITÉ
 // =====================================
 
 function toggleSnapPointTool() {
+    console.log('🔍 toggleSnapPointTool() appelée');
+    console.log('🔍 snapPointTool existe?', typeof snapPointTool !== 'undefined');
+    if (typeof snapPointTool === 'undefined') {
+        console.error('❌ snapPointTool n\'est pas défini!');
+        return;
+    }
+    console.log('🔍 snapPointTool.toggleSnapPointTool existe?', typeof snapPointTool.toggleSnapPointTool === 'function');
     return snapPointTool.toggleSnapPointTool();
 }
 
@@ -2654,4 +2695,9 @@ Object.defineProperty(window, 'contextMenuSnapPointId', {
     set: (value) => { snapPointTool.contextMenuId = value; },
     configurable: true
 });
+
+// Log final pour confirmer que tout est chargé
+console.log('✅ snappoint-tool.js chargé complètement');
+console.log('✅ toggleSnapPointTool disponible:', typeof window.toggleSnapPointTool);
+console.log('✅ window.snapPoints getter/setter défini:', 'snapPoints' in window);
 

@@ -1105,28 +1105,102 @@ function updateAllInterface(isInitialLoad = false) {
             updateColumnSelector();
         }
 
+        // CRITIQUE : Restaurer les canaux dans l'ordre de dépendance :
+        // 1. Calculés (dépendent uniquement des données brutes)
+        // 2. Lissés (peuvent dépendre des canaux calculés)
+        // 3. Dérivés (peuvent dépendre des canaux calculés ET lissés)
+
+        // 1. Restaurer les canaux calculés EN PREMIER
+        appState.calculatedChannels = [];
+
+        if (project.toolsState.calculatedChannels && project.toolsState.calculatedChannels.length > 0) {
+            console.log(`🔄 Restauration de ${project.toolsState.calculatedChannels.length} canal(aux) calculé(s)...`);
+
+            // Copier les données sauvegardées dans appState
+            project.toolsState.calculatedChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.calculatedChannels.push(channelCopy);
+
+                // Recréer les données du canal
+                if (typeof recreateCalculatedChannel === 'function') {
+                    recreateCalculatedChannel(channelCopy);
+                }
+            });
+
+            // Rafraîchir la liste des canaux calculés dans l'UI
+            if (typeof updateCalculatedChannelsList === 'function') {
+                updateCalculatedChannelsList();
+            }
+
+            console.log(`✅ ${appState.calculatedChannels.length} canal(aux) calculé(s) restauré(s)`);
+        } else {
+            console.log(`🔧 Aucun canal calculé à restaurer pour ${project.name}`);
+        }
+
         // CRITIQUE : Initialiser le système de lissage après chargement des canaux
         if (typeof initSmoothingSystem === 'function') {
             initSmoothingSystem();
         }
 
-        // CRITIQUE : Recréer les canaux lissés sauvegardés après initialisation
-        if (appState.smoothedChannels && appState.smoothedChannels.length > 0) {
-            console.log(`🔄 Recréation de ${appState.smoothedChannels.length} canal(aux) lissé(s)...`);
-            appState.smoothedChannels.forEach(channel => {
+        // CRITIQUE : Restaurer les canaux lissés depuis le projet AVANT de les recréer
+        // Vider d'abord pour éviter les conflits
+        appState.smoothedChannels = [];
+
+        if (project.toolsState.smoothedChannels && project.toolsState.smoothedChannels.length > 0) {
+            console.log(`🔄 Restauration de ${project.toolsState.smoothedChannels.length} canal(aux) lissé(s)...`);
+
+            // Copier les données sauvegardées dans appState
+            project.toolsState.smoothedChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.smoothedChannels.push(channelCopy);
+
+                // Recréer les données du canal
                 if (typeof recreateSmoothedChannel === 'function') {
-                    recreateSmoothedChannel(channel);
+                    recreateSmoothedChannel(channelCopy);
                 }
             });
+
             // Rafraîchir la liste des canaux lissés dans l'UI
             if (typeof updateSmoothedChannelsList === 'function') {
                 updateSmoothedChannelsList();
             }
+
+            console.log(`✅ ${appState.smoothedChannels.length} canal(aux) lissé(s) restauré(s)`);
+        } else {
+            console.log(`🔧 Aucun canal lissé à restaurer pour ${project.name}`);
         }
 
         // CRITIQUE : Initialiser le système de dérivée après chargement des canaux
         if (typeof initDerivativeSystem === 'function') {
             initDerivativeSystem();
+        }
+
+        // CRITIQUE : Restaurer les canaux dérivés depuis le projet AVANT de les recréer
+        // Vider d'abord pour éviter les conflits
+        appState.derivativeChannels = [];
+
+        if (project.toolsState.derivativeChannels && project.toolsState.derivativeChannels.length > 0) {
+            console.log(`🔄 Restauration de ${project.toolsState.derivativeChannels.length} canal(aux) dérivé(s)...`);
+
+            // Copier les données sauvegardées dans appState
+            project.toolsState.derivativeChannels.forEach(channel => {
+                const channelCopy = JSON.parse(JSON.stringify(channel));
+                appState.derivativeChannels.push(channelCopy);
+
+                // Recréer les données du canal
+                if (typeof recreateDerivativeChannel === 'function') {
+                    recreateDerivativeChannel(channelCopy);
+                }
+            });
+
+            // Rafraîchir la liste des canaux dérivés dans l'UI
+            if (typeof updateDerivativeChannelsList === 'function') {
+                updateDerivativeChannelsList();
+            }
+
+            console.log(`✅ ${appState.derivativeChannels.length} canal(aux) dérivé(s) restauré(s)`);
+        } else {
+            console.log(`🔧 Aucun canal dérivé à restaurer pour ${project.name}`);
         }
 
         // CRITIQUE : Peupler le sélecteur de canal pour les annotations

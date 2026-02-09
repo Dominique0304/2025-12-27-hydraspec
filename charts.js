@@ -11,6 +11,9 @@ window.globalCharts = {
 // Variable globale pour la taille de police des textes dans les graphiques
 window.chartFontSize = 12;
 
+// Variable globale pour la taille de police des commentaires sur les marqueurs
+window.commentFontSize = 12;
+
 // --- CHARTS INITIALIZATION ---
 function initCharts() {
     const commonOptions = {
@@ -1618,4 +1621,38 @@ function updateChartFontSize(value) {
     }
 
     console.log("✅ Toutes les polices des graphiques mises à jour");
+}
+
+// --- UPDATE COMMENT FONT SIZE ---
+function updateCommentFontSize(value) {
+    const fontSize = parseInt(value);
+    if (isNaN(fontSize) || fontSize < 8 || fontSize > 48) {
+        console.warn("⚠️ Taille de police commentaires invalide:", value);
+        return;
+    }
+
+    // Mettre à jour la variable globale
+    window.commentFontSize = fontSize;
+    console.log(`✏️ Taille de police commentaires mise à jour: ${fontSize}px`);
+
+    // Mettre à jour tous les snapPoints existants
+    if (typeof snapPointTool !== 'undefined' && snapPointTool.snapPoints) {
+        snapPointTool.snapPoints.forEach(snapPoint => {
+            snapPoint.fontSize = fontSize;
+        });
+        console.log(`📍 ${snapPointTool.snapPoints.length} marqueur(s) mis à jour avec la nouvelle taille de police`);
+
+        // Redessiner les snappoints
+        if (typeof snapPointTool.drawSnapPoints === 'function') {
+            snapPointTool.drawSnapPoints();
+        }
+    }
+
+    // Sauvegarder dans le projet actif (via le Proxy appState)
+    if (typeof appState !== 'undefined') {
+        appState.commentFontSize = fontSize;
+        console.log(`💾 Taille de police commentaires sauvegardée dans le projet : ${fontSize}px`);
+    }
+
+    console.log("✅ Taille de police des commentaires mise à jour");
 }

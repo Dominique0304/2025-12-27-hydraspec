@@ -211,6 +211,7 @@ async function performHSPSave(project, fileName, isNewFile) {
             // Paramètres
             timeIncrement: project.state.timeIncrement,
             chartFontSize: project.state.chartFontSize,
+            commentFontSize: project.state.commentFontSize,
 
             // Aperçu des premières lignes du fichier
             rawFilePreview: project.state.rawFilePreview || "",
@@ -495,6 +496,7 @@ async function restoreProjectFromHSP(project, hspData) {
     // Restaurer paramètres
     project.state.timeIncrement = hspData.state.timeIncrement || 1.0;
     project.state.chartFontSize = hspData.state.chartFontSize || 12;
+    project.state.commentFontSize = hspData.state.commentFontSize || 12;
 
     // Restaurer l'aperçu des premières lignes du fichier
     project.state.rawFilePreview = hspData.state.rawFilePreview || "";

@@ -1066,6 +1066,13 @@
                            style="width:60px; margin-top:5px; padding:6px;">
                     <small style="color: var(--text-muted); font-size: 0.8em;"><span data-i18n="labels.font_size_description">Taille des textes dans les graphiques (8-24px)</span></small>
                 </div>
+                <div>
+                    <label for="comment-font-size-input"><span data-i18n="labels.comment_font_size_px">Taille police commentaires (px)</span></label>
+                    <input type="number" id="comment-font-size-input" value="12" min="8" max="48" step="1"
+                           onchange="updateCommentFontSize(this.value)"
+                           style="width:60px; margin-top:5px; padding:6px;">
+                    <small style="color: var(--text-muted); font-size: 0.8em;"><span data-i18n="labels.comment_font_size_description">Taille de la police des commentaires sur les marqueurs (8-48px)</span></small>
+                </div>
             </div>
 
             <!-- <span data-i18n="labels.mouse_halo">Halo de souris</span> -->

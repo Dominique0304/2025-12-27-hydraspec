@@ -55,6 +55,7 @@ class Project {
             // Paramètres
             timeIncrement: 1.0,
             chartFontSize: 12,
+            commentFontSize: 12,
 
             // Aperçu du fichier
             rawFilePreview: "",

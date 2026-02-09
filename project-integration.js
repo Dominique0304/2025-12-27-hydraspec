@@ -1191,6 +1191,15 @@ function updateAllInterface(isInitialLoad = false) {
     }
     console.log(`✏️ Taille de police restaurée : ${window.chartFontSize}px`);
 
+    // CRITIQUE : Synchroniser la taille de police des commentaires
+    appState.commentFontSize = project.state.commentFontSize || 12;
+    window.commentFontSize = appState.commentFontSize;
+    const commentFontSizeInput = document.getElementById('comment-font-size-input');
+    if (commentFontSizeInput) {
+        commentFontSizeInput.value = window.commentFontSize;
+    }
+    console.log(`✏️ Taille de police commentaires restaurée : ${window.commentFontSize}px`);
+
     // CRITIQUE : Synchroniser les données du spectrogramme
     appState.spectroData = project.state.spectroData;
     console.log(`📊 Spectrogramme synchronisé : ${appState.spectroData ? appState.spectroData.length + ' points' : 'aucune donnée'}`);

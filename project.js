@@ -207,6 +207,8 @@ class Project {
         // ========================================
         // Encapsulation des outils de mesure et d'analyse
         this.measureTool = new MeasureTool(this);
+        this.rulerTool = new RulerTool(this);
+        this.trackTool = new TrackTool(this);
 
         console.log(`✅ Projet créé: ${this.name} [ID: ${this.id}]`);
     }

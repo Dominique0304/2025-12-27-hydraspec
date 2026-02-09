@@ -488,28 +488,16 @@ function deactivateAllTools() {
         if (panBtn) panBtn.style.background = 'var(--accent-blue)';
     }
 
-    // Ruler (Mesurer)
-    if (typeof rulerState !== 'undefined' && rulerState.active) {
-        rulerState.active = false;
-        const rulerBtn = document.getElementById('ruler-tool-btn');
-        const rulerResults = document.getElementById('ruler-results');
-        if (rulerBtn) rulerBtn.style.background = 'var(--accent-blue)';
-        if (rulerResults) rulerResults.style.display = 'none';
-        if (rulerState.point) {
-            rulerState.point = null;
-            if (typeof appState !== 'undefined' && appState.charts && appState.charts.time) {
-                appState.charts.time.update('none');
-            }
-        }
+    // Ruler (Mesurer) (POO)
+    const project2 = window.projectManager?.getActive();
+    if (project2 && project2.rulerTool && project2.rulerTool.state.active) {
+        project2.rulerTool.deactivate();
     }
 
-    // Track (Traquer)
-    if (typeof trackState !== 'undefined' && trackState.active) {
-        trackState.active = false;
-        const trackBtn = document.getElementById('track-tool-btn');
-        const trackResults = document.getElementById('track-results');
-        if (trackBtn) trackBtn.style.background = 'var(--accent-blue)';
-        if (trackResults) trackResults.style.display = 'none';
+    // Track (Traquer) (POO)
+    const project3 = window.projectManager?.getActive();
+    if (project3 && project3.trackTool && project3.trackTool.state.active) {
+        project3.trackTool.deactivate();
     }
 }
 
@@ -588,34 +576,19 @@ function deactivateOtherTools(currentTool) {
         }
     }
 
-    // Ruler (Mesurer)
-    if (currentTool !== 'ruler' && typeof rulerState !== 'undefined' && rulerState.active) {
-        rulerState.active = false;
-        const rulerBtn = document.getElementById('ruler-tool-btn');
-        const rulerResults = document.getElementById('ruler-results');
-        if (rulerBtn) rulerBtn.style.background = 'var(--accent-blue)';
-        if (rulerResults) rulerResults.style.display = 'none';
-        if (rulerState.point) {
-            rulerState.point = null;
-            if (typeof appState !== 'undefined' && appState.charts && appState.charts.time) {
-                appState.charts.time.update('none');
-            }
+    // Ruler (Mesurer) (POO)
+    if (currentTool !== 'ruler') {
+        const project = window.projectManager?.getActive();
+        if (project && project.rulerTool && project.rulerTool.state.active) {
+            project.rulerTool.deactivate();
         }
     }
 
-    // Track (Traquer)
-    if (currentTool !== 'track' && typeof trackState !== 'undefined' && trackState.active) {
-        trackState.active = false;
-        const trackBtn = document.getElementById('track-tool-btn');
-        const trackResults = document.getElementById('track-results');
-        if (trackBtn) trackBtn.style.background = 'var(--accent-blue)';
-        if (trackResults) trackResults.style.display = 'none';
-        if (trackState.currentX !== null) {
-            trackState.currentX = null;
-            trackState.values = {};
-            if (typeof appState !== 'undefined' && appState.charts && appState.charts.time) {
-                appState.charts.time.update('none');
-            }
+    // Track (Traquer) (POO)
+    if (currentTool !== 'track') {
+        const project = window.projectManager?.getActive();
+        if (project && project.trackTool && project.trackTool.state.active) {
+            project.trackTool.deactivate();
         }
     }
 }

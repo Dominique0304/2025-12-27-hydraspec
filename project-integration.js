@@ -611,14 +611,10 @@ function saveAllToolsState(project) {
         };
     }
 
-    // Sauvegarder Track Tool
-    if (typeof trackState !== 'undefined') {
-        project.toolsState.trackTool = {
-            active: trackState.active,
-            currentX: trackState.currentX,
-            values: {...trackState.values},
-            locked: trackState.locked
-        };
+    // Sauvegarder Track Tool (POO)
+    if (project.trackTool) {
+        project.toolsState.trackTool = project.trackTool.export();
+        console.log(`📍 TrackTool sauvegardé (POO)`);
     }
 
     // Sauvegarder Vues sauvegardées
@@ -787,22 +783,10 @@ function restoreAllToolsState(project) {
         }
     }
 
-    // Restaurer Track Tool
-    if (typeof trackState !== 'undefined' && project.toolsState.trackTool) {
-        const shouldBeActive = project.toolsState.trackTool.active;
-
-        trackState.active = shouldBeActive;
-        trackState.currentX = project.toolsState.trackTool.currentX;
-        trackState.values = {...project.toolsState.trackTool.values};
-        trackState.locked = project.toolsState.trackTool.locked;
-
-        // Mettre à jour l'UI
-        const btn = document.getElementById('track-tool-btn');
-        const results = document.getElementById('track-results');
-        if (btn && results) {
-            btn.style.background = shouldBeActive ? 'var(--accent-green)' : 'var(--accent-blue)';
-            results.style.display = shouldBeActive ? 'block' : 'none';
-        }
+    // Restaurer Track Tool (POO)
+    if (project.trackTool && project.toolsState.trackTool) {
+        project.trackTool.restore(project.toolsState.trackTool);
+        console.log(`📍 TrackTool restauré (POO)`);
     }
 
     // Restaurer Diff Canal (code legacy pour compatibilité)

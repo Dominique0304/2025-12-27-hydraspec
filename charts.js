@@ -441,52 +441,67 @@ function setupCanvasInteractions() {
 // Gestion du clic souris
 canvas.addEventListener('mousedown', (e) => {
     const chart = appState.charts.time;
+    console.log('🖱️ MouseDown sur canvas - Début gestion des outils');
 
     // Priorité 0: Zoom par sélection de quadrillage
     if (typeof handleGridZoomClick === 'function') {
+        console.log('🔍 Test handleGridZoomClick');
         if (handleGridZoomClick(e, chart, canvas)) {
+            console.log('✅ handleGridZoomClick a géré le clic');
             return; // Le zoom par sélection a géré le clic
         }
     }
 
     // Priorité 1: Outil de déplacement
     if (typeof handlePanClick === 'function') {
+        console.log('🔍 Test handlePanClick');
         if (handlePanClick(e, chart)) {
+            console.log('✅ handlePanClick a géré le clic');
             return; // L'outil de déplacement a géré le clic
         }
     }
 
     // Priorité 2: Outil de mesure
     if (typeof handleMeasureClick === 'function') {
+        console.log('🔍 Test handleMeasureClick');
         if (handleMeasureClick(e, chart)) {
+            console.log('✅ handleMeasureClick a géré le clic');
             return; // L'outil de mesure a géré le clic
         }
     }
 
     // Priorité 2a: Drag des points Diff/Canal
     if (typeof handleDiffCanalMouseDown === 'function') {
+        console.log('🔍 Test handleDiffCanalMouseDown');
         if (handleDiffCanalMouseDown(e, chart)) {
+            console.log('✅ handleDiffCanalMouseDown a géré le clic');
             return; // Le drag d'un point Diff/Canal a commencé
         }
     }
 
     // Priorité 2b: Outil Diff/Canal (création)
     if (typeof handleDiffCanalClick === 'function') {
+        console.log('🔍 Test handleDiffCanalClick');
         if (handleDiffCanalClick(e, chart)) {
+            console.log('✅ handleDiffCanalClick a géré le clic');
             return; // L'outil Diff/Canal a géré le clic
         }
     }
 
     // Priorité 2b2: Drag des marqueurs (SnapPoint)
     if (typeof handleSnapPointMouseDown === 'function') {
+        console.log('🔍 Test handleSnapPointMouseDown');
         if (handleSnapPointMouseDown(e, chart)) {
+            console.log('✅ handleSnapPointMouseDown a géré le clic');
             return; // Le drag d'un marqueur a commencé
         }
     }
 
     // Priorité 2c: Outil Marqueur (création snappoint)
     if (typeof handleSnapPointClick === 'function') {
+        console.log('🔍 Test handleSnapPointClick');
         if (handleSnapPointClick(e, chart)) {
+            console.log('✅ handleSnapPointClick a géré le clic');
             return; // L'outil Marqueur a géré le clic
         }
     }

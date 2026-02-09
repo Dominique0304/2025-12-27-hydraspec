@@ -2477,6 +2477,9 @@ function setSnapPointMode(mode) {
 }
 
 function handleSnapPointClick(event, chart) {
+    console.log('🔍 handleSnapPointClick globale appelée');
+    console.log('🔍 snapPointTool existe?', !!snapPointTool);
+    console.log('🔍 snapPointTool.handleSnapPointClick existe?', typeof snapPointTool.handleSnapPointClick);
     return snapPointTool.handleSnapPointClick(event, chart);
 }
 

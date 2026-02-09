@@ -840,7 +840,7 @@ function restoreAllToolsState(project) {
                 snapPoint.color = data.color || '#4ECDC4';
 
                 // Formatage texte
-                snapPoint.fontSize = data.fontSize || window.chartFontSize;
+                snapPoint.fontSize = data.fontSize || 12; // Taille par défaut des marqueurs = 12 (indépendant des commentaires)
                 snapPoint.fontWeight = data.fontWeight || 'normal';
                 snapPoint.fontStyle = data.fontStyle || 'normal';
                 snapPoint.textDecoration = data.textDecoration || 'none';

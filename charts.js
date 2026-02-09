@@ -1635,18 +1635,8 @@ function updateCommentFontSize(value) {
     window.commentFontSize = fontSize;
     console.log(`✏️ Taille de police commentaires mise à jour: ${fontSize}px`);
 
-    // Mettre à jour tous les snapPoints existants
-    if (typeof snapPointTool !== 'undefined' && snapPointTool.snapPoints) {
-        snapPointTool.snapPoints.forEach(snapPoint => {
-            snapPoint.fontSize = fontSize;
-        });
-        console.log(`📍 ${snapPointTool.snapPoints.length} marqueur(s) mis à jour avec la nouvelle taille de police`);
-
-        // Redessiner les snappoints
-        if (typeof snapPointTool.drawSnapPoints === 'function') {
-            snapPointTool.drawSnapPoints();
-        }
-    }
+    // NOTE: La taille de police des commentaires NE doit PAS affecter les marqueurs.
+    // Chaque marqueur garde sa propre taille définie individuellement via la boîte de dialogue "modifier le marqueur".
 
     // Sauvegarder dans le projet actif (via le Proxy appState)
     if (typeof appState !== 'undefined') {

@@ -134,6 +134,10 @@ function onProjectSwitched(project) {
         if (typeof updateSpectrogram === 'function') updateSpectrogram();
     }
 
+    // CRITIQUE : Restaurer TOUS les outils (marqueurs, intervalles, etc.)
+    // APRÈS avoir restauré les canaux dans updateAllInterface
+    restoreAllToolsState(project);
+
     // Mettre à jour les onglets
     if (typeof updateProjectTabs === 'function') {
         updateProjectTabs();

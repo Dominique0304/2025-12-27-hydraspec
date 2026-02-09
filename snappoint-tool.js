@@ -1,32 +1,9 @@
 // =====================================
-// OUTIL MARQUEUR (SNAPPOINT)
+// OUTIL MARQUEUR (SNAPPOINT) - Version POO
 // Points d'annotation avec info dessinées sur canvas
 // Alternative aux annotations HTML pour éviter débordement
 // =====================================
 
-// Variables globales
-let snapPoints = [];
-let isCreatingSnapPoint = false;
-let nextSnapPointId = 1;
-
-// État de l'outil
-let snapPointState = {
-    active: false,
-    mode: 'create', // 'create' ou 'move'
-    dragging: null, // 'point', 'box', 'resize', ou null
-    draggedSnapPoint: null,
-    dragStartX: 0,
-    dragStartY: 0,
-    dragOffsetX: 0,
-    dragOffsetY: 0,
-    resizeDirection: null, // 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'
-    resizeStartWidth: 0,
-    resizeStartHeight: 0,
-    resizeStartBoxX: 0,
-    resizeStartBoxY: 0
-};
-
-// Classe SnapPoint
 class SnapPoint {
     constructor(id, channelIndex, xValue, value) {
         this.id = id;
@@ -151,13 +128,43 @@ class SnapPoint {
     }
 }
 
-// Activer/désactiver l'outil
-function toggleSnapPointTool() {
+// =====================================
+// CLASSE SNAPPOINT TOOL
+// =====================================
+
+class SnapPointTool {
+    constructor() {
+        // Variables d'état
+        this.snapPoints = [];
+        this.isCreating = false;
+        this.nextId = 1;
+        this.editingId = null;
+        this.contextMenuId = null;
+
+        // État de l'outil
+        this.state = {
+            active: false,
+            mode: 'create', // 'create' ou 'move'
+            dragging: null, // 'point', 'box', 'resize', ou null
+            draggedSnapPoint: null,
+            dragStartX: 0,
+            dragStartY: 0,
+            dragOffsetX: 0,
+            dragOffsetY: 0,
+            resizeDirection: null, // 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'
+            resizeStartWidth: 0,
+            resizeStartHeight: 0,
+            resizeStartBoxX: 0,
+            resizeStartBoxY: 0
+        };
+    }
+
+    toggleSnapPointTool() {
     const btn = document.getElementById('snappoint-btn');
     const content = document.getElementById('snappoint-content');
     const icon = document.getElementById('snappoint-accordion-icon');
 
-    if (!snapPointState.active) {
+    if (!this.state.active) {
         // ACTIVATION
         if (typeof deactivateOtherTools === 'function') {
             deactivateOtherTools('snappoint');
@@ -185,8 +192,8 @@ function toggleSnapPointTool() {
         }
 
         // Activer l'outil
-        snapPointState.active = true;
-        isCreatingSnapPoint = true;
+        this.state.active = true;
+        this.isCreating = true;
         if (btn) {
             btn.style.background = 'var(--accent-green)';
         }
@@ -203,8 +210,8 @@ function toggleSnapPointTool() {
         setStatus(t("status.marker_tool_activated"));
     } else {
         // DÉSACTIVATION
-        snapPointState.active = false;
-        isCreatingSnapPoint = false;
+        this.state.active = false;
+        this.isCreating = false;
         if (btn) {
             btn.style.background = 'var(--accent-blue)';
         }
@@ -220,14 +227,10 @@ function toggleSnapPointTool() {
 
         setStatus(t("status.marker_tool_deactivated"));
     }
-}
+    }
 
-/**
- * Changer le mode de l'outil Marqueur (Créer / Déplacer)
- * @param {string} mode - 'create' ou 'move'
- */
-function setSnapPointMode(mode) {
-    snapPointState.mode = mode;
+    setSnapPointMode(mode) {
+    this.state.mode = mode;
 
     const createBtn = document.getElementById('snappoint-create-btn');
     const moveBtn = document.getElementById('snappoint-move-btn');
@@ -266,12 +269,11 @@ function setSnapPointMode(mode) {
         }
         setStatus("Mode Déplacement : Cliquez sur un marqueur pour le déplacer");
     }
-}
+    }
 
-// Gérer le clic sur le graphique pour créer un marqueur
-function handleSnapPointClick(event, chart) {
+    handleSnapPointClick(event, chart) {
     // Ne créer que si l'outil est actif ET en mode création
-    if (!snapPointState.active || !isCreatingSnapPoint || snapPointState.mode !== 'create') {
+    if (!this.state.active || !this.isCreating || this.state.mode !== 'create') {
         return false;
     }
 
@@ -298,7 +300,7 @@ function handleSnapPointClick(event, chart) {
             if (!yScale) return;
 
             // Interpoler la valeur sur ce canal
-            const value = interpolateChannelValue(index, xValue);
+            const value = this.interpolateChannelValue(index, xValue);
             if (value === null) return;
 
             // Calculer la distance au clic
@@ -319,24 +321,23 @@ function handleSnapPointClick(event, chart) {
 
     // Créer le marqueur
     const snapPoint = new SnapPoint(
-        nextSnapPointId++,
+        this.nextId++,
         closestChannel.index,
         xValue,
         closestChannel.value
     );
-    snapPoints.push(snapPoint);
+    this.snapPoints.push(snapPoint);
 
     // Mettre à jour l'affichage
-    updateSnapPointsList();
+    this.updateSnapPointsList();
     chart.update('none');
 
     setStatus(`Marqueur créé sur ${snapPoint.getChannelLabel()}`);
 
     return true;
-}
+    }
 
-// Interpoler la valeur Y sur un canal à une position X donnée
-function interpolateChannelValue(channelIndex, xValue) {
+    interpolateChannelValue(channelIndex, xValue) {
     if (!appState.channelConfig || !appState.channelConfig[channelIndex]) {
         return null;
     }
@@ -394,10 +395,9 @@ function interpolateChannelValue(channelIndex, xValue) {
     }
 
     return result;
-}
+    }
 
-// Obtenir la valeur réelle sur une courbe à une position X donnée (pour le suivi de courbe)
-function getSnapPointValueOnCurve(channelIndex, xValue) {
+    getSnapPointValueOnCurve(channelIndex, xValue) {
     const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, data: appState.fullDataTime };
     const xValueScaled = xValue * xInfo.scale;
     const dataX = xInfo.data;
@@ -430,10 +430,9 @@ function getSnapPointValueOnCurve(channelIndex, xValue) {
     }
 
     return dataValues[closestIndex];
-}
+    }
 
-// Fonction helper pour convertir hex en rgba
-function hexToRgba(hex, opacity) {
+    hexToRgba(hex, opacity) {
     // Retirer le # si présent
     hex = hex.replace('#', '');
 
@@ -447,10 +446,9 @@ function hexToRgba(hex, opacity) {
     const b = parseInt(hex.substring(4, 6), 16);
 
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-}
+    }
 
-// Fonction helper pour calculer la distance d'un point à un segment de ligne
-function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+    distanceToLineSegment(px, py, x1, y1, x2, y2) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const lengthSquared = dx * dx + dy * dy;
@@ -470,10 +468,9 @@ function distanceToLineSegment(px, py, x1, y1, x2, y2) {
 
     // Distance du point au point le plus proche
     return Math.sqrt((px - closestX) * (px - closestX) + (py - closestY) * (py - closestY));
-}
+    }
 
-// Fonction pour remplacer les balises dans le commentaire
-function replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
+    replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
     if (!comment || comment.trim() === '') {
         return comment;
     }
@@ -484,7 +481,7 @@ function replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
     let markerNumber = snapPointIndex !== null ? (snapPointIndex + 1) : null;
     if (markerNumber === null) {
         // Si l'index n'est pas fourni, le chercher dans le tableau
-        const foundIndex = snapPoints.findIndex(sp => sp.id === snapPoint.id);
+        const foundIndex = this.snapPoints.findIndex(sp => sp.id === snapPoint.id);
         markerNumber = foundIndex !== -1 ? (foundIndex + 1) : snapPoint.id;
     }
 
@@ -524,10 +521,9 @@ function replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
     }
 
     return result;
-}
+    }
 
-// Dessiner tous les marqueurs sur le graphique
-function drawSnapPoints(chart) {
+    drawSnapPoints(chart) {
     if (!chart || !chart.ctx) {
         return;
     }
@@ -541,7 +537,7 @@ function drawSnapPoints(chart) {
     ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
     ctx.clip();
 
-    snapPoints.forEach((snapPoint, index) => {
+    this.snapPoints.forEach((snapPoint, index) => {
         if (!snapPoint.visible) return;
 
         // Déterminer si le marqueur est flottant (-1 = canal fantôme)
@@ -586,11 +582,11 @@ function drawSnapPoints(chart) {
             const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5;
 
             // Dessiner le point d'accroche à 100% d'opacité pour une meilleure visibilité
-            ctx.fillStyle = hexToRgba(anchorColor, 1.0);
+            ctx.fillStyle = this.hexToRgba(anchorColor, 1.0);
             ctx.beginPath();
             ctx.arc(pointPos.x, pointPos.y, 6, 0, 2 * Math.PI);
             ctx.fill();
-            ctx.strokeStyle = hexToRgba('#FFF', 1.0);
+            ctx.strokeStyle = this.hexToRgba('#FFF', 1.0);
             ctx.lineWidth = 2;
             ctx.stroke();
 
@@ -599,7 +595,7 @@ function drawSnapPoints(chart) {
             ctx.font = `${snapPoint.fontWeight} ${snapPoint.fontSize}px sans-serif`;
             const lines = [];
             if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-                const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, index);
+                const processedComment = this.replaceSnapPointTags(snapPoint.comment, snapPoint, index);
                 if (processedComment && processedComment.trim() !== '') {
                     const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                     lines.push(...commentLines);
@@ -676,7 +672,7 @@ function drawSnapPoints(chart) {
                 }
 
                 // Dessiner la ligne pointillée de connexion avec la couleur du canal d'accrochage à 100% d'opacité
-                ctx.strokeStyle = hexToRgba(anchorColor, 1.0);
+                ctx.strokeStyle = this.hexToRgba(anchorColor, 1.0);
                 ctx.lineWidth = 1;
                 ctx.setLineDash([5, 3]);
                 ctx.beginPath();
@@ -692,7 +688,7 @@ function drawSnapPoints(chart) {
         const lines = [];
 
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
-            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, index);
+            const processedComment = this.replaceSnapPointTags(snapPoint.comment, snapPoint, index);
             if (processedComment && processedComment.trim() !== '') {
                 // Séparer le commentaire en lignes (par retour à la ligne ou par ';')
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
@@ -724,8 +720,8 @@ function drawSnapPoints(chart) {
         const backgroundOpacity = snapPoint.backgroundOpacity !== undefined ? snapPoint.backgroundOpacity : 0.5; // 50% de transparence par défaut
 
         // Convertir la couleur en rgba avec l'opacité
-        const bgColor = hexToRgba(backgroundColor, backgroundOpacity);
-        drawRoundedRect(ctx, boxPos.x - boxWidth / 2, boxPos.y, boxWidth, boxHeight, radius, bgColor, '#000');
+        const bgColor = this.hexToRgba(backgroundColor, backgroundOpacity);
+        this.drawRoundedRect(ctx, boxPos.x - boxWidth / 2, boxPos.y, boxWidth, boxHeight, radius, bgColor, '#000');
 
         // Dessiner le texte
         ctx.fillStyle = '#000';
@@ -856,7 +852,7 @@ function drawSnapPoints(chart) {
             }
 
             // Dessiner la ligne de la flèche depuis le bord de la boîte avec transparence
-            ctx.strokeStyle = hexToRgba(arrowColor, backgroundOpacity);
+            ctx.strokeStyle = this.hexToRgba(arrowColor, backgroundOpacity);
             ctx.lineWidth = 2;
             ctx.setLineDash([]);
             ctx.beginPath();
@@ -868,7 +864,7 @@ function drawSnapPoints(chart) {
             const arrowAngle = Math.atan2(arrowEndY - lineStartY, arrowEndX - lineStartX);
             const arrowSize = 12;
 
-            ctx.fillStyle = hexToRgba(arrowColor, backgroundOpacity);
+            ctx.fillStyle = this.hexToRgba(arrowColor, backgroundOpacity);
             ctx.beginPath();
             ctx.moveTo(arrowEndX, arrowEndY);
             ctx.lineTo(
@@ -887,10 +883,9 @@ function drawSnapPoints(chart) {
     });
 
     ctx.restore();
-}
+    }
 
-// Fonction pour dessiner un rectangle aux coins arrondis
-function drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColor) {
+    drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColor) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
@@ -913,18 +908,17 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColo
         ctx.lineWidth = 1;
         ctx.stroke();
     }
-}
+    }
 
-// Vérifier l'intégrité des IDs de marqueurs (pas de doublons, pas de null/undefined)
-function checkSnapPointsIntegrity() {
+    checkSnapPointsIntegrity() {
     let hasErrors = false;
 
     // Vérifier les IDs null/undefined
-    const invalidIds = snapPoints.filter(sp => sp.id === null || sp.id === undefined);
+    const invalidIds = this.snapPoints.filter(sp => sp.id === null || sp.id === undefined);
     if (invalidIds.length > 0) {
         console.error(`❌ ${invalidIds.length} marqueur(s) avec ID null/undefined détecté(s)!`);
         console.table(invalidIds.map((sp, idx) => ({
-            index: snapPoints.indexOf(sp),
+            index: this.snapPoints.indexOf(sp),
             id: sp.id,
             xValue: sp.xValue?.toFixed(3) || 'N/A',
             value: sp.value?.toFixed(1) || 'N/A'
@@ -933,14 +927,14 @@ function checkSnapPointsIntegrity() {
     }
 
     // Vérifier les doublons d'IDs
-    const ids = snapPoints.map(sp => sp.id);
+    const ids = this.snapPoints.map(sp => sp.id);
     const uniqueIds = new Set(ids);
 
     if (ids.length !== uniqueIds.size) {
         console.error('❌ DOUBLONS D\'IDS DÉTECTÉS!');
         const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
         console.error('IDs dupliqués:', duplicates);
-        console.table(snapPoints.map(sp => ({
+        console.table(this.snapPoints.map(sp => ({
             id: sp.id,
             xValue: sp.xValue.toFixed(3),
             value: sp.value.toFixed(1),
@@ -950,20 +944,19 @@ function checkSnapPointsIntegrity() {
     }
 
     if (!hasErrors) {
-        console.log(`✅ Intégrité des ${snapPoints.length} marqueurs vérifiée: OK`);
+        console.log(`✅ Intégrité des ${this.snapPoints.length} marqueurs vérifiée: OK`);
     }
 
     return !hasErrors;
-}
+    }
 
-// Mettre à jour la liste des marqueurs dans le sidebar
-function updateSnapPointsList() {
+    updateSnapPointsList() {
     // Vérifier l'intégrité des IDs
-    checkSnapPointsIntegrity();
+    this.checkSnapPointsIntegrity();
     const listContainer = document.getElementById('snappoints-list');
     if (!listContainer) return;
 
-    if (snapPoints.length === 0) {
+    if (this.snapPoints.length === 0) {
         listContainer.innerHTML = `
             <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.8rem; font-style:italic;">
                 Aucun marqueur
@@ -973,7 +966,7 @@ function updateSnapPointsList() {
     }
 
     let html = '';
-    snapPoints.forEach((snapPoint, index) => {
+    this.snapPoints.forEach((snapPoint, index) => {
         // Vérification de sécurité : s'assurer que l'ID est valide
         if (snapPoint.id === null || snapPoint.id === undefined) {
             console.error(`❌ Marqueur à l'index ${index} a un ID invalide:`, snapPoint.id);
@@ -986,7 +979,7 @@ function updateSnapPointsList() {
         const xValueInfo = `${snapPoint.xValue.toFixed(3)} ${xInfo.unit}`;
         const valueInfo = `${snapPoint.value.toFixed(1)} ${unit}`;
         // Traiter le commentaire avec les balises
-        const commentInfo = snapPoint.comment ? replaceSnapPointTags(snapPoint.comment, snapPoint, index) : '';
+        const commentInfo = snapPoint.comment ? this.replaceSnapPointTags(snapPoint.comment, snapPoint, index) : '';
 
         const isVisible = snapPoint.visible !== false;
         const eyeIcon = isVisible ? 'fa-eye' : 'fa-eye-slash';
@@ -1009,17 +1002,17 @@ function updateSnapPointsList() {
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
                     <span style="color:${color}; font-weight:bold;"><i class="fas fa-map-marker-alt"></i> Marqueur ${index + 1}</span>
                     <span style="flex:1;"></span>
-                    <button onclick="toggleSnapPointVisibility(${snapPoint.id})"
+                    <button onclick="this.this.toggleSnapPointVisibility(${snapPoint.id})"
                             style="padding:4px 6px; background:none; border:none; color:${eyeColor}; cursor:pointer; font-size:0.9rem;"
                             title="${isVisible ? 'Masquer' : 'Afficher'}">
                         <i class="fas ${eyeIcon}"></i>
                     </button>
-                    <button onclick="editSnapPoint(${snapPoint.id})"
+                    <button onclick="this.editSnapPoint(${snapPoint.id})"
                             style="padding:4px 6px; background:none; border:none; color:var(--accent-blue); cursor:pointer; font-size:0.9rem;"
                             title="Modifier">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteSnapPoint(${snapPoint.id})"
+                    <button onclick="this.this.deleteSnapPoint(${snapPoint.id})"
                             style="padding:4px 6px; background:none; border:none; color:var(--accent-red); cursor:pointer; font-size:0.9rem;"
                             title="Supprimer">
                         <i class="fas fa-trash"></i>
@@ -1033,28 +1026,20 @@ function updateSnapPointsList() {
     });
 
     listContainer.innerHTML = html;
-}
+    }
 
-// Basculer la visibilité d'un marqueur
-function toggleSnapPointVisibility(id) {
-    const snapPoint = snapPoints.find(sp => sp.id === id);
+    toggleSnapPointVisibility(id) {
+    const snapPoint = this.snapPoints.find(sp => sp.id === id);
     if (snapPoint) {
         snapPoint.visible = !snapPoint.visible;
-        updateSnapPointsList();
+        this.updateSnapPointsList();
         appState.charts.time.update('none');
     }
-}
+    }
 
-// État de la modale d'édition
-let editingSnapPointId = null;
-
-// État du menu contextuel
-let contextMenuSnapPointId = null;
-
-// Ouvrir la modale d'édition complète d'un marqueur
-function openSnapPointEditModal(id) {
+    openSnapPointEditModal(id) {
     // IMPORTANT: Réinitialiser l'ID d'édition d'abord pour éviter tout conflit
-    editingSnapPointId = null;
+    this.editingId = null;
 
     // Vérifier que l'ID est valide
     if (id === null || id === undefined) {
@@ -1062,10 +1047,10 @@ function openSnapPointEditModal(id) {
         return;
     }
 
-    const snapPoint = snapPoints.find(sp => sp.id === id);
+    const snapPoint = this.snapPoints.find(sp => sp.id === id);
     if (!snapPoint) {
-        console.error(`❌ Marqueur avec id ${id} introuvable dans la liste de ${snapPoints.length} marqueurs`);
-        console.log('IDs disponibles:', snapPoints.map(sp => sp.id));
+        console.error(`❌ Marqueur avec id ${id} introuvable dans la liste de ${this.snapPoints.length} marqueurs`);
+        console.log('IDs disponibles:', this.snapPoints.map(sp => sp.id));
         return;
     }
 
@@ -1082,7 +1067,7 @@ function openSnapPointEditModal(id) {
     if (!modal) return;
 
     // Stocker l'ID en édition APRÈS toutes les vérifications
-    editingSnapPointId = id;
+    this.editingId = id;
 
     // Stocker aussi dans le DOM pour debug
     modal.setAttribute('data-editing-id', id);
@@ -1139,13 +1124,13 @@ function openSnapPointEditModal(id) {
     }
 
     // Mettre à jour les boutons de formatage
-    updateSnapPointFormatButtons();
+    this.updateSnapPointFormatButtons();
 
     // Mettre à jour les boutons d'alignement
-    updateSnapPointAlignmentButtons();
+    this.updateSnapPointAlignmentButtons();
 
     // Mettre à jour l'état du bouton flèche
-    updateArrowButtonState();
+    this.updateArrowButtonState();
 
     // Afficher la modale (alignement en haut pour éviter l'espace vide en bas)
     modal.style.display = 'flex';
@@ -1153,45 +1138,43 @@ function openSnapPointEditModal(id) {
     modal.style.paddingTop = '20px';
 
     // Initialiser le drag de la modale
-    makeSnapPointModalDraggable();
-}
+    this.makeSnapPointModalDraggable();
+    }
 
-// Fermer la modale d'édition
-function closeSnapPointEditModal() {
+    closeSnapPointEditModal() {
     const modal = document.getElementById('snappoint-edit-modal');
     if (modal) {
-        console.log(`🔒 Fermeture de l'édition du marqueur ID=${editingSnapPointId}`);
+        console.log(`🔒 Fermeture de l'édition du marqueur ID=${this.editingId}`);
         modal.style.display = 'none';
         modal.removeAttribute('data-editing-id');
     }
-    editingSnapPointId = null;
-    console.log('✅ editingSnapPointId réinitialisé à null');
-}
+    this.editingId = null;
+    console.log('✅ this.editingId réinitialisé à null');
+    }
 
-// Confirmer l'édition du marqueur
-function confirmSnapPointEdit() {
-    if (editingSnapPointId === null || editingSnapPointId === undefined) {
-        console.error('❌ Aucun marqueur en édition (editingSnapPointId est null/undefined)');
+    confirmSnapPointEdit() {
+    if (this.editingId === null || this.editingId === undefined) {
+        console.error('❌ Aucun marqueur en édition (this.editingId est null/undefined)');
         return;
     }
 
-    console.log(`💾 Confirmation de l'édition pour le marqueur ID=${editingSnapPointId}`);
+    console.log(`💾 Confirmation de l'édition pour le marqueur ID=${this.editingId}`);
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) {
-        console.error(`❌ Marqueur avec id ${editingSnapPointId} introuvable dans ${snapPoints.length} marqueurs`);
-        console.log('IDs disponibles:', snapPoints.map(sp => sp.id));
+        console.error(`❌ Marqueur avec id ${this.editingId} introuvable dans ${this.snapPoints.length} marqueurs`);
+        console.log('IDs disponibles:', this.snapPoints.map(sp => sp.id));
         return;
     }
 
     // Vérification de sécurité: comparer avec l'attribut du modal
     const modal = document.getElementById('snappoint-edit-modal');
     const modalEditingId = modal ? parseInt(modal.getAttribute('data-editing-id')) : null;
-    if (modalEditingId !== null && modalEditingId !== editingSnapPointId) {
-        console.warn(`⚠️ Incohérence détectée! Modal ID=${modalEditingId}, editingSnapPointId=${editingSnapPointId}`);
+    if (modalEditingId !== null && modalEditingId !== this.editingId) {
+        console.warn(`⚠️ Incohérence détectée! Modal ID=${modalEditingId}, this.editingId=${this.editingId}`);
     }
 
-    console.log(`✅ Modification du marqueur ID=${snapPoint.id} (index ${snapPoints.indexOf(snapPoint)})`);
+    console.log(`✅ Modification du marqueur ID=${snapPoint.id} (index ${this.snapPoints.indexOf(snapPoint)})`);
 
     // Récupérer les valeurs
     const commentInput = document.getElementById('snappoint-comment-input');
@@ -1202,32 +1185,31 @@ function confirmSnapPointEdit() {
     }
 
     // Fermer la modale
-    closeSnapPointEditModal();
+    this.closeSnapPointEditModal();
 
     // Mettre à jour l'affichage
-    updateSnapPointsList();
+    this.updateSnapPointsList();
     appState.charts.time.update('none');
 
     // Sauvegarder
     saveSnapPoints();
 
     setStatus(`Marqueur ${snapPoint.id} modifié`);
-}
+    }
 
-// Basculer un format (bold, italic, underline)
-function toggleSnapPointFormat(format) {
-    if (editingSnapPointId === null) {
-        console.warn(`⚠️ toggleSnapPointFormat(${format}): editingSnapPointId est null`);
+    toggleSnapPointFormat(format) {
+    if (this.editingId === null) {
+        console.warn(`⚠️ this.toggleSnapPointFormat(${format}): this.editingId est null`);
         return;
     }
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) {
-        console.error(`❌ toggleSnapPointFormat(${format}): Marqueur ID=${editingSnapPointId} introuvable`);
+        console.error(`❌ this.toggleSnapPointFormat(${format}): Marqueur ID=${this.editingId} introuvable`);
         return;
     }
 
-    console.log(`🎨 Format ${format} basculé pour le marqueur ID=${editingSnapPointId}`);
+    console.log(`🎨 Format ${format} basculé pour le marqueur ID=${this.editingId}`);
 
     if (format === 'bold') {
         snapPoint.fontWeight = snapPoint.fontWeight === 'bold' ? 'normal' : 'bold';
@@ -1237,45 +1219,43 @@ function toggleSnapPointFormat(format) {
         snapPoint.textDecoration = snapPoint.textDecoration === 'underline' ? 'none' : 'underline';
     }
 
-    updateSnapPointFormatButtons();
+    this.updateSnapPointFormatButtons();
 
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-// Définir la taille de police
-function setSnapPointFontSize(size) {
-    if (editingSnapPointId === null) {
-        console.warn(`⚠️ setSnapPointFontSize(${size}): editingSnapPointId est null`);
+    setSnapPointFontSize(size) {
+    if (this.editingId === null) {
+        console.warn(`⚠️ this.setSnapPointFontSize(${size}): this.editingId est null`);
         return;
     }
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) {
-        console.error(`❌ setSnapPointFontSize(${size}): Marqueur ID=${editingSnapPointId} introuvable`);
+        console.error(`❌ this.setSnapPointFontSize(${size}): Marqueur ID=${this.editingId} introuvable`);
         return;
     }
 
-    console.log(`📏 Taille de police changée pour le marqueur ID=${editingSnapPointId}: ${snapPoint.fontSize} → ${size}`);
+    console.log(`📏 Taille de police changée pour le marqueur ID=${this.editingId}: ${snapPoint.fontSize} → ${size}`);
     snapPoint.fontSize = parseInt(size);
-}
+    }
 
-// Définir la couleur de fond
-function setSnapPointBackgroundColor(color) {
-    if (editingSnapPointId === null) {
-        console.warn(`⚠️ setSnapPointBackgroundColor(${color}): editingSnapPointId est null`);
+    setSnapPointBackgroundColor(color) {
+    if (this.editingId === null) {
+        console.warn(`⚠️ this.setSnapPointBackgroundColor(${color}): this.editingId est null`);
         return;
     }
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) {
-        console.error(`❌ setSnapPointBackgroundColor(${color}): Marqueur ID=${editingSnapPointId} introuvable`);
+        console.error(`❌ this.setSnapPointBackgroundColor(${color}): Marqueur ID=${this.editingId} introuvable`);
         return;
     }
 
-    console.log(`🎨 Couleur de fond changée pour le marqueur ID=${editingSnapPointId}: ${snapPoint.backgroundColor} → ${color}`);
+    console.log(`🎨 Couleur de fond changée pour le marqueur ID=${this.editingId}: ${snapPoint.backgroundColor} → ${color}`);
 
     if (color === 'transparent') {
         snapPoint.backgroundOpacity = 0;
@@ -1291,23 +1271,22 @@ function setSnapPointBackgroundColor(color) {
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-// Définir l'opacité du fond
-function setSnapPointOpacity(value) {
-    if (editingSnapPointId === null) {
-        console.warn(`⚠️ setSnapPointOpacity(${value}): editingSnapPointId est null`);
+    setSnapPointOpacity(value) {
+    if (this.editingId === null) {
+        console.warn(`⚠️ this.setSnapPointOpacity(${value}): this.editingId est null`);
         return;
     }
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) {
-        console.error(`❌ setSnapPointOpacity(${value}): Marqueur ID=${editingSnapPointId} introuvable`);
+        console.error(`❌ this.setSnapPointOpacity(${value}): Marqueur ID=${this.editingId} introuvable`);
         return;
     }
 
     const opacity = parseInt(value) / 100;
-    console.log(`🌫️ Opacité changée pour le marqueur ID=${editingSnapPointId}: ${snapPoint.backgroundOpacity} → ${opacity}`);
+    console.log(`🌫️ Opacité changée pour le marqueur ID=${this.editingId}: ${snapPoint.backgroundOpacity} → ${opacity}`);
     snapPoint.backgroundOpacity = opacity;
 
     // Mettre à jour l'affichage de la valeur
@@ -1320,13 +1299,12 @@ function setSnapPointOpacity(value) {
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-// Définir la taille de la boîte (padding scale)
-function setSnapPointPadding(value) {
-    if (editingSnapPointId === null) return;
+    setSnapPointPadding(value) {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     const scale = parseInt(value) / 100;
@@ -1342,13 +1320,12 @@ function setSnapPointPadding(value) {
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-// Définir le canal d'accrochage
-function setSnapPointAnchorChannel(channelIndex) {
-    if (editingSnapPointId === null) return;
+    setSnapPointAnchorChannel(channelIndex) {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     const index = parseInt(channelIndex);
@@ -1356,7 +1333,7 @@ function setSnapPointAnchorChannel(channelIndex) {
 
     // Si un canal d'accrochage est défini, recalculer la valeur Y à cette position X
     if (snapPoint.anchorChannelIndex !== null && snapPoint.anchorChannelIndex !== undefined) {
-        const newValue = getSnapPointValueOnCurve(snapPoint.anchorChannelIndex, snapPoint.xValue);
+        const newValue = this.getSnapPointValueOnCurve(snapPoint.anchorChannelIndex, snapPoint.xValue);
         if (newValue !== null) {
             snapPoint.value = newValue;
         }
@@ -1365,21 +1342,18 @@ function setSnapPointAnchorChannel(channelIndex) {
     }
 
     // Activer/désactiver le bouton flèche selon le canal d'accrochage
-    updateArrowButtonState();
+    this.updateArrowButtonState();
 
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-/**
- * Activer/Désactiver la flèche pour le snapPoint en cours d'édition
- */
-function toggleSnapPointArrow() {
-    if (editingSnapPointId === null) return;
+    toggleSnapPointArrow() {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     // La flèche n'est disponible que si aucun canal d'accrochage n'est sélectionné
@@ -1407,15 +1381,12 @@ function toggleSnapPointArrow() {
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-/**
- * Mettre à jour l'état du bouton flèche (activé/désactivé) selon le canal d'accrochage
- */
-function updateArrowButtonState() {
-    if (editingSnapPointId === null) return;
+    updateArrowButtonState() {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     const btn = document.getElementById('snap-arrow-toggle');
@@ -1449,49 +1420,46 @@ function updateArrowButtonState() {
             btn.innerHTML = '<i class="fas fa-arrow-right"></i> Activer';
         }
     }
-}
+    }
 
-// Définir l'alignement horizontal du texte
-function setSnapPointTextAlign(align) {
-    if (editingSnapPointId === null) return;
+    setSnapPointTextAlign(align) {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     snapPoint.textAlign = align;
 
     // Mettre à jour les boutons d'alignement
-    updateSnapPointAlignmentButtons();
+    this.updateSnapPointAlignmentButtons();
 
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-// Définir l'alignement vertical du texte
-function setSnapPointVerticalAlign(align) {
-    if (editingSnapPointId === null) return;
+    setSnapPointVerticalAlign(align) {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     snapPoint.textVerticalAlign = align;
 
     // Mettre à jour les boutons d'alignement
-    updateSnapPointAlignmentButtons();
+    this.updateSnapPointAlignmentButtons();
 
     // Mettre à jour l'aperçu en temps réel
     if (appState.charts.time) {
         appState.charts.time.update('none');
     }
-}
+    }
 
-// Mettre à jour l'apparence des boutons de formatage
-function updateSnapPointFormatButtons() {
-    if (editingSnapPointId === null) return;
+    updateSnapPointFormatButtons() {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     const btnBold = document.getElementById('snap-fmt-bold');
@@ -1512,13 +1480,12 @@ function updateSnapPointFormatButtons() {
         btnUnderline.style.background = snapPoint.textDecoration === 'underline' ? 'var(--accent-green)' : 'var(--bg-secondary)';
         btnUnderline.style.color = snapPoint.textDecoration === 'underline' ? 'white' : 'var(--text-main)';
     }
-}
+    }
 
-// Mettre à jour l'apparence des boutons d'alignement
-function updateSnapPointAlignmentButtons() {
-    if (editingSnapPointId === null) return;
+    updateSnapPointAlignmentButtons() {
+    if (this.editingId === null) return;
 
-    const snapPoint = snapPoints.find(sp => sp.id === editingSnapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === this.editingId);
     if (!snapPoint) return;
 
     // Alignement horizontal
@@ -1562,10 +1529,9 @@ function updateSnapPointAlignmentButtons() {
         btnBottom.style.background = verticalAlign === 'bottom' ? 'var(--accent-green)' : 'var(--bg-secondary)';
         btnBottom.style.color = verticalAlign === 'bottom' ? 'white' : 'var(--text-main)';
     }
-}
+    }
 
-// Rendre la modale draggable par son header
-function makeSnapPointModalDraggable() {
+    makeSnapPointModalDraggable() {
     const modal = document.getElementById('snappoint-modal-content');
     const header = document.getElementById('snappoint-modal-header');
 
@@ -1594,29 +1560,26 @@ function makeSnapPointModalDraggable() {
     document.addEventListener('mouseup', () => {
         isDragging = false;
     });
-}
+    }
 
-// Éditer un marqueur (fonction appelée depuis la liste)
-function editSnapPoint(id) {
-    openSnapPointEditModal(id);
-}
+    editSnapPoint(id) {
+    this.openSnapPointEditModal(id);
+    }
 
-// Supprimer un marqueur
-function deleteSnapPoint(id) {
-    const index = snapPoints.findIndex(sp => sp.id === id);
+    deleteSnapPoint(id) {
+    const index = this.snapPoints.findIndex(sp => sp.id === id);
     if (index !== -1) {
-        snapPoints.splice(index, 1);
-        updateSnapPointsList();
+        this.snapPoints.splice(index, 1);
+        this.updateSnapPointsList();
         appState.charts.time.update('none');
         setStatus(`Marqueur supprimé`);
     }
-}
+    }
 
-// Effacer tous les marqueurs
-function clearAllSnapPoints() {
-    snapPoints = [];
-    isCreatingSnapPoint = false;
-    snapPointState.active = false;
+    clearAllSnapPoints() {
+    this.snapPoints = [];
+    this.isCreating = false;
+    this.state.active = false;
 
     const btn = document.getElementById('snappoint-btn');
     if (btn) {
@@ -1628,14 +1591,13 @@ function clearAllSnapPoints() {
         content.style.display = 'none';
     }
 
-    updateSnapPointsList();
+    this.updateSnapPointsList();
     console.log('✅ Tous les marqueurs ont été effacés');
-}
+    }
 
-// Sauvegarder les marqueurs dans le localStorage
-function saveSnapPoints() {
+    saveSnapPoints() {
     try {
-        const data = snapPoints.map(sp => ({
+        const data = this.snapPoints.map(sp => ({
             id: sp.id,
             channelIndex: sp.channelIndex,
             xValue: sp.xValue,
@@ -1663,16 +1625,15 @@ function saveSnapPoints() {
     } catch (e) {
         console.error('Erreur sauvegarde marqueurs:', e);
     }
-}
+    }
 
-// Charger les marqueurs depuis le localStorage
-function loadSnapPoints() {
+    loadSnapPoints() {
     try {
         const saved = localStorage.getItem('hydraspec_snappoints');
         if (!saved) return;
 
         const data = JSON.parse(saved);
-        snapPoints = data.map(item => {
+        this.snapPoints = data.map(item => {
             const snapPoint = new SnapPoint(
                 item.id,
                 item.channelIndex,
@@ -1698,23 +1659,22 @@ function loadSnapPoints() {
             snapPoint.anchorChannelIndex = item.anchorChannelIndex !== undefined ? item.anchorChannelIndex : item.channelIndex;
 
             // Mettre à jour nextSnapPointId
-            if (item.id >= nextSnapPointId) {
-                nextSnapPointId = item.id + 1;
+            if (item.id >= this.nextId) {
+                this.nextId = item.id + 1;
             }
 
             return snapPoint;
         });
 
-        console.log(`📥 ${snapPoints.length} marqueur(s) chargé(s) depuis localStorage`);
-        checkSnapPointsIntegrity();
-        updateSnapPointsList();
+        console.log(`📥 ${this.snapPoints.length} marqueur(s) chargé(s) depuis localStorage`);
+        this.checkSnapPointsIntegrity();
+        this.updateSnapPointsList();
     } catch (e) {
         console.error('Erreur chargement marqueurs:', e);
     }
-}
+    }
 
-// Charger les marqueurs depuis les données d'un projet .hsp
-function loadSnapPointsFromProject(savedSnapPoints) {
+    loadSnapPointsFromProject(savedSnapPoints) {
     if (!savedSnapPoints || !Array.isArray(savedSnapPoints)) {
         console.log("⚠️ No snap points to load from project");
         return;
@@ -1737,7 +1697,7 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         }
     }
 
-    snapPoints = savedSnapPoints.map(item => {
+    this.snapPoints = savedSnapPoints.map(item => {
         const snapPoint = new SnapPoint(
             item.id,
             item.channelIndex,
@@ -1763,33 +1723,19 @@ function loadSnapPointsFromProject(savedSnapPoints) {
         snapPoint.anchorChannelIndex = item.anchorChannelIndex !== undefined ? item.anchorChannelIndex : item.channelIndex;
 
         // Mettre à jour nextSnapPointId
-        if (item.id >= nextSnapPointId) {
-            nextSnapPointId = item.id + 1;
+        if (item.id >= this.nextId) {
+            this.nextId = item.id + 1;
         }
 
         return snapPoint;
     });
 
-    console.log("✅ Loaded", snapPoints.length, "snap points successfully");
-    checkSnapPointsIntegrity();
-    updateSnapPointsList();
-}
+    console.log("✅ Loaded", this.snapPoints.length, "snap points successfully");
+    this.checkSnapPointsIntegrity();
+    this.updateSnapPointsList();
+    }
 
-// ========================================
-// INTERACTIONS (DRAG & DELETE & RESIZE)
-// ========================================
-
-/**
- * Détecter la zone de redimensionnement (edge ou corner)
- * @param {number} mouseX - Position X de la souris
- * @param {number} mouseY - Position Y de la souris
- * @param {number} boxX - Position X de la boîte (coin haut-gauche)
- * @param {number} boxY - Position Y de la boîte (coin haut-gauche)
- * @param {number} boxWidth - Largeur de la boîte
- * @param {number} boxHeight - Hauteur de la boîte
- * @returns {string|null} - Direction de resize ('n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw') ou null
- */
-function detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight) {
+    detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight) {
     const edgeThreshold = 8; // Largeur de la zone sensible (pixels)
 
     const nearLeft = Math.abs(mouseX - boxX) <= edgeThreshold;
@@ -1813,12 +1759,9 @@ function detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight) {
     if (nearRight && insideY) return 'e';
 
     return null;
-}
+    }
 
-/**
- * Obtenir le curseur CSS approprié pour une zone de resize
- */
-function getCursorForResizeZone(zone) {
+    getCursorForResizeZone(zone) {
     const cursors = {
         'n': 'ns-resize',
         's': 'ns-resize',
@@ -1830,17 +1773,11 @@ function getCursorForResizeZone(zone) {
         'se': 'nwse-resize'
     };
     return cursors[zone] || 'default';
-}
+    }
 
-/**
- * Gestion du clic sur le canvas pour drag, delete et resize
- * @param {MouseEvent} event - Événement souris
- * @param {Chart} chart - Instance Chart.js
- * @returns {boolean} - true si l'événement a été géré
- */
-function handleSnapPointMouseDown(event, chart) {
+    handleSnapPointMouseDown(event, chart) {
     // Permettre le drag des marqueurs même quand l'outil n'est pas actif
-    if (snapPoints.length === 0) {
+    if (this.snapPoints.length === 0) {
         return false;
     }
 
@@ -1849,8 +1786,8 @@ function handleSnapPointMouseDown(event, chart) {
     const mouseY = event.clientY - rect.top;
 
     // Vérifier les clics sur les éléments (en ordre inverse pour gérer z-index)
-    for (let i = snapPoints.length - 1; i >= 0; i--) {
-        const snapPoint = snapPoints[i];
+    for (let i = this.snapPoints.length - 1; i >= 0; i--) {
+        const snapPoint = this.snapPoints[i];
         if (!snapPoint.visible) continue;
 
         const pointPos = snapPoint.getPointPixelPosition(chart);
@@ -1873,7 +1810,7 @@ function handleSnapPointMouseDown(event, chart) {
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
             // ET utiliser le MÊME split que dans drawSnapPoints pour avoir le même nombre de lignes !
-            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, i);
+            const processedComment = this.replaceSnapPointTags(snapPoint.comment, snapPoint, i);
             if (processedComment.trim() !== '') {
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);
@@ -1907,10 +1844,10 @@ function handleSnapPointMouseDown(event, chart) {
 
             if (distToArrowEnd <= 10) {
                 // Commencer le drag de l'extrémité de la flèche
-                snapPointState.dragging = 'arrow';
-                snapPointState.draggedSnapPoint = snapPoint;
-                snapPointState.dragStartX = mouseX;
-                snapPointState.dragStartY = mouseY;
+                this.state.dragging = 'arrow';
+                this.state.draggedSnapPoint = snapPoint;
+                this.state.dragStartX = mouseX;
+                this.state.dragStartY = mouseY;
 
                 chart.canvas.style.cursor = 'move';
                 return true; // Événement géré
@@ -1975,16 +1912,16 @@ function handleSnapPointMouseDown(event, chart) {
             }
 
             // Vérifier si le clic est proche de la ligne de la flèche
-            const distToLine = distanceToLineSegment(mouseX, mouseY, lineStartX, lineStartY, arrowEndX, arrowEndY);
+            const distToLine = this.this.distanceToLineSegment(mouseX, mouseY, lineStartX, lineStartY, arrowEndX, arrowEndY);
 
             if (distToLine <= 6) {
                 // Commencer le drag de la ligne (boîte + flèche ensemble)
-                snapPointState.dragging = 'arrow-line';
-                snapPointState.draggedSnapPoint = snapPoint;
-                snapPointState.dragStartX = mouseX;
-                snapPointState.dragStartY = mouseY;
-                snapPointState.dragOffsetX = snapPoint.offsetX;
-                snapPointState.dragOffsetY = snapPoint.offsetY;
+                this.state.dragging = 'arrow-line';
+                this.state.draggedSnapPoint = snapPoint;
+                this.state.dragStartX = mouseX;
+                this.state.dragStartY = mouseY;
+                this.state.dragOffsetX = snapPoint.offsetX;
+                this.state.dragOffsetY = snapPoint.offsetY;
 
                 chart.canvas.style.cursor = 'move';
                 return true; // Événement géré
@@ -1992,32 +1929,32 @@ function handleSnapPointMouseDown(event, chart) {
         }
 
         // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
-        const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+        const resizeZone = this.this.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
             // Commencer le resize
-            snapPointState.dragging = 'resize';
-            snapPointState.draggedSnapPoint = snapPoint;
-            snapPointState.resizeDirection = resizeZone;
-            snapPointState.dragStartX = mouseX;
-            snapPointState.dragStartY = mouseY;
-            snapPointState.resizeStartWidth = boxWidth;
-            snapPointState.resizeStartHeight = boxHeight;
-            snapPointState.resizeStartBoxX = boxX;
-            snapPointState.resizeStartBoxY = boxY;
-            snapPointState.dragOffsetX = snapPoint.offsetX;
-            snapPointState.dragOffsetY = snapPoint.offsetY;
-            snapPointState.dimensionsFrozen = false; // Indicateur pour figer les dimensions au premier mouvement
+            this.state.dragging = 'resize';
+            this.state.draggedSnapPoint = snapPoint;
+            this.state.resizeDirection = resizeZone;
+            this.state.dragStartX = mouseX;
+            this.state.dragStartY = mouseY;
+            this.state.resizeStartWidth = boxWidth;
+            this.state.resizeStartHeight = boxHeight;
+            this.state.resizeStartBoxX = boxX;
+            this.state.resizeStartBoxY = boxY;
+            this.state.dragOffsetX = snapPoint.offsetX;
+            this.state.dragOffsetY = snapPoint.offsetY;
+            this.state.dimensionsFrozen = false; // Indicateur pour figer les dimensions au premier mouvement
 
             // Sauvegarder la position initiale de la flèche si elle existe
             if (snapPoint.hasArrow) {
-                snapPointState.initialArrowEndX = snapPoint.arrowEndX;
-                snapPointState.initialArrowEndY = snapPoint.arrowEndY;
+                this.state.initialArrowEndX = snapPoint.arrowEndX;
+                this.state.initialArrowEndY = snapPoint.arrowEndY;
                 // Calculer la position absolue initiale de l'extrémité de la flèche
-                snapPointState.initialArrowAbsX = boxPos.x + snapPoint.arrowEndX;
-                snapPointState.initialArrowAbsY = boxPos.y + snapPoint.arrowEndY;
+                this.state.initialArrowAbsX = boxPos.x + snapPoint.arrowEndX;
+                this.state.initialArrowAbsY = boxPos.y + snapPoint.arrowEndY;
             }
 
-            chart.canvas.style.cursor = getCursorForResizeZone(resizeZone);
+            chart.canvas.style.cursor = this.this.getCursorForResizeZone(resizeZone);
             return true; // Événement géré
         }
 
@@ -2025,17 +1962,17 @@ function handleSnapPointMouseDown(event, chart) {
         if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
             mouseY >= boxY && mouseY <= boxY + boxHeight) {
             // Commencer le drag de la boîte
-            snapPointState.dragging = 'box';
-            snapPointState.draggedSnapPoint = snapPoint;
-            snapPointState.dragStartX = mouseX;
-            snapPointState.dragStartY = mouseY;
-            snapPointState.dragOffsetX = snapPoint.offsetX;
-            snapPointState.dragOffsetY = snapPoint.offsetY;
+            this.state.dragging = 'box';
+            this.state.draggedSnapPoint = snapPoint;
+            this.state.dragStartX = mouseX;
+            this.state.dragStartY = mouseY;
+            this.state.dragOffsetX = snapPoint.offsetX;
+            this.state.dragOffsetY = snapPoint.offsetY;
 
             // Sauvegarder les positions initiales de la flèche si elle existe
             if (snapPoint.hasArrow) {
-                snapPointState.initialArrowEndX = snapPoint.arrowEndX;
-                snapPointState.initialArrowEndY = snapPoint.arrowEndY;
+                this.state.initialArrowEndX = snapPoint.arrowEndX;
+                this.state.initialArrowEndY = snapPoint.arrowEndY;
             }
 
             chart.canvas.style.cursor = 'move';
@@ -2051,10 +1988,10 @@ function handleSnapPointMouseDown(event, chart) {
 
         if (distToPoint <= pointRadius) {
             // Commencer le drag du point
-            snapPointState.dragging = 'point';
-            snapPointState.draggedSnapPoint = snapPoint;
-            snapPointState.dragStartX = mouseX;
-            snapPointState.dragStartY = mouseY;
+            this.state.dragging = 'point';
+            this.state.draggedSnapPoint = snapPoint;
+            this.state.dragStartX = mouseX;
+            this.state.dragStartY = mouseY;
 
             chart.canvas.style.cursor = 'move';
             return true; // Événement géré
@@ -2062,95 +1999,90 @@ function handleSnapPointMouseDown(event, chart) {
     }
 
     return false; // Événement non géré
-}
+    }
 
-/**
- * Gestion du déplacement de la souris (drag en cours)
- * @param {MouseEvent} event - Événement souris
- * @param {Chart} chart - Instance Chart.js
- */
-function handleSnapPointMouseMove(event, chart) {
+    handleSnapPointMouseMove(event, chart) {
     // Permettre le déplacement des marqueurs même quand l'outil n'est pas actif
     const rect = chart.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
     // Si on est en train de drag ou resize
-    if (snapPointState.dragging && snapPointState.draggedSnapPoint) {
-        const deltaX = mouseX - snapPointState.dragStartX;
-        const deltaY = mouseY - snapPointState.dragStartY;
+    if (this.state.dragging && this.state.draggedSnapPoint) {
+        const deltaX = mouseX - this.state.dragStartX;
+        const deltaY = mouseY - this.state.dragStartY;
 
-        if (snapPointState.dragging === 'box') {
+        if (this.state.dragging === 'box') {
             // Drag de la boîte : mettre à jour les offsets
-            snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + deltaX;
-            snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + deltaY;
+            this.state.draggedSnapPoint.offsetX = this.state.dragOffsetX + deltaX;
+            this.state.draggedSnapPoint.offsetY = this.state.dragOffsetY + deltaY;
 
             // Si une flèche est active, ajuster arrowEndX/Y pour que l'extrémité reste en position absolue
-            if (snapPointState.draggedSnapPoint.hasArrow && snapPointState.initialArrowEndX !== undefined) {
-                snapPointState.draggedSnapPoint.arrowEndX = snapPointState.initialArrowEndX - deltaX;
-                snapPointState.draggedSnapPoint.arrowEndY = snapPointState.initialArrowEndY - deltaY;
+            if (this.state.draggedSnapPoint.hasArrow && this.state.initialArrowEndX !== undefined) {
+                this.state.draggedSnapPoint.arrowEndX = this.state.initialArrowEndX - deltaX;
+                this.state.draggedSnapPoint.arrowEndY = this.state.initialArrowEndY - deltaY;
             }
-        } else if (snapPointState.dragging === 'point') {
+        } else if (this.state.dragging === 'point') {
             // Drag du point : recalculer xValue et value
             const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's', isTime: true };
             const xScale = chart.scales.x;
             const xValueScaled = xScale.getValueForPixel(mouseX);
             const xValue = xValueScaled / xInfo.scale;
 
-            snapPointState.draggedSnapPoint.xValue = xValue;
+            this.state.draggedSnapPoint.xValue = xValue;
 
             // Si un canal d'accrochage est défini, suivre la courbe
-            if (snapPointState.draggedSnapPoint.anchorChannelIndex !== null &&
-                snapPointState.draggedSnapPoint.anchorChannelIndex !== undefined) {
-                const liveValue = getSnapPointValueOnCurve(snapPointState.draggedSnapPoint.anchorChannelIndex, xValue);
+            if (this.state.draggedSnapPoint.anchorChannelIndex !== null &&
+                this.state.draggedSnapPoint.anchorChannelIndex !== undefined) {
+                const liveValue = this.getSnapPointValueOnCurve(this.state.draggedSnapPoint.anchorChannelIndex, xValue);
                 if (liveValue !== null) {
-                    snapPointState.draggedSnapPoint.value = liveValue;
+                    this.state.draggedSnapPoint.value = liveValue;
                 }
             } else {
                 // Sinon, utiliser la position Y de la souris
-                const yAxisID = appState.channelConfig[snapPointState.draggedSnapPoint.channelIndex]?.yAxisID || 'y';
+                const yAxisID = appState.channelConfig[this.state.draggedSnapPoint.channelIndex]?.yAxisID || 'y';
                 const yScale = chart.scales[yAxisID];
                 if (yScale) {
-                    snapPointState.draggedSnapPoint.value = yScale.getValueForPixel(mouseY);
+                    this.state.draggedSnapPoint.value = yScale.getValueForPixel(mouseY);
                 }
             }
-        } else if (snapPointState.dragging === 'resize') {
+        } else if (this.state.dragging === 'resize') {
             // Figer les dimensions au premier mouvement pour éviter un saut dimensionnel
-            if (!snapPointState.dimensionsFrozen) {
-                const snapPoint = snapPointState.draggedSnapPoint;
+            if (!this.state.dimensionsFrozen) {
+                const snapPoint = this.state.draggedSnapPoint;
                 if (snapPoint.boxWidth === null || snapPoint.boxHeight === null) {
-                    snapPoint.boxWidth = snapPointState.resizeStartWidth;
-                    snapPoint.boxHeight = snapPointState.resizeStartHeight;
+                    snapPoint.boxWidth = this.state.resizeStartWidth;
+                    snapPoint.boxHeight = this.state.resizeStartHeight;
                 }
-                snapPointState.dimensionsFrozen = true;
+                this.state.dimensionsFrozen = true;
             }
 
             // Resize de la boîte
-            const direction = snapPointState.resizeDirection;
-            let newWidth = snapPointState.resizeStartWidth;
-            let newHeight = snapPointState.resizeStartHeight;
+            const direction = this.state.resizeDirection;
+            let newWidth = this.state.resizeStartWidth;
+            let newHeight = this.state.resizeStartHeight;
             let offsetXDelta = 0;
             let offsetYDelta = 0;
 
             // Calculer les nouvelles dimensions selon la direction
             if (direction.includes('w')) {
                 // Resize vers la gauche (le bord gauche bouge, le bord droit reste fixe)
-                newWidth = snapPointState.resizeStartWidth - deltaX;
+                newWidth = this.state.resizeStartWidth - deltaX;
                 offsetXDelta = deltaX / 2; // Ajuster l'offset pour garder le centre
             }
             if (direction.includes('e')) {
                 // Resize vers la droite (le bord droit bouge, le bord gauche reste fixe)
-                newWidth = snapPointState.resizeStartWidth + deltaX;
+                newWidth = this.state.resizeStartWidth + deltaX;
                 offsetXDelta = deltaX / 2;
             }
             if (direction.includes('n')) {
                 // Resize vers le haut (le bord haut bouge, le bord BAS reste fixe)
-                newHeight = snapPointState.resizeStartHeight - deltaY;
+                newHeight = this.state.resizeStartHeight - deltaY;
                 offsetYDelta = deltaY; // Déplacer toute la boîte vers le haut pour garder le bas fixe
             }
             if (direction.includes('s')) {
                 // Resize vers le bas (le bord bas bouge, le bord HAUT reste fixe)
-                newHeight = snapPointState.resizeStartHeight + deltaY;
+                newHeight = this.state.resizeStartHeight + deltaY;
                 offsetYDelta = 0; // Ne PAS déplacer la boîte, juste agrandir vers le bas
             }
 
@@ -2161,53 +2093,53 @@ function handleSnapPointMouseMove(event, chart) {
             newHeight = Math.max(newHeight, minHeight);
 
             // Mettre à jour les dimensions et ajuster les offsets
-            snapPointState.draggedSnapPoint.boxWidth = newWidth;
-            snapPointState.draggedSnapPoint.boxHeight = newHeight;
+            this.state.draggedSnapPoint.boxWidth = newWidth;
+            this.state.draggedSnapPoint.boxHeight = newHeight;
 
             // Ajuster les offsets pour que la boîte reste centrée pendant le resize
             if (direction.includes('e') || direction.includes('w')) {
-                snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + offsetXDelta;
+                this.state.draggedSnapPoint.offsetX = this.state.dragOffsetX + offsetXDelta;
             }
             if (direction.includes('n') || direction.includes('s')) {
-                snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + offsetYDelta;
+                this.state.draggedSnapPoint.offsetY = this.state.dragOffsetY + offsetYDelta;
             }
 
             // Si une flèche est active, ajuster arrowEndX/Y pour que l'extrémité reste à la même position absolue
-            if (snapPointState.draggedSnapPoint.hasArrow && snapPointState.initialArrowAbsX !== undefined) {
+            if (this.state.draggedSnapPoint.hasArrow && this.state.initialArrowAbsX !== undefined) {
                 // Recalculer la nouvelle position de la boîte après le resize
-                const newBoxPos = snapPointState.draggedSnapPoint.getBoxPixelPosition(chart);
+                const newBoxPos = this.state.draggedSnapPoint.getBoxPixelPosition(chart);
                 if (newBoxPos) {
                     // Ajuster arrowEndX/Y pour maintenir la position absolue
-                    snapPointState.draggedSnapPoint.arrowEndX = snapPointState.initialArrowAbsX - newBoxPos.x;
-                    snapPointState.draggedSnapPoint.arrowEndY = snapPointState.initialArrowAbsY - newBoxPos.y;
+                    this.state.draggedSnapPoint.arrowEndX = this.state.initialArrowAbsX - newBoxPos.x;
+                    this.state.draggedSnapPoint.arrowEndY = this.state.initialArrowAbsY - newBoxPos.y;
                 }
             }
-        } else if (snapPointState.dragging === 'arrow') {
+        } else if (this.state.dragging === 'arrow') {
             // Drag de l'extrémité de la flèche
-            snapPointState.draggedSnapPoint.arrowEndX += deltaX;
-            snapPointState.draggedSnapPoint.arrowEndY += deltaY;
+            this.state.draggedSnapPoint.arrowEndX += deltaX;
+            this.state.draggedSnapPoint.arrowEndY += deltaY;
 
             // Mettre à jour les positions de départ pour le prochain delta
-            snapPointState.dragStartX = mouseX;
-            snapPointState.dragStartY = mouseY;
-        } else if (snapPointState.dragging === 'arrow-line') {
+            this.state.dragStartX = mouseX;
+            this.state.dragStartY = mouseY;
+        } else if (this.state.dragging === 'arrow-line') {
             // Drag de la ligne de la flèche : déplacer la boîte ET l'extrémité ensemble
             // (arrowEndX/Y restent constants car ils sont relatifs à la boîte)
-            snapPointState.draggedSnapPoint.offsetX = snapPointState.dragOffsetX + deltaX;
-            snapPointState.draggedSnapPoint.offsetY = snapPointState.dragOffsetY + deltaY;
+            this.state.draggedSnapPoint.offsetX = this.state.dragOffsetX + deltaX;
+            this.state.draggedSnapPoint.offsetY = this.state.dragOffsetY + deltaY;
         }
 
         // Mettre à jour l'affichage
         chart.update('none');
-        updateSnapPointsList();
+        this.updateSnapPointsList();
         return;
     }
 
     // Si on n'est pas en drag, vérifier le survol pour changer le curseur
     let cursorToSet = 'default';
 
-    for (let i = snapPoints.length - 1; i >= 0; i--) {
-        const snapPoint = snapPoints[i];
+    for (let i = this.snapPoints.length - 1; i >= 0; i--) {
+        const snapPoint = this.snapPoints[i];
         if (!snapPoint.visible) continue;
 
         const pointPos = snapPoint.getPointPixelPosition(chart);
@@ -2230,7 +2162,7 @@ function handleSnapPointMouseMove(event, chart) {
         if (snapPoint.comment && snapPoint.comment.trim() !== '') {
             // IMPORTANT : Traiter les balises pour avoir la bonne taille de boîte
             // ET utiliser le MÊME split que dans drawSnapPoints pour avoir le même nombre de lignes !
-            const processedComment = replaceSnapPointTags(snapPoint.comment, snapPoint, i);
+            const processedComment = this.replaceSnapPointTags(snapPoint.comment, snapPoint, i);
             if (processedComment.trim() !== '') {
                 const commentLines = processedComment.split(/\n|;/).map(line => line.trim()).filter(line => line.length > 0);
                 lines.push(...commentLines);
@@ -2257,9 +2189,9 @@ function handleSnapPointMouseMove(event, chart) {
         const boxY = boxPos.y;
 
         // Vérifier survol zone de resize (prioritaire)
-        const resizeZone = detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+        const resizeZone = this.this.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
-            cursorToSet = getCursorForResizeZone(resizeZone);
+            cursorToSet = this.this.getCursorForResizeZone(resizeZone);
             break;
         }
 
@@ -2296,39 +2228,24 @@ function handleSnapPointMouseMove(event, chart) {
             mouseHalo.classList.remove('small');
         }
     }
-}
+    }
 
-/**
- * Gestion du relâchement de la souris (fin du drag)
- * @param {MouseEvent} event - Événement souris
- * @param {Chart} chart - Instance Chart.js
- */
-function handleSnapPointMouseUp(event, chart) {
-    if (snapPointState.dragging) {
+    handleSnapPointMouseUp(event, chart) {
+    if (this.state.dragging) {
         // Fin du drag
-        snapPointState.dragging = null;
-        snapPointState.draggedSnapPoint = null;
+        this.state.dragging = null;
+        this.state.draggedSnapPoint = null;
 
         chart.canvas.style.cursor = 'default';
 
         // Sauvegarder l'état
         saveSnapPoints();
     }
-}
+    }
 
-// ========================================
-// MENU CONTEXTUEL (CLIC DROIT)
-// ========================================
-
-/**
- * Gestion du clic droit sur un snapPoint
- * @param {MouseEvent} event - Événement souris
- * @param {Chart} chart - Instance Chart.js
- * @returns {boolean} - true si un menu a été affiché
- */
-function handleSnapPointContextMenu(event, chart) {
+    handleSnapPointContextMenu(event, chart) {
     // Permettre le menu contextuel même quand l'outil n'est pas actif
-    if (snapPoints.length === 0) {
+    if (this.snapPoints.length === 0) {
         return false;
     }
 
@@ -2337,8 +2254,8 @@ function handleSnapPointContextMenu(event, chart) {
     const mouseY = event.clientY - rect.top;
 
     // Chercher si on a cliqué sur un snapPoint
-    for (let i = snapPoints.length - 1; i >= 0; i--) {
-        const snapPoint = snapPoints[i];
+    for (let i = this.snapPoints.length - 1; i >= 0; i--) {
+        const snapPoint = this.snapPoints[i];
         if (!snapPoint.visible) continue;
 
         const pointPos = snapPoint.getPointPixelPosition(chart);
@@ -2382,7 +2299,7 @@ function handleSnapPointContextMenu(event, chart) {
         if (mouseX >= boxX && mouseX <= boxX + boxWidth &&
             mouseY >= boxY && mouseY <= boxY + boxHeight) {
             // Afficher le menu contextuel
-            showContextMenu(event.clientX, event.clientY, snapPoint.id);
+            this.showContextMenu(event.clientX, event.clientY, snapPoint.id);
             return true;
         }
 
@@ -2395,26 +2312,23 @@ function handleSnapPointContextMenu(event, chart) {
             );
 
             if (distToPoint <= pointRadius) {
-                showContextMenu(event.clientX, event.clientY, snapPoint.id);
+                this.showContextMenu(event.clientX, event.clientY, snapPoint.id);
                 return true;
             }
         }
     }
 
     return false;
-}
+    }
 
-/**
- * Afficher le menu contextuel à une position donnée
- */
-function showContextMenu(x, y, snapPointId) {
+    showContextMenu(x, y, snapPointId) {
     const menu = document.getElementById('snappoint-context-menu');
     if (!menu) return;
 
-    contextMenuSnapPointId = snapPointId;
+    this.contextMenuId = snapPointId;
 
     // Mettre à jour le texte de visibilité
-    const snapPoint = snapPoints.find(sp => sp.id === snapPointId);
+    const snapPoint = this.snapPoints.find(sp => sp.id === snapPointId);
     if (snapPoint) {
         const eyeIcon = document.getElementById('context-menu-eye-icon');
         const visibilityText = document.getElementById('context-menu-visibility-text');
@@ -2432,43 +2346,37 @@ function showContextMenu(x, y, snapPointId) {
     menu.style.left = x + 'px';
     menu.style.top = y + 'px';
     menu.style.display = 'block';
-}
+    }
 
-/**
- * Masquer le menu contextuel
- */
-function hideContextMenu() {
+    hideContextMenu() {
     const menu = document.getElementById('snappoint-context-menu');
     if (menu) {
         menu.style.display = 'none';
     }
-    contextMenuSnapPointId = null;
-}
-
-/**
- * Actions du menu contextuel
- */
-function contextMenuEdit() {
-    if (contextMenuSnapPointId !== null) {
-        editSnapPoint(contextMenuSnapPointId);
+    this.contextMenuId = null;
     }
-    hideContextMenu();
-}
 
-function contextMenuToggleVisibility() {
-    if (contextMenuSnapPointId !== null) {
-        toggleSnapPointVisibility(contextMenuSnapPointId);
+    contextMenuEdit() {
+    if (this.contextMenuId !== null) {
+        editSnapPoint(this.contextMenuId);
     }
-    hideContextMenu();
-}
+    this.hideContextMenu();
+    }
 
-function contextMenuDuplicate() {
-    if (contextMenuSnapPointId !== null) {
-        const snapPoint = snapPoints.find(sp => sp.id === contextMenuSnapPointId);
+    contextMenuToggleVisibility() {
+    if (this.contextMenuId !== null) {
+        this.toggleSnapPointVisibility(this.contextMenuId);
+    }
+    this.hideContextMenu();
+    }
+
+    contextMenuDuplicate() {
+    if (this.contextMenuId !== null) {
+        const snapPoint = this.snapPoints.find(sp => sp.id === this.contextMenuId);
         if (snapPoint) {
             // Créer une copie
             const duplicate = new SnapPoint(
-                nextSnapPointId++,
+                this.nextId++,
                 snapPoint.channelIndex,
                 snapPoint.xValue,
                 snapPoint.value
@@ -2489,66 +2397,255 @@ function contextMenuDuplicate() {
             duplicate.boxHeight = snapPoint.boxHeight;
             duplicate.anchorChannelIndex = snapPoint.anchorChannelIndex;
 
-            snapPoints.push(duplicate);
-            updateSnapPointsList();
+            this.snapPoints.push(duplicate);
+            this.updateSnapPointsList();
             appState.charts.time.update('none');
             saveSnapPoints();
 
             setStatus(`Marqueur dupliqué`);
         }
     }
-    hideContextMenu();
+    this.hideContextMenu();
+    }
+
+    contextMenuDelete() {
+    if (this.contextMenuId !== null) {
+        this.deleteSnapPoint(this.contextMenuId);
+    }
+    this.hideContextMenu();
+    }
+
+}
+
+// =====================================
+// INSTANCE GLOBALE
+// =====================================
+
+const snapPointTool = new SnapPointTool();
+
+// =====================================
+// FONCTIONS DE COMPATIBILITÉ
+// =====================================
+
+function toggleSnapPointTool() {
+    return snapPointTool.toggleSnapPointTool();
+}
+
+function setSnapPointMode(mode) {
+    return snapPointTool.setSnapPointMode(mode);
+}
+
+function handleSnapPointClick(event, chart) {
+    return snapPointTool.handleSnapPointClick(event, chart);
+}
+
+function interpolateChannelValue(channelIndex, xValue) {
+    return snapPointTool.interpolateChannelValue(channelIndex, xValue);
+}
+
+function getSnapPointValueOnCurve(channelIndex, xValue) {
+    return snapPointTool.getSnapPointValueOnCurve(channelIndex, xValue);
+}
+
+function hexToRgba(hex, opacity) {
+    return snapPointTool.hexToRgba(hex, opacity);
+}
+
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+    return snapPointTool.distanceToLineSegment(px, py, x1, y1, x2, y2);
+}
+
+function replaceSnapPointTags(comment, snapPoint, snapPointIndex = null) {
+    return snapPointTool.replaceSnapPointTags(comment, snapPoint, snapPointIndex);
+}
+
+function drawSnapPoints(chart) {
+    return snapPointTool.drawSnapPoints(chart);
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColor) {
+    return snapPointTool.drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColor);
+}
+
+function checkSnapPointsIntegrity() {
+    return snapPointTool.checkSnapPointsIntegrity();
+}
+
+function updateSnapPointsList() {
+    return snapPointTool.updateSnapPointsList();
+}
+
+function toggleSnapPointVisibility(id) {
+    return snapPointTool.toggleSnapPointVisibility(id);
+}
+
+function openSnapPointEditModal(id) {
+    return snapPointTool.openSnapPointEditModal(id);
+}
+
+function closeSnapPointEditModal() {
+    return snapPointTool.closeSnapPointEditModal();
+}
+
+function confirmSnapPointEdit() {
+    return snapPointTool.confirmSnapPointEdit();
+}
+
+function toggleSnapPointFormat(format) {
+    return snapPointTool.toggleSnapPointFormat(format);
+}
+
+function setSnapPointFontSize(size) {
+    return snapPointTool.setSnapPointFontSize(size);
+}
+
+function setSnapPointBackgroundColor(color) {
+    return snapPointTool.setSnapPointBackgroundColor(color);
+}
+
+function setSnapPointOpacity(value) {
+    return snapPointTool.setSnapPointOpacity(value);
+}
+
+function setSnapPointPadding(value) {
+    return snapPointTool.setSnapPointPadding(value);
+}
+
+function setSnapPointAnchorChannel(channelIndex) {
+    return snapPointTool.setSnapPointAnchorChannel(channelIndex);
+}
+
+function toggleSnapPointArrow() {
+    return snapPointTool.toggleSnapPointArrow();
+}
+
+function updateArrowButtonState() {
+    return snapPointTool.updateArrowButtonState();
+}
+
+function setSnapPointTextAlign(align) {
+    return snapPointTool.setSnapPointTextAlign(align);
+}
+
+function setSnapPointVerticalAlign(align) {
+    return snapPointTool.setSnapPointVerticalAlign(align);
+}
+
+function updateSnapPointFormatButtons() {
+    return snapPointTool.updateSnapPointFormatButtons();
+}
+
+function updateSnapPointAlignmentButtons() {
+    return snapPointTool.updateSnapPointAlignmentButtons();
+}
+
+function makeSnapPointModalDraggable() {
+    return snapPointTool.makeSnapPointModalDraggable();
+}
+
+function editSnapPoint(id) {
+    return snapPointTool.editSnapPoint(id);
+}
+
+function deleteSnapPoint(id) {
+    return snapPointTool.deleteSnapPoint(id);
+}
+
+function clearAllSnapPoints() {
+    return snapPointTool.clearAllSnapPoints();
+}
+
+function saveSnapPoints() {
+    return snapPointTool.saveSnapPoints();
+}
+
+function loadSnapPoints() {
+    return snapPointTool.loadSnapPoints();
+}
+
+function loadSnapPointsFromProject(savedSnapPoints) {
+    return snapPointTool.loadSnapPointsFromProject(savedSnapPoints);
+}
+
+function detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight) {
+    return snapPointTool.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+}
+
+function getCursorForResizeZone(zone) {
+    return snapPointTool.getCursorForResizeZone(zone);
+}
+
+function handleSnapPointMouseDown(event, chart) {
+    return snapPointTool.handleSnapPointMouseDown(event, chart);
+}
+
+function handleSnapPointMouseMove(event, chart) {
+    return snapPointTool.handleSnapPointMouseMove(event, chart);
+}
+
+function handleSnapPointMouseUp(event, chart) {
+    return snapPointTool.handleSnapPointMouseUp(event, chart);
+}
+
+function handleSnapPointContextMenu(event, chart) {
+    return snapPointTool.handleSnapPointContextMenu(event, chart);
+}
+
+function showContextMenu(x, y, snapPointId) {
+    return snapPointTool.showContextMenu(x, y, snapPointId);
+}
+
+function hideContextMenu() {
+    return snapPointTool.hideContextMenu();
+}
+
+function contextMenuEdit() {
+    return snapPointTool.contextMenuEdit();
+}
+
+function contextMenuToggleVisibility() {
+    return snapPointTool.contextMenuToggleVisibility();
+}
+
+function contextMenuDuplicate() {
+    return snapPointTool.contextMenuDuplicate();
 }
 
 function contextMenuDelete() {
-    if (contextMenuSnapPointId !== null) {
-        deleteSnapPoint(contextMenuSnapPointId);
-    }
-    hideContextMenu();
+    return snapPointTool.contextMenuDelete();
 }
 
-// Fermer le menu si on clique ailleurs
-document.addEventListener('click', (e) => {
-    const menu = document.getElementById('snappoint-context-menu');
-    if (menu && menu.style.display === 'block') {
-        // Vérifier si le clic est en dehors du menu
-        if (!menu.contains(e.target)) {
-            hideContextMenu();
-        }
-    }
+// =====================================
+// ACCESSEURS POUR COMPATIBILITÉ
+// =====================================
+
+Object.defineProperty(window, 'snapPoints', {
+    get: () => snapPointTool.snapPoints,
+    set: (value) => { snapPointTool.snapPoints = value; }
 });
 
-// Exporter pour utilisation globale
-if (typeof window !== 'undefined') {
-    window.toggleSnapPointTool = toggleSnapPointTool;
-    window.handleSnapPointClick = handleSnapPointClick;
-    window.handleSnapPointMouseDown = handleSnapPointMouseDown;
-    window.handleSnapPointMouseMove = handleSnapPointMouseMove;
-    window.handleSnapPointMouseUp = handleSnapPointMouseUp;
-    window.drawSnapPoints = drawSnapPoints;
-    window.updateSnapPointsList = updateSnapPointsList;
-    window.toggleSnapPointVisibility = toggleSnapPointVisibility;
-    window.editSnapPoint = editSnapPoint;
-    window.deleteSnapPoint = deleteSnapPoint;
-    window.clearAllSnapPoints = clearAllSnapPoints;
-    window.saveSnapPoints = saveSnapPoints;
-    window.loadSnapPoints = loadSnapPoints;
-    window.loadSnapPointsFromProject = loadSnapPointsFromProject;
-    window.openSnapPointEditModal = openSnapPointEditModal;
-    window.closeSnapPointEditModal = closeSnapPointEditModal;
-    window.confirmSnapPointEdit = confirmSnapPointEdit;
-    window.toggleSnapPointFormat = toggleSnapPointFormat;
-    window.setSnapPointFontSize = setSnapPointFontSize;
-    window.setSnapPointTextAlign = setSnapPointTextAlign;
-    window.setSnapPointVerticalAlign = setSnapPointVerticalAlign;
-    window.setSnapPointBackgroundColor = setSnapPointBackgroundColor;
-    window.setSnapPointOpacity = setSnapPointOpacity;
-    window.setSnapPointAnchorChannel = setSnapPointAnchorChannel;
-    window.handleSnapPointContextMenu = handleSnapPointContextMenu;
-    window.contextMenuEdit = contextMenuEdit;
-    window.contextMenuToggleVisibility = contextMenuToggleVisibility;
-    window.contextMenuDuplicate = contextMenuDuplicate;
-    window.contextMenuDelete = contextMenuDelete;
-}
+Object.defineProperty(window, 'isCreatingSnapPoint', {
+    get: () => snapPointTool.isCreating,
+    set: (value) => { snapPointTool.isCreating = value; }
+});
 
-console.log('✅ Outil Marqueur (SnapPoint) initialisé');
+Object.defineProperty(window, 'nextSnapPointId', {
+    get: () => snapPointTool.nextId,
+    set: (value) => { snapPointTool.nextId = value; }
+});
+
+Object.defineProperty(window, 'snapPointState', {
+    get: () => snapPointTool.state,
+    set: (value) => { snapPointTool.state = value; }
+});
+
+Object.defineProperty(window, 'editingSnapPointId', {
+    get: () => snapPointTool.editingId,
+    set: (value) => { snapPointTool.editingId = value; }
+});
+
+Object.defineProperty(window, 'contextMenuSnapPointId', {
+    get: () => snapPointTool.contextMenuId,
+    set: (value) => { snapPointTool.contextMenuId = value; }
+});
+

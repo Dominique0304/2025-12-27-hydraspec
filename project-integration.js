@@ -552,14 +552,10 @@ function saveAllToolsState(project) {
     // OUTILS NON ENCORE ENCAPSULÉS (ancien système)
     // ========================================
 
-    // Sauvegarder Measure Tool
-    if (typeof measureState !== 'undefined') {
-        project.toolsState.measureTool = {
-            active: measureState.active,
-            point1: measureState.point1 ? {...measureState.point1} : null,
-            point2: measureState.point2 ? {...measureState.point2} : null,
-            dragging: measureState.dragging
-        };
+    // Sauvegarder Measure Tool (POO)
+    if (project.measureTool) {
+        project.toolsState.measureTool = project.measureTool.export();
+        console.log(`📏 MeasureTool sauvegardé (POO)`);
     }
 
     // NOTE: Le code legacy "annotations" a été supprimé.
@@ -754,27 +750,10 @@ function restoreAllToolsState(project) {
         }
     }
 
-    // Restaurer Measure Tool
-    if (typeof measureState !== 'undefined' && project.toolsState.measureTool) {
-        const wasActive = measureState.active;
-        const shouldBeActive = project.toolsState.measureTool.active;
-
-        measureState.active = shouldBeActive;
-        measureState.point1 = project.toolsState.measureTool.point1 ? {...project.toolsState.measureTool.point1} : null;
-        measureState.point2 = project.toolsState.measureTool.point2 ? {...project.toolsState.measureTool.point2} : null;
-
-        // Mettre à jour l'UI du bouton
-        const btn = document.getElementById('measure-diff-btn');
-        const results = document.getElementById('measure-results');
-        if (btn && results) {
-            btn.style.background = shouldBeActive ? 'var(--accent-green)' : 'var(--accent-blue)';
-            results.style.display = shouldBeActive ? 'block' : 'none';
-        }
-
-        // Mettre à jour les valeurs affichées
-        if (typeof updateMeasureDisplay === 'function') {
-            updateMeasureDisplay();
-        }
+    // Restaurer Measure Tool (POO)
+    if (project.measureTool && project.toolsState.measureTool) {
+        project.measureTool.restore(project.toolsState.measureTool);
+        console.log(`📏 MeasureTool restauré (POO)`);
     }
 
     // NOTE: Code legacy "annotations" supprimé - voir SnapPoints pour annotations flottantes

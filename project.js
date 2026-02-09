@@ -202,6 +202,12 @@ class Project {
         this.intervalManager = new IntervalManager(this);
         this.diffCanalManager = new DiffCanalManager(this);
 
+        // ========================================
+        // OUTILS (Architecture POO)
+        // ========================================
+        // Encapsulation des outils de mesure et d'analyse
+        this.measureTool = new MeasureTool(this);
+
         console.log(`✅ Projet créé: ${this.name} [ID: ${this.id}]`);
     }
 

@@ -474,20 +474,10 @@ function deactivateAllTools() {
         }
     }
 
-    // Mesure de différence
-    if (typeof measureState !== 'undefined' && measureState.active) {
-        measureState.active = false;
-        const measureBtn = document.getElementById('measure-diff-btn');
-        const measureResults = document.getElementById('measure-results');
-        if (measureBtn) measureBtn.style.background = 'var(--accent-blue)';
-        if (measureResults) measureResults.style.display = 'none';
-        if (measureState.point1) {
-            measureState.point1 = null;
-            measureState.point2 = null;
-            if (typeof appState !== 'undefined' && appState.charts && appState.charts.time) {
-                appState.charts.time.update('none');
-            }
-        }
+    // Mesure de différence (POO)
+    const project = window.projectManager?.getActive();
+    if (project && project.measureTool && project.measureTool.state.active) {
+        project.measureTool.deactivate();
     }
 
     // Pan (Déplacement)
@@ -574,19 +564,11 @@ function deactivateOtherTools(currentTool) {
         }
     }
 
-    // Mesure de différence
-    if (currentTool !== 'measure' && typeof measureState !== 'undefined' && measureState.active) {
-        measureState.active = false;
-        const measureBtn = document.getElementById('measure-diff-btn');
-        const measureResults = document.getElementById('measure-results');
-        if (measureBtn) measureBtn.style.background = 'var(--accent-blue)';
-        if (measureResults) measureResults.style.display = 'none';
-        if (measureState.point1) {
-            measureState.point1 = null;
-            measureState.point2 = null;
-            if (typeof appState !== 'undefined' && appState.charts && appState.charts.time) {
-                appState.charts.time.update('none');
-            }
+    // Mesure de différence (POO)
+    if (currentTool !== 'measure') {
+        const project = window.projectManager?.getActive();
+        if (project && project.measureTool && project.measureTool.state.active) {
+            project.measureTool.deactivate();
         }
     }
 

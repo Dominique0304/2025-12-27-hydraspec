@@ -239,6 +239,15 @@ class SnapPointTool {
             icon.classList.add('fa-chevron-down');
         }
 
+        // Réinitialiser le curseur de tous les canvas
+        if (typeof appState !== 'undefined' && appState.charts) {
+            Object.values(appState.charts).forEach(chart => {
+                if (chart && chart.canvas) {
+                    chart.canvas.style.cursor = 'default';
+                }
+            });
+        }
+
         setStatus(t("status.marker_tool_deactivated"));
         console.log('✅ Outil marqueur désactivé');
     }
@@ -1034,17 +1043,17 @@ class SnapPointTool {
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
                     <span style="color:${color}; font-weight:bold;"><i class="fas fa-map-marker-alt"></i> Marqueur ${index + 1}</span>
                     <span style="flex:1;"></span>
-                    <button onclick="this.this.toggleSnapPointVisibility(${snapPoint.id})"
+                    <button onclick="toggleSnapPointVisibility(${snapPoint.id})"
                             style="padding:4px 6px; background:none; border:none; color:${eyeColor}; cursor:pointer; font-size:0.9rem;"
                             title="${isVisible ? 'Masquer' : 'Afficher'}">
                         <i class="fas ${eyeIcon}"></i>
                     </button>
-                    <button onclick="this.editSnapPoint(${snapPoint.id})"
+                    <button onclick="editSnapPoint(${snapPoint.id})"
                             style="padding:4px 6px; background:none; border:none; color:var(--accent-blue); cursor:pointer; font-size:0.9rem;"
                             title="Modifier">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="this.this.deleteSnapPoint(${snapPoint.id})"
+                    <button onclick="deleteSnapPoint(${snapPoint.id})"
                             style="padding:4px 6px; background:none; border:none; color:var(--accent-red); cursor:pointer; font-size:0.9rem;"
                             title="Supprimer">
                         <i class="fas fa-trash"></i>
@@ -1944,7 +1953,7 @@ class SnapPointTool {
             }
 
             // Vérifier si le clic est proche de la ligne de la flèche
-            const distToLine = this.this.distanceToLineSegment(mouseX, mouseY, lineStartX, lineStartY, arrowEndX, arrowEndY);
+            const distToLine = this.distanceToLineSegment(mouseX, mouseY, lineStartX, lineStartY, arrowEndX, arrowEndY);
 
             if (distToLine <= 6) {
                 // Commencer le drag de la ligne (boîte + flèche ensemble)
@@ -1961,7 +1970,7 @@ class SnapPointTool {
         }
 
         // 2. Vérifier clic sur zone de resize (prioritaire sur le drag)
-        const resizeZone = this.this.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+        const resizeZone = this.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
             // Commencer le resize
             this.state.dragging = 'resize';
@@ -1986,7 +1995,7 @@ class SnapPointTool {
                 this.state.initialArrowAbsY = boxPos.y + snapPoint.arrowEndY;
             }
 
-            chart.canvas.style.cursor = this.this.getCursorForResizeZone(resizeZone);
+            chart.canvas.style.cursor = this.getCursorForResizeZone(resizeZone);
             return true; // Événement géré
         }
 
@@ -2221,9 +2230,9 @@ class SnapPointTool {
         const boxY = boxPos.y;
 
         // Vérifier survol zone de resize (prioritaire)
-        const resizeZone = this.this.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
+        const resizeZone = this.detectResizeZone(mouseX, mouseY, boxX, boxY, boxWidth, boxHeight);
         if (resizeZone) {
-            cursorToSet = this.this.getCursorForResizeZone(resizeZone);
+            cursorToSet = this.getCursorForResizeZone(resizeZone);
             break;
         }
 

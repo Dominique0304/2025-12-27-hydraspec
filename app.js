@@ -532,6 +532,15 @@ function deactivateOtherTools(currentTool) {
             icon.classList.remove('fa-chevron-up');
             icon.classList.add('fa-chevron-down');
         }
+
+        // Réinitialiser le curseur de tous les canvas
+        if (typeof appState !== 'undefined' && appState.charts) {
+            Object.values(appState.charts).forEach(chart => {
+                if (chart && chart.canvas) {
+                    chart.canvas.style.cursor = 'default';
+                }
+            });
+        }
     }
 
     // Marqueur (SnapPoint) - TOUJOURS désactiver quand un autre outil est activé
@@ -549,6 +558,15 @@ function deactivateOtherTools(currentTool) {
         if (icon) {
             icon.classList.remove('fa-chevron-up');
             icon.classList.add('fa-chevron-down');
+        }
+
+        // Réinitialiser le curseur de tous les canvas
+        if (typeof appState !== 'undefined' && appState.charts) {
+            Object.values(appState.charts).forEach(chart => {
+                if (chart && chart.canvas) {
+                    chart.canvas.style.cursor = 'default';
+                }
+            });
         }
     }
 

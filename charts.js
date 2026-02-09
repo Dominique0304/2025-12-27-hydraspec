@@ -491,18 +491,28 @@ canvas.addEventListener('mousedown', (e) => {
     // Priorité 2b2: Drag des marqueurs (SnapPoint)
     if (typeof handleSnapPointMouseDown === 'function') {
         console.log('🔍 Test handleSnapPointMouseDown');
-        if (handleSnapPointMouseDown(e, chart)) {
-            console.log('✅ handleSnapPointMouseDown a géré le clic');
-            return; // Le drag d'un marqueur a commencé
+        try {
+            if (handleSnapPointMouseDown(e, chart)) {
+                console.log('✅ handleSnapPointMouseDown a géré le clic');
+                return; // Le drag d'un marqueur a commencé
+            }
+            console.log('⏭️ handleSnapPointMouseDown a retourné false - continue');
+        } catch (error) {
+            console.error('❌ ERREUR dans handleSnapPointMouseDown:', error);
         }
     }
 
     // Priorité 2c: Outil Marqueur (création snappoint)
     if (typeof handleSnapPointClick === 'function') {
         console.log('🔍 Test handleSnapPointClick');
-        if (handleSnapPointClick(e, chart)) {
-            console.log('✅ handleSnapPointClick a géré le clic');
-            return; // L'outil Marqueur a géré le clic
+        try {
+            if (handleSnapPointClick(e, chart)) {
+                console.log('✅ handleSnapPointClick a géré le clic');
+                return; // L'outil Marqueur a géré le clic
+            }
+            console.log('⏭️ handleSnapPointClick a retourné false - continue');
+        } catch (error) {
+            console.error('❌ ERREUR dans handleSnapPointClick:', error);
         }
     }
 

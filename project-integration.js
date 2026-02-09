@@ -687,13 +687,14 @@ function restoreAllToolsState(project) {
     // ========================================
 
     // Restaurer Intervals depuis le manager
-    if (project.intervalManager && project.toolsState.intervals) {
+    // CRITIQUE : TOUJOURS charger (même si vide) pour nettoyer les anciennes données
+    if (project.intervalManager) {
         // Charger dans le manager (crée automatiquement les instances Interval)
         project.intervalManager.load({
-            intervals: project.toolsState.intervals,
-            nextIntervalId: project.toolsState.nextIntervalId,
-            isCreating: project.toolsState.isCreatingInterval,
-            pendingIntervalData: project.toolsState.pendingIntervalData
+            intervals: project.toolsState.intervals || [],
+            nextIntervalId: project.toolsState.nextIntervalId || 1,
+            isCreating: project.toolsState.isCreatingInterval || false,
+            pendingIntervalData: project.toolsState.pendingIntervalData || null
         });
 
         // CRITIQUE : Synchroniser window.intervals avec le tableau du manager
@@ -709,12 +710,13 @@ function restoreAllToolsState(project) {
     }
 
     // Restaurer SnapPoints depuis le manager
-    if (project.snapPointManager && project.toolsState.snapPoints) {
+    // CRITIQUE : TOUJOURS charger (même si vide) pour nettoyer les anciennes données
+    if (project.snapPointManager) {
         // Charger dans le manager (crée automatiquement les instances SnapPoint)
         project.snapPointManager.load({
-            snapPoints: project.toolsState.snapPoints,
-            nextSnapPointId: project.toolsState.nextSnapPointId,
-            isCreating: project.toolsState.isCreatingSnapPoint
+            snapPoints: project.toolsState.snapPoints || [],
+            nextSnapPointId: project.toolsState.nextSnapPointId || 1,
+            isCreating: project.toolsState.isCreatingSnapPoint || false
         });
 
         // CRITIQUE : Synchroniser window.snapPoints avec le tableau du manager
@@ -729,11 +731,12 @@ function restoreAllToolsState(project) {
     }
 
     // Restaurer Diff Canal depuis le manager
-    if (project.diffCanalManager && project.toolsState.diffCanal) {
+    // CRITIQUE : TOUJOURS charger (même si vide) pour nettoyer les anciennes données
+    if (project.diffCanalManager) {
         // Charger dans le manager
         project.diffCanalManager.load({
-            intervals: project.toolsState.diffCanal.intervals,
-            nextId: project.toolsState.diffCanal.nextId
+            intervals: project.toolsState.diffCanal ? project.toolsState.diffCanal.intervals : [],
+            nextId: project.toolsState.diffCanal ? project.toolsState.diffCanal.nextId : 1
         });
 
         // CRITIQUE : Synchroniser window.diffCanalIntervals avec le tableau du manager
@@ -819,81 +822,95 @@ function restoreAllToolsState(project) {
         }
     }
 
-    // Restaurer Diff Canal
-    if (typeof diffCanalIntervals !== 'undefined' && typeof DiffCanalInterval !== 'undefined' && project.toolsState.diffCanal.intervals) {
-        diffCanalIntervals.length = 0;
+    // Restaurer Diff Canal (code legacy pour compatibilité)
+    // CRITIQUE : TOUJOURS vider le tableau, même si le projet n'a pas de diffCanal
+    if (typeof diffCanalIntervals !== 'undefined' && typeof DiffCanalInterval !== 'undefined') {
+        diffCanalIntervals.length = 0; // Vider SYSTÉMATIQUEMENT
 
-        // Recréer les instances de la classe DiffCanalInterval
-        project.toolsState.diffCanal.intervals.forEach(data => {
-            const diffInterval = new DiffCanalInterval(data.id, data.channelIndex, data.point1, data.point2);
-            diffInterval.labelOffset = data.labelOffset;
-            diffInterval.horizontalLabelOffsetX = data.horizontalLabelOffsetX;
-            diffInterval.verticalLabelOffsetY = data.verticalLabelOffsetY;
-            diffInterval.visible = data.visible;
-            diffInterval.color = data.color;
-            diffCanalIntervals.push(diffInterval);
-        });
+        // Restaurer seulement si le projet a des diffCanal sauvegardés
+        if (project.toolsState.diffCanal && project.toolsState.diffCanal.intervals && project.toolsState.diffCanal.intervals.length > 0) {
+            // Recréer les instances de la classe DiffCanalInterval
+            project.toolsState.diffCanal.intervals.forEach(data => {
+                const diffInterval = new DiffCanalInterval(data.id, data.channelIndex, data.point1, data.point2);
+                diffInterval.labelOffset = data.labelOffset;
+                diffInterval.horizontalLabelOffsetX = data.horizontalLabelOffsetX;
+                diffInterval.verticalLabelOffsetY = data.verticalLabelOffsetY;
+                diffInterval.visible = data.visible;
+                diffInterval.color = data.color;
+                diffCanalIntervals.push(diffInterval);
+            });
 
-        nextDiffCanalId = project.toolsState.diffCanal.nextId;
+            nextDiffCanalId = project.toolsState.diffCanal.nextId;
+            console.log(`📏 ${diffCanalIntervals.length} diff/canal(aux) restauré(s)`);
+        } else {
+            nextDiffCanalId = 1;
+            console.log(`📏 Aucun diff/canal à restaurer (tableau vidé)`);
+        }
 
-        // Mettre à jour l'affichage
+        // Mettre à jour l'affichage dans tous les cas
         if (typeof updateDiffCanalList === 'function') {
             updateDiffCanalList();
         }
     }
 
     // Restaurer Marqueurs (SnapPoints)
-    if (typeof snapPoints !== 'undefined' && typeof SnapPoint !== 'undefined' && project.toolsState.snapPoints) {
-        snapPoints.length = 0; // Vider le tableau
+    // CRITIQUE : TOUJOURS vider le tableau, même si le nouveau projet n'a pas de snapPoints
+    if (typeof snapPoints !== 'undefined' && typeof SnapPoint !== 'undefined') {
+        snapPoints.length = 0; // Vider le tableau SYSTÉMATIQUEMENT
 
-        // Recréer les instances de la classe SnapPoint
-        project.toolsState.snapPoints.forEach(data => {
-            // CRITIQUE: Utiliser xValue (pas time) pour le constructeur
-            const snapPoint = new SnapPoint(data.id, data.channelIndex, data.xValue, data.value);
+        // Restaurer seulement si le projet a des snapPoints sauvegardés
+        if (project.toolsState.snapPoints && project.toolsState.snapPoints.length > 0) {
+            // Recréer les instances de la classe SnapPoint
+            project.toolsState.snapPoints.forEach(data => {
+                // CRITIQUE: Utiliser xValue (pas time) pour le constructeur
+                const snapPoint = new SnapPoint(data.id, data.channelIndex, data.xValue, data.value);
 
-            // Restaurer TOUTES les propriétés
-            snapPoint.comment = data.comment || '';
-            snapPoint.offsetX = data.offsetX || 80;
-            snapPoint.offsetY = data.offsetY || -40;
-            snapPoint.visible = data.visible !== false;
-            snapPoint.color = data.color || '#4ECDC4';
+                // Restaurer TOUTES les propriétés
+                snapPoint.comment = data.comment || '';
+                snapPoint.offsetX = data.offsetX || 80;
+                snapPoint.offsetY = data.offsetY || -40;
+                snapPoint.visible = data.visible !== false;
+                snapPoint.color = data.color || '#4ECDC4';
 
-            // Formatage texte
-            snapPoint.fontSize = data.fontSize || window.chartFontSize;
-            snapPoint.fontWeight = data.fontWeight || 'normal';
-            snapPoint.fontStyle = data.fontStyle || 'normal';
-            snapPoint.textDecoration = data.textDecoration || 'none';
-            snapPoint.textAlign = data.textAlign || 'center';
-            snapPoint.textVerticalAlign = data.textVerticalAlign || 'middle';
+                // Formatage texte
+                snapPoint.fontSize = data.fontSize || window.chartFontSize;
+                snapPoint.fontWeight = data.fontWeight || 'normal';
+                snapPoint.fontStyle = data.fontStyle || 'normal';
+                snapPoint.textDecoration = data.textDecoration || 'none';
+                snapPoint.textAlign = data.textAlign || 'center';
+                snapPoint.textVerticalAlign = data.textVerticalAlign || 'middle';
 
-            // Apparence boîte
-            snapPoint.backgroundColor = data.backgroundColor || '#FFD93D';
-            snapPoint.backgroundOpacity = data.backgroundOpacity !== undefined ? data.backgroundOpacity : 0.9;
-            snapPoint.boxPaddingScale = data.boxPaddingScale || 1.0;
-            snapPoint.boxWidth = data.boxWidth || null;
-            snapPoint.boxHeight = data.boxHeight || null;
+                // Apparence boîte
+                snapPoint.backgroundColor = data.backgroundColor || '#FFD93D';
+                snapPoint.backgroundOpacity = data.backgroundOpacity !== undefined ? data.backgroundOpacity : 0.9;
+                snapPoint.boxPaddingScale = data.boxPaddingScale || 1.0;
+                snapPoint.boxWidth = data.boxWidth || null;
+                snapPoint.boxHeight = data.boxHeight || null;
 
-            // Accrochage
-            snapPoint.anchorChannelIndex = data.anchorChannelIndex !== undefined ? data.anchorChannelIndex : data.channelIndex;
+                // Accrochage
+                snapPoint.anchorChannelIndex = data.anchorChannelIndex !== undefined ? data.anchorChannelIndex : data.channelIndex;
 
-            // Flèche
-            snapPoint.hasArrow = data.hasArrow || false;
-            snapPoint.arrowEndX = data.arrowEndX || 150;
-            snapPoint.arrowEndY = data.arrowEndY || -80;
+                // Flèche
+                snapPoint.hasArrow = data.hasArrow || false;
+                snapPoint.arrowEndX = data.arrowEndX || 150;
+                snapPoint.arrowEndY = data.arrowEndY || -80;
 
-            snapPoints.push(snapPoint);
-        });
+                snapPoints.push(snapPoint);
+            });
 
-        if (project.toolsState.nextSnapPointId !== undefined) {
-            nextSnapPointId = project.toolsState.nextSnapPointId;
+            if (project.toolsState.nextSnapPointId !== undefined) {
+                nextSnapPointId = project.toolsState.nextSnapPointId;
+            }
+            if (project.toolsState.isCreatingSnapPoint !== undefined) {
+                isCreatingSnapPoint = project.toolsState.isCreatingSnapPoint;
+            }
+
+            console.log(`📌 ${snapPoints.length} marqueur(s) restauré(s) dans le tableau global`);
+        } else {
+            console.log(`📌 Aucun marqueur à restaurer (tableau vidé)`);
         }
-        if (project.toolsState.isCreatingSnapPoint !== undefined) {
-            isCreatingSnapPoint = project.toolsState.isCreatingSnapPoint;
-        }
 
-        console.log(`📌 ${snapPoints.length} marqueur(s) restauré(s) dans le tableau global`);
-
-        // Mettre à jour l'affichage
+        // Mettre à jour l'affichage dans tous les cas
         if (typeof updateSnapPointsList === 'function') {
             updateSnapPointsList();
         }
@@ -907,6 +924,7 @@ function restoreAllToolsState(project) {
     }
 
     // Restaurer et recréer les canaux lissés, calculés et dérivés
+    // CRITIQUE : TOUJOURS vider les tableaux, même si le nouveau projet n'a pas de canaux
     if (typeof appState !== 'undefined') {
         // IMPORTANT: Restaurer dans l'ordre de dépendance :
         // 1. Calculés (dépendent uniquement des données brutes)
@@ -914,8 +932,10 @@ function restoreAllToolsState(project) {
         // 3. Dérivés (peuvent dépendre des canaux calculés ET lissés)
 
         // 1. Restaurer les canaux calculés EN PREMIER
+        // CRITIQUE : TOUJOURS vider, même si le projet n'en a pas
+        appState.calculatedChannels = [];
+
         if (project.toolsState.calculatedChannels && project.toolsState.calculatedChannels.length > 0) {
-            appState.calculatedChannels = [];
             console.log(`🔧 Recréation de ${project.toolsState.calculatedChannels.length} canal(aux) calculé(s)...`);
 
             project.toolsState.calculatedChannels.forEach(channel => {
@@ -926,16 +946,20 @@ function restoreAllToolsState(project) {
                     recreateCalculatedChannel(channelCopy);
                 }
             });
+        } else {
+            console.log(`🔧 Aucun canal calculé à restaurer (tableau vidé)`);
+        }
 
-            // Rafraîchir la liste d'affichage
-            if (typeof updateCalculatedChannelsList === 'function') {
-                updateCalculatedChannelsList();
-            }
+        // Rafraîchir la liste d'affichage dans tous les cas
+        if (typeof updateCalculatedChannelsList === 'function') {
+            updateCalculatedChannelsList();
         }
 
         // 2. Restaurer les canaux lissés (peuvent utiliser les canaux calculés)
+        // CRITIQUE : TOUJOURS vider, même si le projet n'en a pas
+        appState.smoothedChannels = [];
+
         if (project.toolsState.smoothedChannels && project.toolsState.smoothedChannels.length > 0) {
-            appState.smoothedChannels = [];
             console.log(`🔧 Recréation de ${project.toolsState.smoothedChannels.length} canal(aux) lissé(s)...`);
 
             project.toolsState.smoothedChannels.forEach(channel => {
@@ -946,16 +970,20 @@ function restoreAllToolsState(project) {
                     recreateSmoothedChannel(channelCopy);
                 }
             });
+        } else {
+            console.log(`🔧 Aucun canal lissé à restaurer (tableau vidé)`);
+        }
 
-            // Rafraîchir la liste d'affichage
-            if (typeof updateSmoothedChannelsList === 'function') {
-                updateSmoothedChannelsList();
-            }
+        // Rafraîchir la liste d'affichage dans tous les cas
+        if (typeof updateSmoothedChannelsList === 'function') {
+            updateSmoothedChannelsList();
         }
 
         // 3. Restaurer les canaux dérivés EN DERNIER (peuvent dépendre des calculés et lissés)
+        // CRITIQUE : TOUJOURS vider, même si le projet n'en a pas
+        appState.derivativeChannels = [];
+
         if (project.toolsState.derivativeChannels && project.toolsState.derivativeChannels.length > 0) {
-            appState.derivativeChannels = [];
             console.log(`🔧 Recréation de ${project.toolsState.derivativeChannels.length} canal(aux) dérivé(s)...`);
 
             project.toolsState.derivativeChannels.forEach(channel => {
@@ -966,11 +994,13 @@ function restoreAllToolsState(project) {
                     recreateDerivativeChannel(channelCopy);
                 }
             });
+        } else {
+            console.log(`🔧 Aucun canal dérivé à restaurer (tableau vidé)`);
+        }
 
-            // Rafraîchir la liste d'affichage
-            if (typeof updateDerivativeChannelsList === 'function') {
-                updateDerivativeChannelsList();
-            }
+        // Rafraîchir la liste d'affichage dans tous les cas
+        if (typeof updateDerivativeChannelsList === 'function') {
+            updateDerivativeChannelsList();
         }
 
         // Rafraîchir les sélecteurs de canaux sources

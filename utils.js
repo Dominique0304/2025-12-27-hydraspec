@@ -1022,7 +1022,8 @@ async function addNotesToCanvas(sourceCanvas) {
     const tempCtx = tempCanvas.getContext('2d');
 
     // Configuration du texte
-    const fontSize = 46; // Taille de police pour lisibilité dans Word (équivalent ~17pt)
+    // Utiliser window.commentFontSize (défaut 23px) et multiplier par 2 pour le canvas scale 2x
+    const fontSize = (window.commentFontSize || 23) * 2;
     const lineHeight = fontSize * 1.4;
     const padding = 40;
     const maxWidth = sourceCanvas.width - (padding * 2);

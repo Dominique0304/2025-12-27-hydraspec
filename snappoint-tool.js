@@ -17,7 +17,7 @@ class SnapPoint {
         this.color = '#4ECDC4'; // Couleur par défaut
 
         // Formatage du texte
-        this.fontSize = window.commentFontSize || window.chartFontSize;
+        this.fontSize = window.chartFontSize || 12;
         this.fontWeight = 'normal';
         this.fontStyle = 'normal';
         this.textDecoration = 'none';

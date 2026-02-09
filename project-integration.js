@@ -1110,6 +1110,20 @@ function updateAllInterface(isInitialLoad = false) {
             initSmoothingSystem();
         }
 
+        // CRITIQUE : Recréer les canaux lissés sauvegardés après initialisation
+        if (appState.smoothedChannels && appState.smoothedChannels.length > 0) {
+            console.log(`🔄 Recréation de ${appState.smoothedChannels.length} canal(aux) lissé(s)...`);
+            appState.smoothedChannels.forEach(channel => {
+                if (typeof recreateSmoothedChannel === 'function') {
+                    recreateSmoothedChannel(channel);
+                }
+            });
+            // Rafraîchir la liste des canaux lissés dans l'UI
+            if (typeof updateSmoothedChannelsList === 'function') {
+                updateSmoothedChannelsList();
+            }
+        }
+
         // CRITIQUE : Initialiser le système de dérivée après chargement des canaux
         if (typeof initDerivativeSystem === 'function') {
             initDerivativeSystem();
@@ -1175,6 +1189,12 @@ function updateAllInterface(isInitialLoad = false) {
         const stepMs = (project.state.timeIncrement * 1000).toFixed(2);
         document.getElementById('manual-step-config').value = stepMs;
         console.log(`🔄 Pas (ms) restauré dans le champ manuel : ${stepMs} ms`);
+
+        // CRITIQUE : Synchroniser l'état interne avec le pas restauré
+        if (typeof updateFsFromStep === 'function') {
+            updateFsFromStep();
+            console.log(`✅ État interne synchronisé avec le pas (ms) restauré`);
+        }
     }
 
     setStatus(`Interface mise à jour : ${project.name}`);

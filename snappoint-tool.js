@@ -2621,31 +2621,37 @@ function contextMenuDelete() {
 
 Object.defineProperty(window, 'snapPoints', {
     get: () => snapPointTool.snapPoints,
-    set: (value) => { snapPointTool.snapPoints = value; }
+    set: (value) => { snapPointTool.snapPoints = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'isCreatingSnapPoint', {
     get: () => snapPointTool.isCreating,
-    set: (value) => { snapPointTool.isCreating = value; }
+    set: (value) => { snapPointTool.isCreating = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'nextSnapPointId', {
     get: () => snapPointTool.nextId,
-    set: (value) => { snapPointTool.nextId = value; }
+    set: (value) => { snapPointTool.nextId = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'snapPointState', {
     get: () => snapPointTool.state,
-    set: (value) => { snapPointTool.state = value; }
+    set: (value) => { snapPointTool.state = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'editingSnapPointId', {
     get: () => snapPointTool.editingId,
-    set: (value) => { snapPointTool.editingId = value; }
+    set: (value) => { snapPointTool.editingId = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'contextMenuSnapPointId', {
     get: () => snapPointTool.contextMenuId,
-    set: (value) => { snapPointTool.contextMenuId = value; }
+    set: (value) => { snapPointTool.contextMenuId = value; },
+    configurable: true
 });
 

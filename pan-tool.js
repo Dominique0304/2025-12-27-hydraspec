@@ -810,10 +810,12 @@ function applyPanToolZoom() {
 // Accesseurs pour les variables globales (utilisés par d'autres parties du code)
 Object.defineProperty(window, 'panState', {
     get: () => panTool.state,
-    set: (value) => { panTool.state = value; }
+    set: (value) => { panTool.state = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'gridZoomState', {
     get: () => panTool.gridZoomState,
-    set: (value) => { panTool.gridZoomState = value; }
+    set: (value) => { panTool.gridZoomState = value; },
+    configurable: true
 });

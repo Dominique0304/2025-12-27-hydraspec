@@ -1131,20 +1131,24 @@ function handleDiffCanalMouseUp(event, chart) {
 // Accesseurs pour les variables globales (utilisés par d'autres parties du code)
 Object.defineProperty(window, 'diffCanalIntervals', {
     get: () => diffCanalTool.intervals,
-    set: (value) => { diffCanalTool.intervals = value; }
+    set: (value) => { diffCanalTool.intervals = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'isCreatingDiffCanal', {
     get: () => diffCanalTool.isCreating,
-    set: (value) => { diffCanalTool.isCreating = value; }
+    set: (value) => { diffCanalTool.isCreating = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'diffCanalState', {
     get: () => diffCanalTool.state,
-    set: (value) => { diffCanalTool.state = value; }
+    set: (value) => { diffCanalTool.state = value; },
+    configurable: true
 });
 
 Object.defineProperty(window, 'nextDiffCanalId', {
     get: () => diffCanalTool.nextId,
-    set: (value) => { diffCanalTool.nextId = value; }
+    set: (value) => { diffCanalTool.nextId = value; },
+    configurable: true
 });

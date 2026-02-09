@@ -1202,13 +1202,13 @@ async function copyChartsToClipboard() {
         // Ajouter les notes (commentaires) au canvas
         const finalCanvas = await addNotesToCanvas(compositeCanvas);
 
-        // Rendre les pixels blancs transparents
+        // Rendre les pixels noirs/foncés transparents (fond du graphique)
         const finalCtx = finalCanvas.getContext('2d');
         const imageData = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
         const data = imageData.data;
 
-        // Seuil de tolérance pour détecter le blanc (0-255)
-        const whiteThreshold = 250;
+        // Seuil de tolérance pour détecter le noir/très foncé (0-255)
+        const blackThreshold = 5; // Pixels très proches du noir
 
         // Parcourir tous les pixels
         for (let i = 0; i < data.length; i += 4) {
@@ -1216,8 +1216,8 @@ async function copyChartsToClipboard() {
             const g = data[i + 1];
             const b = data[i + 2];
 
-            // Si le pixel est blanc (ou proche du blanc), le rendre transparent
-            if (r >= whiteThreshold && g >= whiteThreshold && b >= whiteThreshold) {
+            // Si le pixel est noir (ou très proche du noir), le rendre transparent
+            if (r <= blackThreshold && g <= blackThreshold && b <= blackThreshold) {
                 data[i + 3] = 0; // Canal alpha à 0 (transparent)
             }
         }
@@ -1225,7 +1225,7 @@ async function copyChartsToClipboard() {
         // Remettre les données modifiées dans le canvas
         finalCtx.putImageData(imageData, 0, 0);
 
-        console.log(`✅ Pixels blancs rendus transparents`);
+        console.log(`✅ Pixels noirs rendus transparents (fond du graphique)`);
 
         // Convertir le canvas final en Blob PNG
         finalCanvas.toBlob(async (blob) => {

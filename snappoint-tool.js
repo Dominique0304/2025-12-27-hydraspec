@@ -1677,7 +1677,7 @@ class SnapPointTool {
             snapPoint.offsetY = item.offsetY || -40;
             snapPoint.visible = item.visible !== false;
             snapPoint.color = item.color || '#4ECDC4';
-            snapPoint.fontSize = item.fontSize || window.chartFontSize;
+            snapPoint.fontSize = item.fontSize || 12; // Taille par défaut des marqueurs, indépendante de chartFontSize
             snapPoint.fontWeight = item.fontWeight || 'normal';
             snapPoint.fontStyle = item.fontStyle || 'normal';
             snapPoint.textDecoration = item.textDecoration || 'none';
@@ -1741,7 +1741,7 @@ class SnapPointTool {
         snapPoint.offsetY = item.offsetY || -40;
         snapPoint.visible = item.visible !== false;
         snapPoint.color = item.color || '#4ECDC4';
-        snapPoint.fontSize = item.fontSize || window.chartFontSize;
+        snapPoint.fontSize = item.fontSize || 12; // Taille par défaut des marqueurs, indépendante de chartFontSize
         snapPoint.fontWeight = item.fontWeight || 'normal';
         snapPoint.fontStyle = item.fontStyle || 'normal';
         snapPoint.textDecoration = item.textDecoration || 'none';

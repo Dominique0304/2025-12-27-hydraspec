@@ -853,7 +853,7 @@ function updateXAxisSelector() {
         // Utiliser l'index dans availableColumns + 1 (car 0 = temps)
         const originalIndex = appState.availableColumns.indexOf(col);
         option.value = (originalIndex + 1).toString();
-        option.textContent = col.label;
+        option.textContent = col.label + (col.unit ? ` (${col.unit})` : '');
         select.appendChild(option);
     });
 

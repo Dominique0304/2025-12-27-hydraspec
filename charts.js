@@ -158,6 +158,26 @@ const timeChart = new Chart(ctxTime, {
                 drawSnapPoints(chart);
             }
         }
+    }, {
+        id: 'xAxisEndLabel',
+        afterDraw: (chart) => {
+            if (typeof getXAxisInfo !== 'function') return;
+            const xInfo = getXAxisInfo();
+            if (xInfo.isTime) return; // Rien à afficher pour l'axe Temps
+
+            const label = xInfo.label + (xInfo.unit ? ` (${xInfo.unit})` : '');
+            const ctx = chart.ctx;
+            const chartArea = chart.chartArea;
+            const fontSize = window.chartFontSize || 12;
+
+            ctx.save();
+            ctx.fillStyle = '#aaa';
+            ctx.font = `${fontSize}px sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(label, chartArea.right + 6, chartArea.bottom + 4);
+            ctx.restore();
+        }
     }]
 });
 // Stocker dans globalCharts et appState.charts

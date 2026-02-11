@@ -871,6 +871,21 @@ function updateXAxisSelector() {
         const newChannelIndex = parseInt(e.target.value);
         appState.xAxisChannel = newChannelIndex;
 
+        // Masquer automatiquement le canal sélectionné comme axe X (s'il n'est pas Temps)
+        if (newChannelIndex > 0 && appState.channelConfig) {
+            const xCol = appState.availableColumns[newChannelIndex - 1];
+            if (xCol) {
+                const xChanConfig = appState.channelConfig.find(cfg => cfg.index === xCol.index);
+                if (xChanConfig) {
+                    xChanConfig.visible = false;
+                    xChanConfig.yAxisPosition = 'hidden';
+                    console.log(`👁️ Canal X "${xChanConfig.label}" masqué dans l'affichage Y`);
+                }
+            }
+            // Rafraîchir l'interface du configurateur pour refléter le changement
+            updateChannelConfigUI();
+        }
+
         // Mettre à jour les labels des champs Min/Max
         updateXAxisLabels();
 

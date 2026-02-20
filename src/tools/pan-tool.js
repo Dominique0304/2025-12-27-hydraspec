@@ -144,14 +144,46 @@ class PanTool {
     handleDrag(event, chart, canvas) {
         if (!this.state.active || !this.state.dragging) return false;
 
+        // Vérifications de sécurité
+        if (!chart || !chart.scales || !chart.scales.x || !canvas) {
+            console.error('❌ handleDrag: chart, scales ou canvas invalide');
+            return false;
+        }
+
+        if (!canvas.width || !canvas.height) {
+            console.error('❌ handleDrag: dimensions du canvas invalides', { width: canvas.width, height: canvas.height });
+            return false;
+        }
+
         const dx = event.clientX - this.state.lastX;
         const dy = event.clientY - this.state.lastY;
 
         // Déplacement horizontal (si mode 'free' ou 'horizontal')
         if (this.state.mode === 'free' || this.state.mode === 'horizontal') {
-            const dxVal = (chart.scales.x.max - chart.scales.x.min) * (dx / canvas.width);
-            chart.options.scales.x.min -= dxVal;
-            chart.options.scales.x.max -= dxVal;
+            const xRange = chart.scales.x.max - chart.scales.x.min;
+            if (xRange <= 0) {
+                console.error('❌ handleDrag: plage X invalide', xRange);
+                return false;
+            }
+
+            const dxVal = xRange * (dx / canvas.width);
+            const newMinX = chart.options.scales.x.min - dxVal;
+            const newMaxX = chart.options.scales.x.max - dxVal;
+
+            // Vérifier que les nouvelles valeurs sont valides
+            if (isNaN(newMinX) || isNaN(newMaxX) || !isFinite(newMinX) || !isFinite(newMaxX)) {
+                console.error('❌ handleDrag: nouvelles limites X invalides', { newMinX, newMaxX, dxVal, dx });
+                return false;
+            }
+
+            if (newMinX >= newMaxX) {
+                console.error('❌ handleDrag: min >= max après déplacement', { newMinX, newMaxX });
+                return false;
+            }
+
+            chart.options.scales.x.min = newMinX;
+            chart.options.scales.x.max = newMaxX;
+            console.log(`🔄 Pan horizontal: dx=${dx}px, dxVal=${dxVal.toFixed(2)}, nouvelle plage: [${newMinX.toFixed(2)}, ${newMaxX.toFixed(2)}]`);
         }
 
         // Déplacement vertical sur TOUTES les échelles Y (si mode 'free' ou 'vertical')
@@ -160,7 +192,13 @@ class PanTool {
             Object.keys(chart.scales).forEach(scaleKey => {
                 if (scaleKey.startsWith('y')) {
                     const scale = chart.scales[scaleKey];
-                    const dyVal = (scale.max - scale.min) * (dy / canvas.height);
+                    const yRange = scale.max - scale.min;
+                    if (yRange <= 0) {
+                        console.warn(`⚠️ handleDrag: plage Y invalide pour ${scaleKey}`, yRange);
+                        return;
+                    }
+
+                    const dyVal = yRange * (dy / canvas.height);
                     chart.options.scales[scaleKey].min += dyVal;
                     chart.options.scales[scaleKey].max += dyVal;
                 }
@@ -665,8 +703,8 @@ class PanTool {
     updateZoomInputs() {
         const tMinInput = document.getElementById('zoom-t-min');
         const tMaxInput = document.getElementById('zoom-t-max');
-
-        if (!tMinInput || !tMaxInput) return;
+        const zoomMinInput = document.getElementById('zoom-min');
+        const zoomMaxInput = document.getElementById('zoom-max');
 
         // Récupérer le graphique time
         const chart = appState.charts?.time;
@@ -679,9 +717,22 @@ class PanTool {
         // Obtenir les infos du canal X pour la conversion dynamique
         const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
 
-        // Mettre à jour les champs avec conversion dynamique
-        tMinInput.value = (xScale.min / xInfo.scale).toFixed(3);
-        tMaxInput.value = (xScale.max / xInfo.scale).toFixed(3);
+        // Calculer les valeurs en secondes (ou autre unité selon le canal X)
+        const minValue = (xScale.min / xInfo.scale).toFixed(3);
+        const maxValue = (xScale.max / xInfo.scale).toFixed(3);
+
+        // Mettre à jour les champs de l'outil de déplacement (zoom-t-min / zoom-t-max)
+        if (tMinInput && tMaxInput) {
+            tMinInput.value = minValue;
+            tMaxInput.value = maxValue;
+        }
+
+        // CRITIQUE: Mettre à jour AUSSI les champs principaux (zoom-min / zoom-max)
+        // pour éviter que updateTimeChart() réinitialise le zoom
+        if (zoomMinInput && zoomMaxInput) {
+            zoomMinInput.value = minValue;
+            zoomMaxInput.value = maxValue;
+        }
     }
 
     // Appliquer le zoom depuis les champs T min et T max

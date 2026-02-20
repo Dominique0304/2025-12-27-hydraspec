@@ -19,9 +19,9 @@
 
 
     <!-- Fichiers de l'application -->
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="animations.css">
-    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/responsive.css">
 </head>
 
 <body data-theme="light">
@@ -1982,56 +1982,56 @@
     </div>
 
     <!-- Scripts -->
-    <script src="constants.js"></script>
+    <script src="src/core/constants.js"></script>
     <!-- <script src="fft.js"></script> -->
-    <script src="charts.js"></script>
-    <script src="spectrogram.js"></script>
-    <script src="utils.js"></script>
-    <script src="i18n.js"></script>
+    <script src="src/core/charts.js"></script>
+    <script src="src/core/spectrogram.js"></script>
+    <script src="src/core/utils.js"></script>
+    <script src="src/core/i18n.js"></script>
 
     <!-- Managers POO - Encapsulation des outils (AVANT project.js car utilisés dans constructeur) -->
-    <script src="snappoint-manager.js"></script>
-    <script src="interval-manager.js"></script>
-    <script src="diffcanal-manager.js"></script>
-    <script src="measure-tool.js"></script>
-    <script src="ruler-tool.js"></script>
-    <script src="track-tool.js"></script>
+    <script src="src/managers/snappoint-manager.js"></script>
+    <script src="src/managers/interval-manager.js"></script>
+    <script src="src/managers/diffcanal-manager.js"></script>
+    <script src="src/managers/measure-tool.js"></script>
+    <script src="src/managers/ruler-tool.js"></script>
+    <script src="src/managers/track-tool.js"></script>
 
     <!-- Architecture POO Multi-Projets - DOIT être chargé AVANT app.js -->
-    <script src="project.js"></script>
-    <script src="project-manager.js"></script>
-    <script src="tool-adapters.js"></script>
-    <script src="project-integration.js"></script>
+    <script src="src/poo/project.js"></script>
+    <script src="src/poo/project-manager.js"></script>
+    <script src="src/poo/tool-adapters.js"></script>
+    <script src="src/poo/project-integration.js"></script>
 
-    <script src="app.js"></script>
-    <script src="halo.js"></script>
-    <script src="color-picker-advanced.js"></script>
+    <script src="src/core/app.js"></script>
+    <script src="src/core/halo.js"></script>
+    <script src="src/core/color-picker-advanced.js"></script>
 
-    <script src="hsp-manager.js"></script>
+    <script src="src/core/hsp-manager.js"></script>
 
     <!-- TOUTES LES DÉPENDANCES EN LOCAL ddx -->
-<script src="intervals.js"></script>
-<script src="multi-channel.js"></script>
-<script src="diff-canal-tool.js"></script>
-<script src="snappoint-tool.js"></script>
-<script src="pan-tool.js"></script>
-<script src="zoom-history.js"></script>
-<script src="views-manager.js"></script>
-<script src="smoothing.js"></script>
-<script src="derivative-channel.js"></script>
-<script src="calculated-channel.js"></script>
-<script src="canal-quick-view.js"></script>
-<script src="section-reorder.js"></script>
+<script src="src/tools/intervals.js"></script>
+<script src="src/tools/multi-channel.js"></script>
+<script src="src/tools/diff-canal-tool.js"></script>
+<script src="src/tools/snappoint-tool.js"></script>
+<script src="src/tools/pan-tool.js"></script>
+<script src="src/tools/zoom-history.js"></script>
+<script src="src/tools/views-manager.js"></script>
+<script src="src/tools/smoothing.js"></script>
+<script src="src/tools/derivative-channel.js"></script>
+<script src="src/tools/calculated-channel.js"></script>
+<script src="src/tools/canal-quick-view.js"></script>
+<script src="src/tools/section-reorder.js"></script>
 
 <!-- Nouveaux modules UX -->
-<script src="toast.js"></script>
-<script src="loading.js"></script>
-<script src="history-manager.js"></script>
-<script src="presets.js"></script>
-<script src="keyboard-shortcuts.js"></script>
-<script src="help-content.js"></script>
-<script src="help-loader.js"></script>
-<script src="fft-worker-manager.js"></script>
+<script src="src/ux/toast.js"></script>
+<script src="src/ux/loading.js"></script>
+<script src="src/ux/history-manager.js"></script>
+<script src="src/ux/presets.js"></script>
+<script src="src/ux/keyboard-shortcuts.js"></script>
+<script src="src/ux/help-content.js"></script>
+<script src="src/ux/help-loader.js"></script>
+<script src="src/workers/fft-worker-manager.js"></script>
 
 <!-- Initialisation des nouveaux systèmes -->
 <script>

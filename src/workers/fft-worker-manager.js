@@ -27,7 +27,7 @@ class FFTWorkerManager {
             }
 
             // Créer le worker
-            this.worker = new Worker('fft-worker.js');
+            this.worker = new Worker('src/workers/fft-worker.js');
 
             // Gérer les messages du worker
             this.worker.onmessage = (e) => {

@@ -129,10 +129,30 @@ class DiffCanalManager {
     load(savedData) {
         if (!savedData) return;
 
-        this.intervals = savedData.intervals || [];
+        // CRITIQUE: Recréer les instances de la classe DiffCanalInterval
+        this.intervals = [];
+        if (savedData.intervals && savedData.intervals.length > 0) {
+            savedData.intervals.forEach(data => {
+                const interval = new DiffCanalInterval(
+                    data.id,
+                    data.channelIndex,
+                    data.point1,
+                    data.point2
+                );
+                // Restaurer les propriétés supplémentaires
+                interval.labelOffset = data.labelOffset !== undefined ? data.labelOffset : 0.5;
+                interval.horizontalLabelOffsetX = data.horizontalLabelOffsetX || 0;
+                interval.verticalLabelOffsetY = data.verticalLabelOffsetY || 0;
+                interval.visible = data.visible !== undefined ? data.visible : true;
+                interval.color = data.color || '#4ECDC4';
+
+                this.intervals.push(interval);
+            });
+        }
+
         this.nextId = savedData.nextId || 1;
 
-        console.log(`📐 Chargé ${this.intervals.length} diff canal`);
+        console.log(`📐 Chargé ${this.intervals.length} diff canal (instances DiffCanalInterval créées)`);
     }
 
     /**

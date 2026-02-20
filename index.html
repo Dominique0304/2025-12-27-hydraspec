@@ -15,6 +15,93 @@
     <script src="lib/html2canvas.min.js"></script>
     <script src="lib/jspdf.min.js"></script>
     <link rel="stylesheet" href="lib/all.min.css">
+    <!-- Override FA7 CSS-variable rendering → approche directe FA5 pour compatibilité maximale -->
+    <style>
+        .fas::before, .fas:before {
+            font-family: "Font Awesome 7 Free" !important;
+            font-weight: 900 !important;
+            font-style: normal;
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .fab::before, .fab:before {
+            font-family: "Font Awesome 7 Brands" !important;
+            font-weight: 400 !important;
+            font-style: normal;
+            display: inline-block;
+            -webkit-font-smoothing: antialiased;
+        }
+        .fa-align-center::before { content: "\f037"; }
+        .fa-align-left::before { content: "\f036"; }
+        .fa-align-right::before { content: "\f038"; }
+        .fa-arrow-down::before { content: "\f063"; }
+        .fa-arrow-right::before { content: "\f061"; }
+        .fa-arrow-up::before { content: "\f062"; }
+        .fa-arrows-alt::before { content: "\f0b2"; }
+        .fa-arrows-alt-h::before { content: "\f337"; }
+        .fa-arrows-alt-v::before { content: "\f338"; }
+        .fa-bars::before { content: "\f0c9"; }
+        .fa-calculator::before { content: "\f1ec"; }
+        .fa-camera::before { content: "\f030"; }
+        .fa-caret-down::before { content: "\f0d7"; }
+        .fa-chart-area::before { content: "\f1fe"; }
+        .fa-chart-line::before { content: "\f201"; }
+        .fa-check::before { content: "\f00c"; }
+        .fa-chevron-down::before { content: "\f078"; }
+        .fa-chevron-up::before { content: "\f077"; }
+        .fa-cog::before { content: "\f013"; }
+        .fa-cogs::before { content: "\f085"; }
+        .fa-comment::before { content: "\f075"; }
+        .fa-copy::before { content: "\f0c5"; }
+        .fa-crosshairs::before { content: "\f05b"; }
+        .fa-download::before { content: "\f019"; }
+        .fa-edit::before { content: "\f044"; }
+        .fa-equals::before { content: "="; }
+        .fa-eraser::before { content: "\f12d"; }
+        .fa-exclamation-triangle::before { content: "\f071"; }
+        .fa-expand::before { content: "\f065"; }
+        .fa-eye::before { content: "\f06e"; }
+        .fa-file::before { content: "\f15b"; }
+        .fa-file-csv::before { content: "\f6dd"; }
+        .fa-file-export::before { content: "\f56e"; }
+        .fa-file-import::before { content: "\f56f"; }
+        .fa-file-pdf::before { content: "\f1c1"; }
+        .fa-folder::before { content: "\f07b"; }
+        .fa-folder-open::before { content: "\f07c"; }
+        .fa-grip-lines::before { content: "\f7a4"; }
+        .fa-grip-lines-vertical::before { content: "\f7a5"; }
+        .fa-history::before { content: "\f1da"; }
+        .fa-image::before { content: "\f03e"; }
+        .fa-info-circle::before { content: "\f05a"; }
+        .fa-keyboard::before { content: "\f11c"; }
+        .fa-layer-group::before { content: "\f5fd"; }
+        .fa-lightbulb::before { content: "\f0eb"; }
+        .fa-list::before { content: "\f03a"; }
+        .fa-map-marker-alt::before { content: "\f3c5"; }
+        .fa-palette::before { content: "\f53f"; }
+        .fa-plus::before { content: "+"; }
+        .fa-plus-circle::before { content: "\f055"; }
+        .fa-question-circle::before { content: "\f059"; }
+        .fa-redo::before { content: "\f01e"; }
+        .fa-ruler::before { content: "\f545"; }
+        .fa-ruler-combined::before { content: "\f546"; }
+        .fa-satellite-dish::before { content: "\f7c0"; }
+        .fa-save::before { content: "\f0c7"; }
+        .fa-search-plus::before { content: "\f00e"; }
+        .fa-signal::before { content: "\f012"; }
+        .fa-sliders-h::before { content: "\f1de"; }
+        .fa-stopwatch::before { content: "\f2f2"; }
+        .fa-sync-alt::before { content: "\f2f1"; }
+        .fa-tag::before { content: "\f02b"; }
+        .fa-th::before { content: "\f00a"; }
+        .fa-tools::before { content: "\f7d9"; }
+        .fa-trash::before { content: "\f1f8"; }
+        .fa-undo::before { content: "\f0e2"; }
+        .fa-wave-square::before { content: "\f83e"; }
+        .fa-apple::before { content: "\f179"; }
+        .fa-windows::before { content: "\f17a"; }
+    </style>
 
 
 

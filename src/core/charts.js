@@ -20,7 +20,7 @@ function initCharts() {
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
-        layout: { padding: { top: 20, right: 10, bottom: 0, left: 0 } },
+        layout: { padding: { top: 20, right: 80, bottom: 0, left: 0 } },
         plugins: {
             legend: { display: false },
             tooltip: {

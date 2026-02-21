@@ -1207,3 +1207,46 @@ function initIntervals() {
 
     console.log('Système d\'intervalles initialisé');
 }
+
+// =====================================
+// LIAISON window.* ↔ VARIABLES LOCALES
+// Nécessaire pour que syncGlobalVariablesWithManagers() fonctionne
+// car les variables 'let' ne sont pas automatiquement des propriétés de window
+// =====================================
+
+Object.defineProperty(window, 'intervals', {
+    get: () => intervals,
+    set: (value) => {
+        // CRITIQUE : Modifier le CONTENU du tableau sans changer la référence
+        // pour que toutes les fonctions qui utilisent 'intervals' voient les changements
+        intervals.length = 0;
+        if (Array.isArray(value)) {
+            value.forEach(item => intervals.push(item));
+        }
+    },
+    configurable: true
+});
+
+Object.defineProperty(window, 'nextIntervalId', {
+    get: () => nextIntervalId,
+    set: (value) => { nextIntervalId = value; },
+    configurable: true
+});
+
+Object.defineProperty(window, 'isCreatingInterval', {
+    get: () => isCreatingInterval,
+    set: (value) => { isCreatingInterval = value; },
+    configurable: true
+});
+
+Object.defineProperty(window, 'pendingIntervalData', {
+    get: () => pendingIntervalData,
+    set: (value) => { pendingIntervalData = value; },
+    configurable: true
+});
+
+Object.defineProperty(window, 'intervalDragState', {
+    get: () => intervalDragState,
+    set: (value) => { intervalDragState = value; },
+    configurable: true
+});

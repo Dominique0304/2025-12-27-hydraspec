@@ -448,8 +448,8 @@ function restoreChartZoomLimits(project) {
         const scales = charts.time.options.scales;
         const limits = project.toolsState.chartLimits.time;
 
-        // Axe X
-        if (limits.x) {
+        // Axe X (ne restaurer que si les limites sont définies et non-null)
+        if (limits.x && limits.x.min !== null && limits.x.max !== null) {
             scales.x.min = limits.x.min;
             scales.x.max = limits.x.max;
         }
@@ -472,7 +472,7 @@ function restoreChartZoomLimits(project) {
         const scales = charts.freq.options.scales;
         const limits = project.toolsState.chartLimits.freq;
 
-        if (limits.x) {
+        if (limits.x && limits.x.min !== null && limits.x.max !== null) {
             scales.x.min = limits.x.min;
             scales.x.max = limits.x.max;
         }
@@ -494,7 +494,7 @@ function restoreChartZoomLimits(project) {
         const scales = charts.spectro.options.scales;
         const limits = project.toolsState.chartLimits.spectro;
 
-        if (limits.x) {
+        if (limits.x && limits.x.min !== null && limits.x.max !== null) {
             scales.x.min = limits.x.min;
             scales.x.max = limits.x.max;
         }
@@ -1235,6 +1235,12 @@ async function handleFileUpload_POO(input) {
                         chart.options.scales.x.min = t[0];
                         chart.options.scales.x.max = t[t.length - 1];
                         chart.update('none');
+
+                        // IMPORTANT : Sauvegarder ces limites dans le projet pour que le changement d'onglet fonctionne
+                        if (typeof saveChartZoomLimits === 'function') {
+                            saveChartZoomLimits(project);
+                            console.log("💾 Limites X initiales sauvegardées dans le projet");
+                        }
                     }
 
                     // Centrer les curseurs

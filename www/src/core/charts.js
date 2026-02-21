@@ -1059,16 +1059,21 @@ function updateTimeChart(isInitialLoad = false) {
     chart.data.datasets[0].data = Array.from(v);
 
     // Configurer les échelles X
-    // Vérifier si l'utilisateur a défini des valeurs personnalisées
+    // Obtenir les infos du canal X pour la conversion (cohérent avec syncZoomInputsFromProject)
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+
+    // Vérifier si l'utilisateur a défini des valeurs personnalisées via les inputs
     const zoomMinInput = document.getElementById('zoom-min');
     const zoomMaxInput = document.getElementById('zoom-max');
     const userMinX = zoomMinInput ? parseFloat(zoomMinInput.value) : NaN;
     const userMaxX = zoomMaxInput ? parseFloat(zoomMaxInput.value) : NaN;
 
     // Utiliser les valeurs utilisateur si valides, sinon utiliser les valeurs par défaut
+    // IMPORTANT: Utiliser xInfo.scale pour la conversion (pas 1000 en dur)
+    // Cela garantit la cohérence avec syncZoomInputsFromProject() lors du changement de projet
     if (!isNaN(userMinX) && !isNaN(userMaxX) && userMinX < userMaxX) {
-        chart.options.scales.x.min = userMinX * 1000; // Convertir s en ms
-        chart.options.scales.x.max = userMaxX * 1000;
+        chart.options.scales.x.min = userMinX * xInfo.scale; // Convertir avec l'échelle dynamique
+        chart.options.scales.x.max = userMaxX * xInfo.scale;
     } else {
         chart.options.scales.x.min = t[0];
         chart.options.scales.x.max = t[t.length-1];

@@ -512,6 +512,53 @@ function restoreChartZoomLimits(project) {
     }
 
     console.log(`✅ Zoom restauré pour ${project.name}`);
+
+    // IMPORTANT: Synchroniser les inputs DOM avec les limites restaurées
+    // Cela empêche updateTimeChart() d'utiliser les anciennes valeurs du projet précédent
+    syncZoomInputsFromProject(project);
+}
+
+/**
+ * Synchronise les inputs DOM de zoom avec les limites du projet
+ * Cette fonction est cruciale pour éviter que les inputs DOM conservent
+ * les valeurs du projet précédent lors du changement d'onglet
+ * @param {Project} project - Projet source
+ */
+function syncZoomInputsFromProject(project) {
+    if (!project || !project.toolsState || !project.toolsState.chartLimits) {
+        return;
+    }
+
+    const charts = window.globalCharts;
+    if (!charts || !charts.time) {
+        return;
+    }
+
+    // Lire les limites X depuis le graphique (qui vient d'être restauré)
+    const xScale = charts.time.scales ? charts.time.scales.x : null;
+    if (!xScale) return;
+
+    // Obtenir les infos du canal X pour la conversion
+    const xInfo = typeof getXAxisInfo === 'function' ? getXAxisInfo() : { scale: 1000, unit: 's' };
+
+    // Mettre à jour les inputs DOM avec les valeurs du projet actif
+    const zoomMinInput = document.getElementById('zoom-min');
+    const zoomMaxInput = document.getElementById('zoom-max');
+
+    if (zoomMinInput && zoomMaxInput) {
+        zoomMinInput.value = (xScale.min / xInfo.scale).toFixed(3);
+        zoomMaxInput.value = (xScale.max / xInfo.scale).toFixed(3);
+        console.log(`🔄 Inputs DOM synchronisés: [${zoomMinInput.value}, ${zoomMaxInput.value}] pour ${project.name}`);
+    }
+
+    // Mettre à jour aussi les inputs Y si disponibles
+    const yScale = charts.time.scales ? charts.time.scales.y : null;
+    if (yScale) {
+        const zoomYMin = document.getElementById('zoom-y-min');
+        const zoomYMax = document.getElementById('zoom-y-max');
+        if (zoomYMin) zoomYMin.value = yScale.min.toFixed(1);
+        if (zoomYMax) zoomYMax.value = yScale.max.toFixed(1);
+    }
 }
 
 /**

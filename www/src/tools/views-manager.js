@@ -46,12 +46,17 @@ function captureCurrentState() {
         max: xScale.max / 1000
     };
 
-    // Capturer le zoom Y du canal actuel
-    const yScale = chart.scales.y;
-    const yZoom = {
-        min: yScale.min,
-        max: yScale.max
-    };
+    // Capturer TOUS les zooms Y (y, y2, y3, ...) pour le mode multi-canaux
+    const yZooms = {};
+    Object.keys(chart.scales).forEach(scaleKey => {
+        if (scaleKey.startsWith('y')) {
+            yZooms[scaleKey] = {
+                min: chart.scales[scaleKey].min,
+                max: chart.scales[scaleKey].max
+            };
+        }
+    });
+    console.log("💾 Tous les zooms Y capturés:", yZooms);
 
     // Capturer l'état des graphiques Freq/Spectro
     const state = {
@@ -59,7 +64,7 @@ function captureCurrentState() {
         name: `Vue ${viewsState.nextId}`,
         createdAt: new Date().toLocaleString('fr-FR'),
         timeZoom: timeZoom,
-        yZoom: yZoom,
+        yZooms: yZooms,  // Nouveau format : tous les axes Y
         currentChannel: appState.currentColumnIndex || 0,
         channelLabel: appState.yAxisLabel || 'Canal',
         freqVisible: uiState.freqVisible || false,
@@ -173,9 +178,24 @@ function displayView(viewId) {
     chart.options.scales.x.min = view.timeZoom.min * 1000; // s → ms
     chart.options.scales.x.max = view.timeZoom.max * 1000;
 
-    // Restaurer le zoom Y
-    chart.options.scales.y.min = view.yZoom.min;
-    chart.options.scales.y.max = view.yZoom.max;
+    // Restaurer TOUS les zooms Y (nouveau format)
+    if (view.yZooms) {
+        Object.keys(view.yZooms).forEach(scaleKey => {
+            if (chart.options.scales[scaleKey]) {
+                chart.options.scales[scaleKey].min = view.yZooms[scaleKey].min;
+                chart.options.scales[scaleKey].max = view.yZooms[scaleKey].max;
+            }
+        });
+        console.log("🔓 Tous les zooms Y restaurés:", view.yZooms);
+    }
+    // Rétrocompatibilité : ancien format avec un seul axe Y
+    else if (view.yZoom) {
+        if (chart.options.scales.y) {
+            chart.options.scales.y.min = view.yZoom.min;
+            chart.options.scales.y.max = view.yZoom.max;
+            console.log("🔓 Zoom Y restauré (ancien format):", view.yZoom);
+        }
+    }
 
     // Mettre à jour le graphique
     chart.update('none');

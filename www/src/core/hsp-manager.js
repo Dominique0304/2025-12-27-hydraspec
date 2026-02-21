@@ -292,7 +292,7 @@ async function performHSPSave(project, fileName, isNewFile) {
         const handle = await downloadBlob(blob, `${fileName}.hsp`);
 
         // Si downloadBlob retourne un handle (File System Access API), le stocker
-        if (handle && !isNewFile) {
+        if (handle) {
             project.fileHandle = handle;
             console.log("✅ FileHandle stocké pour prochaine sauvegarde directe");
         }

@@ -217,10 +217,12 @@ async function handleFileUpload_POO(input) {
                             centerCursors();
                         }
 
-                        // Fermer le configurateur après tout
+                        // Afficher l'onglet Paramètres au lieu de fermer le configurateur
                         setTimeout(() => {
-                            closeChannelConfig();
-                            console.log("✅ Auto-config terminée (configurateur fermé)");
+                            if (typeof switchConfigTab === 'function') {
+                                switchConfigTab('parametres');
+                                console.log("✅ Auto-config terminée - Affichage de l'onglet Paramètres");
+                            }
                         }, 100);
                     }, 100);
                 }, 200);

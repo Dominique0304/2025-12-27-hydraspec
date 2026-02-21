@@ -795,99 +795,13 @@ function restoreAllToolsState(project) {
         console.log(`📍 TrackTool restauré (POO)`);
     }
 
-    // Restaurer Diff Canal (code legacy pour compatibilité)
-    // CRITIQUE : TOUJOURS vider le tableau, même si le projet n'a pas de diffCanal
-    if (typeof diffCanalIntervals !== 'undefined' && typeof DiffCanalInterval !== 'undefined') {
-        diffCanalIntervals.length = 0; // Vider SYSTÉMATIQUEMENT
+    // NOTE: Code legacy de restauration Diff Canal supprimé
+    // La restauration est maintenant gérée par le système POO (lignes 737-753)
+    // via project.diffCanalManager.load() et syncGlobalVariablesWithManagers()
 
-        // Restaurer seulement si le projet a des diffCanal sauvegardés
-        if (project.toolsState.diffCanal && project.toolsState.diffCanal.intervals && project.toolsState.diffCanal.intervals.length > 0) {
-            // Recréer les instances de la classe DiffCanalInterval
-            project.toolsState.diffCanal.intervals.forEach(data => {
-                const diffInterval = new DiffCanalInterval(data.id, data.channelIndex, data.point1, data.point2);
-                diffInterval.labelOffset = data.labelOffset;
-                diffInterval.horizontalLabelOffsetX = data.horizontalLabelOffsetX;
-                diffInterval.verticalLabelOffsetY = data.verticalLabelOffsetY;
-                diffInterval.visible = data.visible;
-                diffInterval.color = data.color;
-                diffCanalIntervals.push(diffInterval);
-            });
-
-            nextDiffCanalId = project.toolsState.diffCanal.nextId;
-            console.log(`📏 ${diffCanalIntervals.length} diff/canal(aux) restauré(s)`);
-        } else {
-            nextDiffCanalId = 1;
-            console.log(`📏 Aucun diff/canal à restaurer (tableau vidé)`);
-        }
-
-        // Mettre à jour l'affichage dans tous les cas
-        if (typeof updateDiffCanalList === 'function') {
-            updateDiffCanalList();
-        }
-    }
-
-    // Restaurer Marqueurs (SnapPoints)
-    // CRITIQUE : TOUJOURS vider le tableau, même si le nouveau projet n'a pas de snapPoints
-    if (typeof snapPoints !== 'undefined' && typeof SnapPoint !== 'undefined') {
-        snapPoints.length = 0; // Vider le tableau SYSTÉMATIQUEMENT
-
-        // Restaurer seulement si le projet a des snapPoints sauvegardés
-        if (project.toolsState.snapPoints && project.toolsState.snapPoints.length > 0) {
-            // Recréer les instances de la classe SnapPoint
-            project.toolsState.snapPoints.forEach(data => {
-                // CRITIQUE: Utiliser xValue (pas time) pour le constructeur
-                const snapPoint = new SnapPoint(data.id, data.channelIndex, data.xValue, data.value);
-
-                // Restaurer TOUTES les propriétés
-                snapPoint.comment = data.comment || '';
-                snapPoint.offsetX = data.offsetX || 80;
-                snapPoint.offsetY = data.offsetY || -40;
-                snapPoint.visible = data.visible !== false;
-                snapPoint.color = data.color || '#4ECDC4';
-
-                // Formatage texte
-                snapPoint.fontSize = data.fontSize || 12; // Taille par défaut des marqueurs = 12 (indépendant des commentaires)
-                snapPoint.fontWeight = data.fontWeight || 'normal';
-                snapPoint.fontStyle = data.fontStyle || 'normal';
-                snapPoint.textDecoration = data.textDecoration || 'none';
-                snapPoint.textAlign = data.textAlign || 'center';
-                snapPoint.textVerticalAlign = data.textVerticalAlign || 'middle';
-
-                // Apparence boîte
-                snapPoint.backgroundColor = data.backgroundColor || '#FFD93D';
-                snapPoint.backgroundOpacity = data.backgroundOpacity !== undefined ? data.backgroundOpacity : 0.9;
-                snapPoint.boxPaddingScale = data.boxPaddingScale || 1.0;
-                snapPoint.boxWidth = data.boxWidth || null;
-                snapPoint.boxHeight = data.boxHeight || null;
-
-                // Accrochage
-                snapPoint.anchorChannelIndex = data.anchorChannelIndex !== undefined ? data.anchorChannelIndex : data.channelIndex;
-
-                // Flèche
-                snapPoint.hasArrow = data.hasArrow || false;
-                snapPoint.arrowEndX = data.arrowEndX || 150;
-                snapPoint.arrowEndY = data.arrowEndY || -80;
-
-                snapPoints.push(snapPoint);
-            });
-
-            if (project.toolsState.nextSnapPointId !== undefined) {
-                nextSnapPointId = project.toolsState.nextSnapPointId;
-            }
-            if (project.toolsState.isCreatingSnapPoint !== undefined) {
-                isCreatingSnapPoint = project.toolsState.isCreatingSnapPoint;
-            }
-
-            console.log(`📌 ${snapPoints.length} marqueur(s) restauré(s) dans le tableau global`);
-        } else {
-            console.log(`📌 Aucun marqueur à restaurer (tableau vidé)`);
-        }
-
-        // Mettre à jour l'affichage dans tous les cas
-        if (typeof updateSnapPointsList === 'function') {
-            updateSnapPointsList();
-        }
-    }
+    // NOTE: Code legacy de restauration SnapPoints supprimé
+    // La restauration est maintenant gérée par le système POO (lignes 716-733)
+    // via project.snapPointManager.load() et syncGlobalVariablesWithManagers()
 
     // Restaurer les notes utilisateur
     const notesTextarea = document.getElementById('user-notes');

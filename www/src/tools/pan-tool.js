@@ -12,7 +12,8 @@ class PanTool {
             lastY: 0,
             mode: 'free',        // 'free', 'horizontal', 'vertical'
             y0Active: false,     // Forcer Y=0
-            zoomMode: null       // null, 'grid', 'horizontal', 'vertical'
+            zoomMode: null,      // null, 'grid', 'horizontal', 'vertical'
+            verticalPanOccurred: false  // Tracker si un déplacement vertical a eu lieu
         };
 
         // État du zoom par sélection de quadrillage
@@ -201,6 +202,9 @@ class PanTool {
                     const dyVal = yRange * (dy / canvas.height);
                     chart.options.scales[scaleKey].min += dyVal;
                     chart.options.scales[scaleKey].max += dyVal;
+
+                    // Marquer qu'un déplacement vertical a eu lieu
+                    this.state.verticalPanOccurred = true;
                 }
             });
         }
@@ -222,16 +226,52 @@ class PanTool {
         if (this.state.dragging) {
             this.state.dragging = false;
 
+            // CRITIQUE: Sauvegarder les limites Y si un déplacement vertical a eu lieu
+            let savedYLimits = null;
+            if (this.state.verticalPanOccurred) {
+                const chart = appState.charts?.time;
+                if (chart) {
+                    savedYLimits = {};
+                    Object.keys(chart.scales).forEach(scaleKey => {
+                        if (scaleKey.startsWith('y')) {
+                            savedYLimits[scaleKey] = {
+                                min: chart.options.scales[scaleKey].min,
+                                max: chart.options.scales[scaleKey].max
+                            };
+                        }
+                    });
+                    console.log("💾 Limites Y sauvegardées avant updateTimeChart:", savedYLimits);
+                }
+            }
+
             // CRITIQUE: Recalculer le downsampling après le pan
             if (typeof updateTimeChart === 'function') {
                 updateTimeChart();
                 console.log("🔄 Downsampling recalculé après pan");
             }
 
+            // CRITIQUE: Restaurer les limites Y si un déplacement vertical avait eu lieu
+            if (savedYLimits) {
+                const chart = appState.charts?.time;
+                if (chart) {
+                    Object.keys(savedYLimits).forEach(scaleKey => {
+                        if (chart.options.scales[scaleKey]) {
+                            chart.options.scales[scaleKey].min = savedYLimits[scaleKey].min;
+                            chart.options.scales[scaleKey].max = savedYLimits[scaleKey].max;
+                        }
+                    });
+                    chart.update('none');
+                    console.log("✅ Limites Y restaurées après updateTimeChart");
+                }
+            }
+
             // Sauvegarder l'état après le déplacement
             if (typeof saveZoomState === 'function') {
                 saveZoomState();
             }
+
+            // Réinitialiser le flag
+            this.state.verticalPanOccurred = false;
 
             return true;
         }

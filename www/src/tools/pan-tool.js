@@ -682,7 +682,9 @@ class PanTool {
         }
 
         // Si Y=0 n'est pas actif, zoomer aussi verticalement
+        let savedYLimits = null;
         if (!this.state.y0Active) {
+            savedYLimits = {};
             Object.keys(chart.scales).forEach(scaleKey => {
                 if (scaleKey.startsWith('y')) {
                     const yScale = chart.scales[scaleKey];
@@ -692,8 +694,15 @@ class PanTool {
 
                     chart.options.scales[scaleKey].min = newYMin;
                     chart.options.scales[scaleKey].max = newYMax;
+
+                    // Sauvegarder les limites calculées
+                    savedYLimits[scaleKey] = {
+                        min: newYMin,
+                        max: newYMax
+                    };
                 }
             });
+            console.log("💾 Limites Y sauvegardées pour zoom quadrillage:", savedYLimits);
         }
 
         // CRITIQUE: Ne pas appeler chart.update() ni updateZoomInputs() ici!
@@ -706,6 +715,18 @@ class PanTool {
         } else {
             // Fallback si updateTimeChart n'existe pas
             chart.update('none');
+        }
+
+        // CRITIQUE: Restaurer les limites Y après updateTimeChart pour préserver le zoom Y
+        if (savedYLimits) {
+            Object.keys(savedYLimits).forEach(scaleKey => {
+                if (chart.options.scales[scaleKey]) {
+                    chart.options.scales[scaleKey].min = savedYLimits[scaleKey].min;
+                    chart.options.scales[scaleKey].max = savedYLimits[scaleKey].max;
+                }
+            });
+            chart.update('none');
+            console.log("✅ Limites Y restaurées après updateTimeChart");
         }
 
         return true;

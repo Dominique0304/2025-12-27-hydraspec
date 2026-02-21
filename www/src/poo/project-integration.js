@@ -684,6 +684,12 @@ function restoreAllToolsState(project) {
 
     // Restaurer Intervals depuis le manager
     // CRITIQUE : TOUJOURS charger (même si vide) pour nettoyer les anciennes données
+    // CRITIQUE : Vider window.intervals AVANT de restaurer (garantit isolation entre projets)
+    if (typeof intervals !== 'undefined') {
+        intervals.length = 0; // Vider SYSTÉMATIQUEMENT
+        console.log(`🧹 Tableau global intervals vidé avant restauration`);
+    }
+
     if (project.intervalManager) {
         // Charger dans le manager (crée automatiquement les instances Interval)
         project.intervalManager.load({

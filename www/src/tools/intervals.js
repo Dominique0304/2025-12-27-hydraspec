@@ -341,8 +341,8 @@ function drawIntervals(chart) {
         if (interval.comment && interval.comment.trim() !== '') {
             const commentText = interval.comment;
 
-            // Utiliser la taille de police globale avec bold et sans-serif
-            const fontSize = window.chartFontSize;
+            // Utiliser la taille de police de l'intervalle
+            const fontSize = interval.fontSize || 11;
             const fontWeight = interval.fontWeight || 'bold'; // Par défaut bold
             const fontStyle = interval.fontStyle || 'normal';
 

@@ -2,6 +2,7 @@
     /* Dark Theme (Default) */
     --bg-app: #121212;
     --bg-panel: #1e1e1e;
+    --bg-secondary: #2a2a2a;
     --text-main: #e0e0e0;
     --text-muted: #a0a0a0;
     --border-color: #333;
@@ -26,6 +27,7 @@
 [data-theme="light"] {
     --bg-app: #f0f2f5;
     --bg-panel: #ffffff;
+    --bg-secondary: #e8eaed;
     --text-main: #333333;
     --text-muted: #666666;
     --border-color: #ddd;
@@ -38,6 +40,7 @@
 [data-theme="steampunk"] {
     --bg-app: #2b2b2b;
     --bg-panel: #3e2723; /* Dark Wood */
+    --bg-secondary: #4a332b; /* Slightly lighter wood */
     --text-main: #d4af37; /* Brass */
     --text-muted: #b87333; /* Copper */
     --border-color: #8b4513; /* Leather */

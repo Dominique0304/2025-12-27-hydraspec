@@ -1188,6 +1188,108 @@ function handleIntervalMouseUp(event, chart) {
     return true; // Drag terminé avec succès
 }
 
+// =====================================
+// MENU CONTEXTUEL (CLIC DROIT)
+// =====================================
+
+// Variable pour stocker l'ID de l'intervalle du menu contextuel
+let contextMenuIntervalId = null;
+
+// Gérer le clic droit (menu contextuel) sur un intervalle
+function handleIntervalContextMenu(event, chart) {
+    // Ne pas afficher le menu si on est en train de drag
+    if (intervalDragState.active) {
+        return false;
+    }
+
+    if (intervals.length === 0) {
+        return false;
+    }
+
+    const rect = chart.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Chercher si on a cliqué sur un intervalle
+    const interval = findIntervalAtPosition(mouseX, mouseY, chart);
+
+    if (interval) {
+        // Afficher le menu contextuel
+        showIntervalContextMenu(event.clientX, event.clientY, interval.id);
+        return true;
+    }
+
+    return false;
+}
+
+// Afficher le menu contextuel pour un intervalle
+function showIntervalContextMenu(x, y, intervalId) {
+    const menu = document.getElementById('interval-context-menu');
+    if (!menu) return;
+
+    contextMenuIntervalId = intervalId;
+
+    // Mettre à jour le texte de visibilité
+    const interval = intervals.find(int => int.id === intervalId);
+    if (interval) {
+        const eyeIcon = document.getElementById('interval-context-menu-eye-icon');
+        const visibilityText = document.getElementById('interval-context-menu-visibility-text');
+
+        if (interval.visible) {
+            if (eyeIcon) eyeIcon.className = 'fas fa-eye-slash';
+            if (visibilityText) visibilityText.textContent = 'Masquer';
+        } else {
+            if (eyeIcon) eyeIcon.className = 'fas fa-eye';
+            if (visibilityText) visibilityText.textContent = 'Afficher';
+        }
+    }
+
+    // Positionner et afficher le menu
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    menu.style.display = 'block';
+}
+
+// Cacher le menu contextuel
+function hideIntervalContextMenu() {
+    const menu = document.getElementById('interval-context-menu');
+    if (menu) {
+        menu.style.display = 'none';
+    }
+    contextMenuIntervalId = null;
+}
+
+// Action du menu contextuel : Modifier
+function contextMenuIntervalEdit() {
+    if (contextMenuIntervalId !== null) {
+        const interval = intervals.find(int => int.id === contextMenuIntervalId);
+        if (interval) {
+            openIntervalEditModal(interval);
+        }
+    }
+    hideIntervalContextMenu();
+}
+
+// Action du menu contextuel : Masquer/Afficher
+function contextMenuIntervalToggleVisibility() {
+    if (contextMenuIntervalId !== null) {
+        toggleIntervalVisibility(contextMenuIntervalId);
+    }
+    hideIntervalContextMenu();
+}
+
+// Action du menu contextuel : Supprimer
+function contextMenuIntervalDelete() {
+    if (contextMenuIntervalId !== null) {
+        deleteInterval(contextMenuIntervalId);
+    }
+    hideIntervalContextMenu();
+}
+
+// =====================================
+// INITIALISATION
+// =====================================
+
 // Initialiser le système d'intervalles
 function initIntervals() {
     // Charger les intervalles sauvegardés
@@ -1204,6 +1306,14 @@ function initIntervals() {
         // avec système de priorités pour éviter conflits avec autres outils
         console.log('✅ Event listeners interval: dblclick sur canvas, drag géré par charts.js');
     }
+
+    // Fermer le menu contextuel lors d'un clic ailleurs
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('interval-context-menu');
+        if (menu && menu.style.display === 'block' && !e.target.closest('#interval-context-menu')) {
+            hideIntervalContextMenu();
+        }
+    });
 
     console.log('Système d\'intervalles initialisé');
 }

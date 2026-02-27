@@ -637,6 +637,14 @@ canvas.addEventListener('contextmenu', (e) => {
         }
     }
 
+    // Priorité 2: Menu contextuel des intervalles
+    if (typeof handleIntervalContextMenu === 'function') {
+        if (handleIntervalContextMenu(e, chart)) {
+            e.preventDefault(); // Empêcher le menu contextuel du navigateur
+            return;
+        }
+    }
+
     // Autres outils pourraient avoir leur menu contextuel ici
 });
 

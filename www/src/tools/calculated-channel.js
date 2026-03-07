@@ -874,6 +874,9 @@ function updateCalculatedChannelsList() {
         return;
     }
 
+    // Corriger automatiquement les canaux cylindre si nécessaire
+    fixCylinderChannels();
+
     listContainer.style.display = 'block';
     itemsContainer.innerHTML = '';
 
@@ -1191,6 +1194,63 @@ window.editCalculatedChannel = editCalculatedChannel;
 window.deleteCalculatedChannel = deleteCalculatedChannel;
 window.editCylinderChannel = editCylinderChannel;
 window.deleteCylinderChannel = deleteCylinderChannel;
+
+// =====================================
+// MIGRATION & RÉPARATION
+// =====================================
+
+// Corriger les canaux cylindre qui n'ont pas de cylinderGroupId ou cylinderSide
+function fixCylinderChannels() {
+    const cylinderChannels = appState.calculatedChannels.filter(ch => ch.type === 'cylinder');
+
+    if (cylinderChannels.length === 0) return;
+
+    console.log(`🔧 Vérification de ${cylinderChannels.length} canal(aux) cylindre...`);
+
+    // Grouper les canaux par baseName
+    const groups = {};
+    cylinderChannels.forEach(ch => {
+        const key = ch.baseName || ch.name.split(' - ')[0] || 'Vérin';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(ch);
+    });
+
+    // Pour chaque groupe, corriger les propriétés manquantes
+    Object.entries(groups).forEach(([baseName, channels]) => {
+        // Si le groupe a exactement 2 canaux et qu'ils n'ont pas de cylinderGroupId
+        if (channels.length === 2) {
+            const needsFix = channels.some(ch => !ch.cylinderGroupId || !ch.cylinderSide);
+
+            if (needsFix) {
+                // Générer un nouveau cylinderGroupId pour le groupe
+                const groupId = channels[0].cylinderGroupId || Date.now() + Math.random();
+
+                console.log(`  ⚙️ Correction du groupe "${baseName}" (ID: ${groupId})`);
+
+                // Identifier piston et rod par leur nom
+                channels.forEach(ch => {
+                    ch.cylinderGroupId = groupId;
+
+                    // Déterminer le côté en fonction du nom
+                    if (ch.name.includes('Piston') || ch.name.includes('piston')) {
+                        ch.cylinderSide = 'piston';
+                        ch.id = groupId + '_piston';
+                    } else if (ch.name.includes('Annulaire') || ch.name.includes('annulaire') || ch.name.includes('Rod') || ch.name.includes('rod')) {
+                        ch.cylinderSide = 'rod';
+                        ch.id = groupId + '_rod';
+                    }
+
+                    // S'assurer que baseName est défini
+                    if (!ch.baseName) {
+                        ch.baseName = baseName;
+                    }
+
+                    console.log(`    ✓ ${ch.name}: cylinderSide=${ch.cylinderSide}`);
+                });
+            }
+        }
+    });
+}
 
 // =====================================
 // INTERFACE

@@ -1099,7 +1099,10 @@ function deleteCalculatedChannel(channelId, silent = false) {
 
 // Éditer un canal vérin (groupe piston + tige)
 function editCylinderChannel(cylinderGroupId) {
-    console.log('🔧 editCylinderChannel appelée avec cylinderGroupId:', cylinderGroupId);
+    // Convertir en number car onclick passe une string
+    cylinderGroupId = Number(cylinderGroupId);
+
+    console.log('🔧 editCylinderChannel appelée avec cylinderGroupId:', cylinderGroupId, typeof cylinderGroupId);
     console.log('📋 Canaux calculés disponibles:', appState.calculatedChannels);
 
     // Trouver les canaux du groupe
@@ -1149,7 +1152,10 @@ function editCylinderChannel(cylinderGroupId) {
 
 // Supprimer un canal vérin (groupe piston + tige)
 function deleteCylinderChannel(cylinderGroupId) {
-    console.log('🗑️ deleteCylinderChannel appelée avec cylinderGroupId:', cylinderGroupId);
+    // Convertir en number car onclick passe une string
+    cylinderGroupId = Number(cylinderGroupId);
+
+    console.log('🗑️ deleteCylinderChannel appelée avec cylinderGroupId:', cylinderGroupId, typeof cylinderGroupId);
     console.log('📋 Canaux calculés disponibles:', appState.calculatedChannels);
 
     // Trouver les deux canaux du groupe

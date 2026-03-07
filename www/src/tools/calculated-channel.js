@@ -1183,6 +1183,15 @@ function deleteCylinderChannel(cylinderGroupId) {
     setStatus("Canaux vérin supprimés: " + baseName);
 }
 
+// Exposer les fonctions dans le scope global pour les boutons onclick
+window.toggleCalculatedChannel = toggleCalculatedChannel;
+window.toggleCalculatedType = toggleCalculatedType;
+window.createCalculatedChannel = createCalculatedChannel;
+window.editCalculatedChannel = editCalculatedChannel;
+window.deleteCalculatedChannel = deleteCalculatedChannel;
+window.editCylinderChannel = editCylinderChannel;
+window.deleteCylinderChannel = deleteCylinderChannel;
+
 // =====================================
 // INTERFACE
 // =====================================

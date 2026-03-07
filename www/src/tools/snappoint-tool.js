@@ -1079,6 +1079,7 @@ class SnapPointTool {
     }
 
     openSnapPointEditModal(id) {
+    console.log('🔓 openSnapPointEditModal() appelée avec id:', id);
     // IMPORTANT: Réinitialiser l'ID d'édition d'abord pour éviter tout conflit
     this.editingId = null;
 
@@ -1089,6 +1090,7 @@ class SnapPointTool {
     }
 
     const snapPoint = this.snapPoints.find(sp => sp.id === id);
+    console.log('🔍 Recherche du snapPoint, trouvé:', snapPoint);
     if (!snapPoint) {
         console.error(`❌ Marqueur avec id ${id} introuvable dans la liste de ${this.snapPoints.length} marqueurs`);
         console.log('IDs disponibles:', this.snapPoints.map(sp => sp.id));
@@ -1604,6 +1606,7 @@ class SnapPointTool {
     }
 
     editSnapPoint(id) {
+    console.log('📝 editSnapPoint() appelée avec id:', id);
     this.openSnapPointEditModal(id);
     }
 
@@ -2398,8 +2401,12 @@ class SnapPointTool {
     }
 
     contextMenuEdit() {
+    console.log('🔧 contextMenuEdit() appelée, contextMenuId:', this.contextMenuId);
     if (this.contextMenuId !== null) {
+        console.log('📍 Appel de editSnapPoint avec id:', this.contextMenuId);
         editSnapPoint(this.contextMenuId);
+    } else {
+        console.warn('⚠️ contextMenuId est null');
     }
     this.hideContextMenu();
     }

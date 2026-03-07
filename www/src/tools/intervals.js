@@ -401,7 +401,11 @@ let currentEditingInterval = null;
 
 // Ouvrir la modale d'édition complète d'un intervalle
 function openIntervalEditModal(interval) {
-    if (!interval) return;
+    console.log('📝 openIntervalEditModal() appelée avec:', interval);
+    if (!interval) {
+        console.error('❌ Intervalle null passé à openIntervalEditModal');
+        return;
+    }
 
     currentEditingInterval = interval;
 
@@ -1261,11 +1265,17 @@ function hideIntervalContextMenu() {
 
 // Action du menu contextuel : Modifier
 function contextMenuIntervalEdit() {
+    console.log('🔧 contextMenuIntervalEdit() appelée, contextMenuIntervalId:', contextMenuIntervalId);
     if (contextMenuIntervalId !== null) {
         const interval = intervals.find(int => int.id === contextMenuIntervalId);
+        console.log('📍 Intervalle trouvé:', interval);
         if (interval) {
             openIntervalEditModal(interval);
+        } else {
+            console.error('❌ Intervalle non trouvé pour id:', contextMenuIntervalId);
         }
+    } else {
+        console.warn('⚠️ contextMenuIntervalId est null');
     }
     hideIntervalContextMenu();
 }

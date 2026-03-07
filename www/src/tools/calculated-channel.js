@@ -904,6 +904,14 @@ function updateCalculatedChannelsList() {
 
             if (!pistonChannel || !rodChannel) return;
 
+            // LOG: Afficher les infos du vérin
+            console.log('🔧 Génération boutons vérin:', {
+                cylinderGroupId: channel.cylinderGroupId,
+                baseName: channel.baseName,
+                pistonChannel: pistonChannel,
+                rodChannel: rodChannel
+            });
+
             // Créer l'élément groupé pour le vérin
             const item = document.createElement('div');
             item.style.cssText = 'margin-bottom:8px; padding:8px; background:var(--bg-secondary); border-radius:4px; border-left:4px solid ' + channel.color;
@@ -917,12 +925,12 @@ function updateCalculatedChannelsList() {
                         <i class="fas fa-cog" style="margin-right:4px;"></i>Vérin: ${channel.baseName || 'Vérin'}
                     </div>
                     <div style="display:flex; gap:4px;">
-                        <button onclick="editCylinderChannel('${channel.cylinderGroupId}')"
+                        <button onclick="console.log('🖱️ Clic édition vérin:', '${channel.cylinderGroupId}'); editCylinderChannel('${channel.cylinderGroupId}')"
                                 style="padding:4px 8px; background:var(--accent-blue); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.75em;"
                                 title="Modifier">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="deleteCylinderChannel('${channel.cylinderGroupId}')"
+                        <button onclick="console.log('🖱️ Clic suppression vérin:', '${channel.cylinderGroupId}'); deleteCylinderChannel('${channel.cylinderGroupId}')"
                                 style="padding:4px 8px; background:var(--accent-red); color:white; border:none; border-radius:3px; cursor:pointer; font-size:0.75em;"
                                 title="Supprimer">
                             <i class="fas fa-trash"></i>
@@ -1091,6 +1099,9 @@ function deleteCalculatedChannel(channelId, silent = false) {
 
 // Éditer un canal vérin (groupe piston + tige)
 function editCylinderChannel(cylinderGroupId) {
+    console.log('🔧 editCylinderChannel appelée avec cylinderGroupId:', cylinderGroupId);
+    console.log('📋 Canaux calculés disponibles:', appState.calculatedChannels);
+
     // Trouver les canaux du groupe
     const pistonChannel = appState.calculatedChannels.find(
         ch => ch.cylinderGroupId === cylinderGroupId && ch.cylinderSide === 'piston'
@@ -1099,7 +1110,10 @@ function editCylinderChannel(cylinderGroupId) {
         ch => ch.cylinderGroupId === cylinderGroupId && ch.cylinderSide === 'rod'
     );
 
+    console.log('🔍 Résultat recherche:', { pistonChannel, rodChannel });
+
     if (!pistonChannel || !rodChannel) {
+        console.error('❌ Canaux vérin introuvables pour cylinderGroupId:', cylinderGroupId);
         setStatus("Erreur: Canaux vérin introuvables");
         return;
     }
@@ -1135,6 +1149,9 @@ function editCylinderChannel(cylinderGroupId) {
 
 // Supprimer un canal vérin (groupe piston + tige)
 function deleteCylinderChannel(cylinderGroupId) {
+    console.log('🗑️ deleteCylinderChannel appelée avec cylinderGroupId:', cylinderGroupId);
+    console.log('📋 Canaux calculés disponibles:', appState.calculatedChannels);
+
     // Trouver les deux canaux du groupe
     const pistonChannel = appState.calculatedChannels.find(
         ch => ch.cylinderGroupId === cylinderGroupId && ch.cylinderSide === 'piston'
@@ -1143,7 +1160,10 @@ function deleteCylinderChannel(cylinderGroupId) {
         ch => ch.cylinderGroupId === cylinderGroupId && ch.cylinderSide === 'rod'
     );
 
+    console.log('🔍 Résultat recherche:', { pistonChannel, rodChannel });
+
     if (!pistonChannel || !rodChannel) {
+        console.error('❌ Canaux vérin introuvables pour cylinderGroupId:', cylinderGroupId);
         setStatus("Erreur: Canaux vérin introuvables");
         return;
     }
@@ -1194,6 +1214,12 @@ window.editCalculatedChannel = editCalculatedChannel;
 window.deleteCalculatedChannel = deleteCalculatedChannel;
 window.editCylinderChannel = editCylinderChannel;
 window.deleteCylinderChannel = deleteCylinderChannel;
+
+// LOG: Vérifier que les fonctions sont bien exposées
+console.log('✅ Fonctions vérin exposées dans window:', {
+    editCylinderChannel: typeof window.editCylinderChannel,
+    deleteCylinderChannel: typeof window.deleteCylinderChannel
+});
 
 // =====================================
 // MIGRATION & RÉPARATION

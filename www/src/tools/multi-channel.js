@@ -175,6 +175,54 @@ function closeChannelConfig(silent = false) {
     }
 }
 
+/**
+ * Synchronise les valeurs YMin/YMax entre les deux canaux d'un même vérin
+ * @param {Object} config - Configuration du canal source
+ * @param {string} property - 'yMin' ou 'yMax'
+ * @param {number|null} newValue - Nouvelle valeur à synchroniser
+ */
+function syncCylinderYMinMax(config, property, newValue) {
+    // Vérifier si c'est un canal vérin
+    if (!config.cylinderGroupId) {
+        return; // Pas un canal vérin
+    }
+
+    // Trouver le canal partenaire (même cylinderGroupId, calculatedId différent)
+    const partnerConfig = appState.channelConfig.find(c =>
+        c.cylinderGroupId === config.cylinderGroupId &&
+        c.calculatedId !== config.calculatedId
+    );
+
+    if (!partnerConfig) {
+        return; // Pas de partenaire trouvé
+    }
+
+    // Synchroniser la valeur
+    partnerConfig[property] = newValue;
+    console.log(`🔄 Synchronisation ${property} vérin: ${config.label} → ${partnerConfig.label} = ${newValue}`);
+
+    // Mettre à jour l'input visuel dans le DOM
+    const partnerIndex = appState.channelConfig.indexOf(partnerConfig);
+    const tbody = document.getElementById('channel-config-tbody');
+    if (!tbody) return;
+
+    // Trouver la ligne correspondante
+    const rows = tbody.querySelectorAll('tr');
+    for (const row of rows) {
+        const globalIndex = parseInt(row.getAttribute('data-global-index'));
+        if (globalIndex === partnerIndex) {
+            // Trouver l'input yMin ou yMax dans cette ligne
+            const inputs = row.querySelectorAll('input[type="number"]');
+            // inputs[0] = yMin, inputs[1] = yMax
+            const inputIndex = property === 'yMin' ? 0 : 1;
+            if (inputs[inputIndex]) {
+                inputs[inputIndex].value = newValue !== null ? newValue : '';
+            }
+            break;
+        }
+    }
+}
+
 // Mettre à jour l'interface de configuration
 function updateChannelConfigUI() {
     const tbody = document.getElementById('channel-config-tbody');
@@ -370,6 +418,9 @@ function updateChannelConfigUI() {
             config.yMin = newValue;
             console.log(`📊 Y Min modifié pour ${config.label}: ${newValue}`);
 
+            // Synchroniser avec le canal partenaire si vérin
+            syncCylinderYMinMax(config, 'yMin', newValue);
+
             // Vérifier si les valeurs correspondent encore à un preset
             let matchesPreset = false;
             for (let i = 1; i <= 5; i++) {
@@ -411,6 +462,9 @@ function updateChannelConfigUI() {
             const newValue = e.target.value === '' ? null : parseFloat(e.target.value);
             config.yMax = newValue;
             console.log(`📊 Y Max modifié pour ${config.label}: ${newValue}`);
+
+            // Synchroniser avec le canal partenaire si vérin
+            syncCylinderYMinMax(config, 'yMax', newValue);
 
             // Vérifier si les valeurs correspondent encore à un preset
             let matchesPreset = false;
